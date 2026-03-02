@@ -1218,36 +1218,50 @@ const Admin = () => {
                   <Label className="text-sm font-medium">Assistente IA ativada</Label>
                   <Switch checked={aiSettings.enabled} onCheckedChange={v => setAiSettings({ ...aiSettings, enabled: v })} />
                 </div>
+
+                <div className="bg-muted/50 rounded-xl p-4 space-y-1">
+                  <p className="text-xs font-semibold text-foreground">💡 Como funciona?</p>
+                  <p className="text-xs text-muted-foreground">
+                    Por padrão, usamos a IA integrada do Lovable (gratuita para começar). 
+                    Se preferir usar <strong>sua própria chave de API</strong> (Google Gemini, OpenAI, etc.), 
+                    selecione o provedor e cole sua chave. Deixe como "Lovable AI" para usar sem chave.
+                  </p>
+                </div>
+
                 <div>
                   <Label className="text-sm font-medium">Provedor</Label>
                   <select value={aiSettings.provider} onChange={e => setAiSettings({ ...aiSettings, provider: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
-                    <option value="google">Google (Gemini)</option>
-                    <option value="openai">OpenAI (GPT)</option>
+                    <option value="lovable">Lovable AI (padrão, sem chave)</option>
+                    <option value="google">Google (Gemini) — sua chave</option>
+                    <option value="openai">OpenAI (GPT) — sua chave</option>
                   </select>
                 </div>
+
+                {aiSettings.provider !== "lovable" && (
+                  <>
+                    <div>
+                      <Label className="text-sm font-medium">Modelo</Label>
+                      <Input value={aiSettings.model} onChange={e => setAiSettings({ ...aiSettings, model: e.target.value })} className="mt-1 rounded-xl" placeholder={aiSettings.provider === "google" ? "gemini-2.0-flash" : "gpt-4o"} />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">API Key</Label>
+                      <Input type="password" value={aiSettings.api_key_encrypted} onChange={e => setAiSettings({ ...aiSettings, api_key_encrypted: e.target.value })} className="mt-1 rounded-xl" placeholder="Cole sua chave de API aqui" />
+                      <p className="text-[10px] text-muted-foreground mt-1">Obtenha em: {aiSettings.provider === "google" ? "aistudio.google.com" : "platform.openai.com/api-keys"}</p>
+                    </div>
+                  </>
+                )}
+
                 <div>
-                  <Label className="text-sm font-medium">Modelo</Label>
-                  <Input value={aiSettings.model} onChange={e => setAiSettings({ ...aiSettings, model: e.target.value })} className="mt-1 rounded-xl" placeholder="gemini-2.0-flash" />
+                  <Label className="text-sm font-medium">Instruções do sistema (personalidade da IA)</Label>
+                  <Textarea value={aiSettings.system_prompt} onChange={e => setAiSettings({ ...aiSettings, system_prompt: e.target.value })} className="mt-1 rounded-xl" rows={5} placeholder="Ex: Você é uma assistente carinhosa especializada em gestação..." />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">API Key</Label>
-                  <Input type="password" value={aiSettings.api_key_encrypted} onChange={e => setAiSettings({ ...aiSettings, api_key_encrypted: e.target.value })} className="mt-1 rounded-xl" placeholder="Cole sua chave de API aqui" />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Instruções do sistema (system prompt)</Label>
-                  <Textarea value={aiSettings.system_prompt} onChange={e => setAiSettings({ ...aiSettings, system_prompt: e.target.value })} className="mt-1 rounded-xl" rows={5} />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Temperatura ({aiSettings.temperature})</Label>
+                  <Label className="text-sm font-medium">Temperatura ({aiSettings.temperature}) — mais baixo = mais preciso, mais alto = mais criativo</Label>
                   <input type="range" min="0" max="1" step="0.1" value={aiSettings.temperature} onChange={e => setAiSettings({ ...aiSettings, temperature: parseFloat(e.target.value) })} className="mt-1 w-full" />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Máximo de tokens</Label>
+                  <Label className="text-sm font-medium">Máximo de tokens (tamanho da resposta)</Label>
                   <Input type="number" value={aiSettings.max_tokens} onChange={e => setAiSettings({ ...aiSettings, max_tokens: parseInt(e.target.value) || 1024 })} className="mt-1 rounded-xl" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Google Analytics</Label>
-                  <Switch checked={settings.analyticsEnabled} onCheckedChange={v => setSettings({ ...settings, analyticsEnabled: v })} />
                 </div>
               </div>
             )}
