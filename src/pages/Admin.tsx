@@ -25,12 +25,13 @@ import cardDiary from "@/assets/card-diary.png";
 import cardAssistant from "@/assets/card-assistant.png";
 
 import {
-  useCategories, useUpdateCategory,
+  useCategories, useUpdateCategory, useCreateCategory, useDeleteCategory,
   useWeekContents, useUpdateWeekContent, useDeleteWeekContent,
   useSymptoms, useUpdateSymptom, useCreateSymptom, useDeleteSymptom,
   useExercises, useUpdateExercise, useCreateExercise, useDeleteExercise,
+  useHealthTips, useUpdateHealthTip, useCreateHealthTip, useDeleteHealthTip,
   useWeeklyTips, useUpdateWeeklyTip, useCreateWeeklyTip, useDeleteWeeklyTip,
-  type Category, type WeekContent, type SymptomRow, type ExerciseRow, type WeeklyTipRow,
+  type Category, type WeekContent, type SymptomRow, type ExerciseRow, type HealthTipRow, type WeeklyTipRow,
 } from "@/hooks/useSupabaseData";
 
 const localImages: Record<string, string> = {
@@ -70,6 +71,22 @@ const sidebarItems = [
   { id: "settings", label: "Configurações", icon: Settings },
 ];
 
+const CategorySelect = ({ value, onChange, categories }: { value: string | null; onChange: (v: string | null) => void; categories: Category[] }) => (
+  <div>
+    <Label className="text-sm font-medium">Card/Categoria vinculada</Label>
+    <select
+      value={value || ""}
+      onChange={e => onChange(e.target.value || null)}
+      className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+    >
+      <option value="">— Nenhuma —</option>
+      {categories.map(c => (
+        <option key={c.id} value={c.id}>{c.title}</option>
+      ))}
+    </select>
+  </div>
+);
+
 const Admin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
@@ -79,6 +96,8 @@ const Admin = () => {
   // Supabase data
   const { data: categories = [], isLoading: loadingCategories } = useCategories();
   const updateCategory = useUpdateCategory();
+  const createCategory = useCreateCategory();
+  const deleteCategory = useDeleteCategory();
   const { data: weekContents = [], isLoading: loadingWeeks } = useWeekContents();
   const updateWeek = useUpdateWeekContent();
   const deleteWeekContent = useDeleteWeekContent();
@@ -90,6 +109,10 @@ const Admin = () => {
   const updateExercise = useUpdateExercise();
   const createExercise = useCreateExercise();
   const deleteExerciseMut = useDeleteExercise();
+  const { data: healthTipsData = [], isLoading: loadingHealthTips } = useHealthTips();
+  const updateHealthTip = useUpdateHealthTip();
+  const createHealthTip = useCreateHealthTip();
+  const deleteHealthTipMut = useDeleteHealthTip();
   const { data: tipsData = [], isLoading: loadingTips } = useWeeklyTips();
   const updateTip = useUpdateWeeklyTip();
   const createTip = useCreateWeeklyTip();
@@ -98,6 +121,8 @@ const Admin = () => {
   // Editing states
   const [editingCard, setEditingCard] = useState<Category | null>(null);
   const [editCardOpen, setEditCardOpen] = useState(false);
+  const [newCardOpen, setNewCardOpen] = useState(false);
+  const [newCard, setNewCard] = useState({ title: "", slug: "", description: "", icon: "BookOpen", path: "/", visible: true, display_order: 0 });
 
   const [editingWeek, setEditingWeek] = useState<WeekContent | null>(null);
   const [editWeekOpen, setEditWeekOpen] = useState(false);
@@ -109,6 +134,9 @@ const Admin = () => {
 
   const [editingExercise, setEditingExercise] = useState<Partial<ExerciseRow> | null>(null);
   const [editExerciseOpen, setEditExerciseOpen] = useState(false);
+
+  const [editingHealthTip, setEditingHealthTip] = useState<Partial<HealthTipRow> & { tipsText?: string } | null>(null);
+  const [editHealthTipOpen, setEditHealthTipOpen] = useState(false);
 
   const [editingTip, setEditingTip] = useState<Partial<WeeklyTipRow> | null>(null);
   const [editTipOpen, setEditTipOpen] = useState(false);
@@ -152,6 +180,20 @@ const Admin = () => {
       toast.success(card.visible ? "Card ocultado" : "Card visível");
     } catch { toast.error("Erro ao alterar visibilidade"); }
   };
+  const handleCreateCard = async () => {
+    try {
+      await createCategory.mutateAsync(newCard);
+      toast.success("Card criado!");
+      setNewCardOpen(false);
+      setNewCard({ title: "", slug: "", description: "", icon: "BookOpen", path: "/", visible: true, display_order: categories.length });
+    } catch { toast.error("Erro ao criar card"); }
+  };
+  const handleDeleteCard = async (card: Category) => {
+    try {
+      await deleteCategory.mutateAsync(card.id);
+      toast.success("Card excluído!");
+    } catch { toast.error("Erro ao excluir card"); }
+  };
 
   // Week handlers
   const handleSaveWeek = async () => {
@@ -166,6 +208,7 @@ const Admin = () => {
         reviewed: editingWeek.reviewed,
         status: editingWeek.baby_development ? "draft" : "empty",
         active: editingWeek.active,
+        category_id: editingWeek.category_id,
       });
       toast.success("Semana atualizada!");
       setEditWeekOpen(false);
@@ -184,9 +227,9 @@ const Admin = () => {
     if (!editingSymptom) return;
     try {
       if (editingSymptom.id) {
-        await updateSymptom.mutateAsync({ id: editingSymptom.id, name: editingSymptom.name, description: editingSymptom.description, alert_level: editingSymptom.alert_level, active: editingSymptom.active });
+        await updateSymptom.mutateAsync({ id: editingSymptom.id, name: editingSymptom.name, description: editingSymptom.description, alert_level: editingSymptom.alert_level, active: editingSymptom.active, category_id: editingSymptom.category_id });
       } else {
-        await createSymptom.mutateAsync({ name: editingSymptom.name || "", description: editingSymptom.description, alert_level: editingSymptom.alert_level, trimester: editingSymptom.trimester || [1] });
+        await createSymptom.mutateAsync({ name: editingSymptom.name || "", description: editingSymptom.description, alert_level: editingSymptom.alert_level, trimester: editingSymptom.trimester || [1], category_id: editingSymptom.category_id });
       }
       toast.success("Sintoma salvo!");
       setEditSymptomOpen(false);
@@ -199,9 +242,9 @@ const Admin = () => {
     if (!editingExercise) return;
     try {
       if (editingExercise.id) {
-        await updateExercise.mutateAsync({ id: editingExercise.id, name: editingExercise.name, description: editingExercise.description, intensity: editingExercise.intensity, active: editingExercise.active });
+        await updateExercise.mutateAsync({ id: editingExercise.id, name: editingExercise.name, description: editingExercise.description, intensity: editingExercise.intensity, active: editingExercise.active, category_id: editingExercise.category_id });
       } else {
-        await createExercise.mutateAsync({ name: editingExercise.name || "", description: editingExercise.description, intensity: editingExercise.intensity, trimester: editingExercise.trimester || [1] });
+        await createExercise.mutateAsync({ name: editingExercise.name || "", description: editingExercise.description, intensity: editingExercise.intensity, trimester: editingExercise.trimester || [1], category_id: editingExercise.category_id });
       }
       toast.success("Exercício salvo!");
       setEditExerciseOpen(false);
@@ -209,14 +252,30 @@ const Admin = () => {
     } catch { toast.error("Erro ao salvar exercício"); }
   };
 
+  // Health Tip handlers
+  const handleSaveHealthTip = async () => {
+    if (!editingHealthTip) return;
+    const tips = (editingHealthTip.tipsText || "").split("\n").filter(t => t.trim());
+    try {
+      if (editingHealthTip.id) {
+        await updateHealthTip.mutateAsync({ id: editingHealthTip.id, section_title: editingHealthTip.section_title, icon: editingHealthTip.icon, tips, active: editingHealthTip.active, category_id: editingHealthTip.category_id });
+      } else {
+        await createHealthTip.mutateAsync({ section_title: editingHealthTip.section_title || "", icon: editingHealthTip.icon || "Heart", tips, category_id: editingHealthTip.category_id });
+      }
+      toast.success("Dica de saúde salva!");
+      setEditHealthTipOpen(false);
+      setEditingHealthTip(null);
+    } catch { toast.error("Erro ao salvar dica de saúde"); }
+  };
+
   // Tip handlers
   const handleSaveTip = async () => {
     if (!editingTip) return;
     try {
       if (editingTip.id) {
-        await updateTip.mutateAsync({ id: editingTip.id, title: editingTip.title, content: editingTip.content, week_number: editingTip.week_number, active: editingTip.active });
+        await updateTip.mutateAsync({ id: editingTip.id, title: editingTip.title, content: editingTip.content, week_number: editingTip.week_number, active: editingTip.active, category_id: editingTip.category_id });
       } else {
-        await createTip.mutateAsync({ title: editingTip.title || "", content: editingTip.content, week_number: editingTip.week_number || 1 });
+        await createTip.mutateAsync({ title: editingTip.title || "", content: editingTip.content, week_number: editingTip.week_number || 1, category_id: editingTip.category_id });
       }
       toast.success("Dica salva!");
       setEditTipOpen(false);
@@ -348,11 +407,12 @@ const Admin = () => {
 
             <div className="bg-card rounded-2xl p-5 border border-border shadow-card">
               <h3 className="font-semibold text-foreground mb-4">Resumo de Conteúdo</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {[
                   { label: "Semanas", value: weekContents.length, sub: `${weekContents.filter(w => w.status === 'published').length} publicadas` },
                   { label: "Sintomas", value: symptomsData.length, sub: `${symptomsData.filter(s => s.active).length} ativos` },
                   { label: "Exercícios", value: exercisesData.length, sub: `${exercisesData.filter(e => e.active).length} ativos` },
+                  { label: "Saúde", value: healthTipsData.length, sub: `${healthTipsData.filter(h => h.active).length} ativos` },
                   { label: "Dicas", value: tipsData.length, sub: `${tipsData.filter(t => t.active).length} ativas` },
                 ].map(item => (
                   <div key={item.label} className="bg-muted/50 rounded-xl p-3 text-center">
@@ -369,9 +429,14 @@ const Admin = () => {
         {/* ===== CARDS ===== */}
         {activeTab === "cards" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold font-display text-foreground">Cards do Dashboard</h1>
-              <p className="text-sm text-muted-foreground mt-1">Gerencie os cards exibidos no dashboard das gestantes.</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold font-display text-foreground">Cards do Dashboard</h1>
+                <p className="text-sm text-muted-foreground mt-1">Gerencie os cards exibidos no dashboard das gestantes.</p>
+              </div>
+              <Button size="sm" className="rounded-xl" onClick={() => { setNewCard({ title: "", slug: "", description: "", icon: "BookOpen", path: "/", visible: true, display_order: categories.length }); setNewCardOpen(true); }}>
+                <Plus className="w-4 h-4 mr-1" /> Novo Card
+              </Button>
             </div>
 
             {loadingCategories ? (
@@ -402,6 +467,9 @@ const Admin = () => {
                           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleToggleVisibility(card)}>
                             <Eye className={`w-4 h-4 ${!card.visible ? "text-muted-foreground" : ""}`} />
                           </Button>
+                          <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => handleDeleteCard(card)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -424,6 +492,7 @@ const Admin = () => {
                 <TabsTrigger value="weeks" className="rounded-lg text-xs sm:text-sm">Semanas</TabsTrigger>
                 <TabsTrigger value="symptoms" className="rounded-lg text-xs sm:text-sm">Sintomas</TabsTrigger>
                 <TabsTrigger value="exercises" className="rounded-lg text-xs sm:text-sm">Exercícios</TabsTrigger>
+                <TabsTrigger value="health" className="rounded-lg text-xs sm:text-sm">Saúde</TabsTrigger>
                 <TabsTrigger value="tips" className="rounded-lg text-xs sm:text-sm">Dicas</TabsTrigger>
               </TabsList>
 
@@ -490,7 +559,7 @@ const Admin = () => {
                 <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                   <div className="p-4 border-b border-border flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">Sintomas cadastrados ({symptomsData.length})</span>
-                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingSymptom({ name: "", description: "", alert_level: "low", trimester: [1], active: true }); setEditSymptomOpen(true); }}>
+                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingSymptom({ name: "", description: "", alert_level: "low", trimester: [1], active: true, category_id: null }); setEditSymptomOpen(true); }}>
                       <Plus className="w-4 h-4 mr-1" /> Novo
                     </Button>
                   </div>
@@ -508,6 +577,7 @@ const Admin = () => {
                                 <span key={t} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">{t}° tri</span>
                               ))}
                               {!s.active && <span className="text-[10px] bg-red-100 px-1.5 py-0.5 rounded-full text-red-700">Inativo</span>}
+                              {s.category_id && <span className="text-[10px] bg-primary/10 px-1.5 py-0.5 rounded-full text-primary">{categories.find(c => c.id === s.category_id)?.title || "Card"}</span>}
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
@@ -526,7 +596,7 @@ const Admin = () => {
                 <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                   <div className="p-4 border-b border-border flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">Exercícios cadastrados ({exercisesData.length})</span>
-                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingExercise({ name: "", description: "", intensity: "Leve", trimester: [1], active: true }); setEditExerciseOpen(true); }}>
+                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingExercise({ name: "", description: "", intensity: "Leve", trimester: [1], active: true, category_id: null }); setEditExerciseOpen(true); }}>
                       <Plus className="w-4 h-4 mr-1" /> Novo
                     </Button>
                   </div>
@@ -545,6 +615,7 @@ const Admin = () => {
                                 <span key={t} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">{t}° tri</span>
                               ))}
                               {!ex.active && <span className="text-[10px] bg-red-100 px-1.5 py-0.5 rounded-full text-red-700">Inativo</span>}
+                              {ex.category_id && <span className="text-[10px] bg-primary/10 px-1.5 py-0.5 rounded-full text-primary">{categories.find(c => c.id === ex.category_id)?.title || "Card"}</span>}
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
@@ -558,12 +629,47 @@ const Admin = () => {
                 </div>
               </TabsContent>
 
+              {/* Health Tips tab */}
+              <TabsContent value="health" className="mt-4">
+                <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
+                  <div className="p-4 border-b border-border flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">Saúde Integral ({healthTipsData.length})</span>
+                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingHealthTip({ section_title: "", icon: "Heart", tips: [], tipsText: "", active: true, category_id: null }); setEditHealthTipOpen(true); }}>
+                      <Plus className="w-4 h-4 mr-1" /> Nova Seção
+                    </Button>
+                  </div>
+                  {loadingHealthTips ? (
+                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                  ) : (
+                    <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
+                      {healthTipsData.map(ht => (
+                        <div key={ht.id} className={`p-4 flex items-center justify-between gap-3 ${!ht.active ? "opacity-50" : ""}`}>
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm text-foreground">{ht.section_title}</p>
+                            <p className="text-xs text-muted-foreground truncate">{ht.tips.length} dica(s)</p>
+                            <div className="flex gap-1 mt-1">
+                              <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">Ícone: {ht.icon}</span>
+                              {!ht.active && <span className="text-[10px] bg-red-100 px-1.5 py-0.5 rounded-full text-red-700">Inativo</span>}
+                              {ht.category_id && <span className="text-[10px] bg-primary/10 px-1.5 py-0.5 rounded-full text-primary">{categories.find(c => c.id === ht.category_id)?.title || "Card"}</span>}
+                            </div>
+                          </div>
+                          <div className="flex gap-1 flex-shrink-0">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingHealthTip({ ...ht, tipsText: ht.tips.join("\n") }); setEditHealthTipOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteHealthTipMut.mutate(ht.id); toast.success("Seção excluída"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
               {/* Tips tab */}
               <TabsContent value="tips" className="mt-4">
                 <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                   <div className="p-4 border-b border-border flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">Dicas cadastradas ({tipsData.length})</span>
-                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingTip({ title: "", content: "", week_number: 1, active: true }); setEditTipOpen(true); }}>
+                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingTip({ title: "", content: "", week_number: 1, active: true, category_id: null }); setEditTipOpen(true); }}>
                       <Plus className="w-4 h-4 mr-1" /> Nova
                     </Button>
                   </div>
@@ -579,6 +685,7 @@ const Admin = () => {
                             <div className="flex gap-1 mt-1">
                               <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">Semana {tip.week_number}</span>
                               {!tip.active && <span className="text-[10px] bg-red-100 px-1.5 py-0.5 rounded-full text-red-700">Inativa</span>}
+                              {tip.category_id && <span className="text-[10px] bg-primary/10 px-1.5 py-0.5 rounded-full text-primary">{categories.find(c => c.id === tip.category_id)?.title || "Card"}</span>}
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
@@ -639,20 +746,24 @@ const Admin = () => {
                 { type: "app", icon: Monitor, title: "Informações do App", description: `Nome: ${settings.appName}` },
                 { type: "plans", icon: CreditCard, title: "Planos e Assinaturas", description: `Premium: R$ ${settings.planPremiumPrice}/mês` },
                 { type: "push", icon: Bell, title: "Notificações Push", description: settings.pushEnabled ? `Ativadas · ${settings.pushFrequency}` : "Desativadas" },
-                { type: "integrations", icon: Link2, title: "Integrações", description: `Analytics: ${settings.analyticsEnabled ? "Ativo" : "Inativo"}` },
-                { type: "backup", icon: Database, title: "Backup e Exportação", description: settings.backupEnabled ? "Backup automático ativo" : "Backup desativado" },
-              ].map(setting => (
-                <div key={setting.type} className="bg-card rounded-2xl p-4 md:p-5 border border-border shadow-card flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <setting.icon className="w-5 h-5 text-primary" />
+                { type: "integrations", icon: Link2, title: "Integrações", description: `Analytics: ${settings.analyticsEnabled ? "Ativado" : "Desativado"}` },
+                { type: "backup", icon: Database, title: "Backup e Exportação", description: settings.backupEnabled ? "Backup automático ativado" : "Manual" },
+              ].map(s => (
+                <div key={s.type} className="bg-card rounded-2xl border border-border shadow-card p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                        <s.icon className="w-5 h-5 text-foreground/70" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm text-foreground">{s.title}</p>
+                        <p className="text-xs text-muted-foreground">{s.description}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-sm text-foreground">{setting.title}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{setting.description}</p>
-                    </div>
+                    <Button variant="outline" size="sm" className="rounded-xl" onClick={() => openSetting(s.type)}>
+                      <Edit className="w-3.5 h-3.5 mr-1" /> Editar
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" className="rounded-xl flex-shrink-0" onClick={() => openSetting(setting.type)}>Configurar</Button>
                 </div>
               ))}
             </div>
@@ -664,31 +775,23 @@ const Admin = () => {
 
       {/* Edit Card Dialog */}
       <Dialog open={editCardOpen} onOpenChange={setEditCardOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Card: {editingCard?.title}</DialogTitle>
-            <DialogDescription>Altere as informações do card do dashboard.</DialogDescription>
+            <DialogDescription>Modifique as informações do card.</DialogDescription>
           </DialogHeader>
           {editingCard && (
             <div className="space-y-4 mt-2">
-              <div className="rounded-xl overflow-hidden border border-border">
-                <img src={localImages[editingCard.slug] || cardJourney} alt={editingCard.title} className="w-full h-40 object-cover" />
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Título</Label>
-                <Input value={editingCard.title} onChange={e => setEditingCard({ ...editingCard, title: e.target.value })} className="mt-1 rounded-xl" />
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Descrição</Label>
-                <Textarea value={editingCard.description} onChange={e => setEditingCard({ ...editingCard, description: e.target.value })} className="mt-1 rounded-xl" rows={2} />
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Rota</Label>
-                <Input value={editingCard.path} onChange={e => setEditingCard({ ...editingCard, path: e.target.value })} className="mt-1 rounded-xl" />
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Ordem de exibição</Label>
-                <Input type="number" value={editingCard.display_order} onChange={e => setEditingCard({ ...editingCard, display_order: parseInt(e.target.value) || 1 })} className="mt-1 rounded-xl" min={1} max={10} />
+              <div><Label className="text-sm font-medium">Título</Label><Input value={editingCard.title} onChange={e => setEditingCard({ ...editingCard, title: e.target.value })} className="mt-1 rounded-xl" /></div>
+              <div><Label className="text-sm font-medium">Slug</Label><Input value={editingCard.slug} onChange={e => setEditingCard({ ...editingCard, slug: e.target.value })} className="mt-1 rounded-xl" /></div>
+              <div><Label className="text-sm font-medium">Descrição</Label><Textarea value={editingCard.description} onChange={e => setEditingCard({ ...editingCard, description: e.target.value })} className="mt-1 rounded-xl" rows={2} /></div>
+              <div><Label className="text-sm font-medium">Ícone (componente)</Label><Input value={editingCard.icon} onChange={e => setEditingCard({ ...editingCard, icon: e.target.value })} className="mt-1 rounded-xl" /></div>
+              <div><Label className="text-sm font-medium">Rota (path)</Label><Input value={editingCard.path} onChange={e => setEditingCard({ ...editingCard, path: e.target.value })} className="mt-1 rounded-xl" /></div>
+              <div><Label className="text-sm font-medium">URL da imagem</Label><Input value={editingCard.image_url} onChange={e => setEditingCard({ ...editingCard, image_url: e.target.value })} className="mt-1 rounded-xl" /></div>
+              <div><Label className="text-sm font-medium">Ordem de exibição</Label><Input type="number" value={editingCard.display_order} onChange={e => setEditingCard({ ...editingCard, display_order: parseInt(e.target.value) || 0 })} className="mt-1 rounded-xl" /></div>
+              <div className="flex items-center gap-3">
+                <Switch checked={editingCard.visible} onCheckedChange={v => setEditingCard({ ...editingCard, visible: v })} />
+                <Label className="text-sm">Visível no dashboard</Label>
               </div>
               <div className="flex gap-2 pt-2">
                 <Button className="flex-1 rounded-xl" onClick={handleSaveCard} disabled={updateCategory.isPending}>
@@ -698,6 +801,34 @@ const Admin = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* New Card Dialog */}
+      <Dialog open={newCardOpen} onOpenChange={setNewCardOpen}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Novo Card</DialogTitle>
+            <DialogDescription>Crie um novo card para o dashboard.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div><Label className="text-sm font-medium">Título</Label><Input value={newCard.title} onChange={e => setNewCard({ ...newCard, title: e.target.value })} className="mt-1 rounded-xl" placeholder="Ex: Nutrição" /></div>
+            <div><Label className="text-sm font-medium">Slug (identificador único)</Label><Input value={newCard.slug} onChange={e => setNewCard({ ...newCard, slug: e.target.value })} className="mt-1 rounded-xl" placeholder="Ex: nutricao" /></div>
+            <div><Label className="text-sm font-medium">Descrição</Label><Textarea value={newCard.description} onChange={e => setNewCard({ ...newCard, description: e.target.value })} className="mt-1 rounded-xl" rows={2} /></div>
+            <div><Label className="text-sm font-medium">Ícone</Label><Input value={newCard.icon} onChange={e => setNewCard({ ...newCard, icon: e.target.value })} className="mt-1 rounded-xl" placeholder="BookOpen" /></div>
+            <div><Label className="text-sm font-medium">Rota</Label><Input value={newCard.path} onChange={e => setNewCard({ ...newCard, path: e.target.value })} className="mt-1 rounded-xl" placeholder="/nutricao" /></div>
+            <div><Label className="text-sm font-medium">Ordem</Label><Input type="number" value={newCard.display_order} onChange={e => setNewCard({ ...newCard, display_order: parseInt(e.target.value) || 0 })} className="mt-1 rounded-xl" /></div>
+            <div className="flex items-center gap-3">
+              <Switch checked={newCard.visible} onCheckedChange={v => setNewCard({ ...newCard, visible: v })} />
+              <Label className="text-sm">Visível no dashboard</Label>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button className="flex-1 rounded-xl" onClick={handleCreateCard} disabled={createCategory.isPending}>
+                {createCategory.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />} Criar Card
+              </Button>
+              <Button variant="outline" className="rounded-xl" onClick={() => setNewCardOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -742,6 +873,7 @@ const Admin = () => {
           </DialogHeader>
           {editingWeek && (
             <div className="space-y-4 mt-2">
+              <CategorySelect value={editingWeek.category_id} onChange={v => setEditingWeek({ ...editingWeek, category_id: v })} categories={categories} />
               <div>
                 <Label className="text-sm font-medium">Desenvolvimento do bebê</Label>
                 <Textarea value={editingWeek.baby_development} onChange={e => setEditingWeek({ ...editingWeek, baby_development: e.target.value })} className="mt-1 rounded-xl" rows={3} />
@@ -782,6 +914,7 @@ const Admin = () => {
           </DialogHeader>
           {editingSymptom && (
             <div className="space-y-4 mt-2">
+              <CategorySelect value={editingSymptom.category_id || null} onChange={v => setEditingSymptom({ ...editingSymptom, category_id: v })} categories={categories} />
               <div>
                 <Label className="text-sm font-medium">Nome</Label>
                 <Input value={editingSymptom.name || ""} onChange={e => setEditingSymptom({ ...editingSymptom, name: e.target.value })} className="mt-1 rounded-xl" />
@@ -822,6 +955,7 @@ const Admin = () => {
           </DialogHeader>
           {editingExercise && (
             <div className="space-y-4 mt-2">
+              <CategorySelect value={editingExercise.category_id || null} onChange={v => setEditingExercise({ ...editingExercise, category_id: v })} categories={categories} />
               <div>
                 <Label className="text-sm font-medium">Nome</Label>
                 <Input value={editingExercise.name || ""} onChange={e => setEditingExercise({ ...editingExercise, name: e.target.value })} className="mt-1 rounded-xl" />
@@ -852,6 +986,50 @@ const Admin = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Health Tip Dialog */}
+      <Dialog open={editHealthTipOpen} onOpenChange={setEditHealthTipOpen}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{!editingHealthTip?.id ? "Nova Seção de Saúde" : `Editar: ${editingHealthTip?.section_title}`}</DialogTitle>
+            <DialogDescription>Preencha as informações da seção de saúde integral.</DialogDescription>
+          </DialogHeader>
+          {editingHealthTip && (
+            <div className="space-y-4 mt-2">
+              <CategorySelect value={editingHealthTip.category_id || null} onChange={v => setEditingHealthTip({ ...editingHealthTip, category_id: v })} categories={categories} />
+              <div>
+                <Label className="text-sm font-medium">Título da seção</Label>
+                <Input value={editingHealthTip.section_title || ""} onChange={e => setEditingHealthTip({ ...editingHealthTip, section_title: e.target.value })} className="mt-1 rounded-xl" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Ícone</Label>
+                <select value={editingHealthTip.icon || "Heart"} onChange={e => setEditingHealthTip({ ...editingHealthTip, icon: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
+                  <option value="Apple">Apple (Nutrição)</option>
+                  <option value="Moon">Moon (Sono)</option>
+                  <option value="Brain">Brain (Emocional)</option>
+                  <option value="Heart">Heart (Coração)</option>
+                  <option value="Baby">Baby (Bebê)</option>
+                  <option value="Sparkles">Sparkles (Brilho)</option>
+                </select>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Dicas (uma por linha)</Label>
+                <Textarea value={editingHealthTip.tipsText || ""} onChange={e => setEditingHealthTip({ ...editingHealthTip, tipsText: e.target.value })} className="mt-1 rounded-xl" rows={6} placeholder="Cada linha será uma dica separada" />
+              </div>
+              {editingHealthTip.id && (
+                <div className="flex items-center gap-3">
+                  <Switch checked={editingHealthTip.active ?? true} onCheckedChange={v => setEditingHealthTip({ ...editingHealthTip, active: v })} />
+                  <Label className="text-sm">Ativo</Label>
+                </div>
+              )}
+              <div className="flex gap-2 pt-2">
+                <Button className="flex-1 rounded-xl" onClick={handleSaveHealthTip}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => setEditHealthTipOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Tip Dialog */}
       <Dialog open={editTipOpen} onOpenChange={setEditTipOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
@@ -861,6 +1039,7 @@ const Admin = () => {
           </DialogHeader>
           {editingTip && (
             <div className="space-y-4 mt-2">
+              <CategorySelect value={editingTip.category_id || null} onChange={v => setEditingTip({ ...editingTip, category_id: v })} categories={categories} />
               <div>
                 <Label className="text-sm font-medium">Título</Label>
                 <Input value={editingTip.title || ""} onChange={e => setEditingTip({ ...editingTip, title: e.target.value })} className="mt-1 rounded-xl" />
