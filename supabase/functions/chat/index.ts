@@ -97,7 +97,30 @@ serve(async (req) => {
       });
     }
 
-    const response = await fetch(apiUrl, { method: "POST", headers, body });
+    let responseProvider = provider;
+    let response = await fetch(apiUrl, { method: "POST", headers, body });
+
+    if (!response.ok && response.status === 429 && provider === "google" && customApiKey) {
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (LOVABLE_API_KEY) {
+        console.warn("Google rate limit (429). Falling back to Lovable AI Gateway.");
+        responseProvider = "lovable";
+        response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-3-flash-preview",
+            messages: [{ role: "system", content: systemPrompt }, ...messages],
+            temperature,
+            max_tokens: maxTokens,
+            stream: false,
+          }),
+        });
+      }
+    }
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -120,7 +143,7 @@ serve(async (req) => {
     const data = await response.json();
 
     let assistantContent = "";
-    if (provider === "google" && customApiKey) {
+    if (responseProvider === "google") {
       assistantContent = data.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui gerar uma resposta.";
     } else {
       assistantContent = data.choices?.[0]?.message?.content || "Desculpe, não consegui gerar uma resposta.";
