@@ -255,6 +255,65 @@ export function useActiveHealthTips() {
   });
 }
 
+export function useUpdateHealthTip() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: TablesUpdate<"health_tips"> & { id: string }) => {
+      const { data, error } = await supabase.from("health_tips").update(updates).eq("id", id).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["health_tips"] }),
+  });
+}
+
+export function useCreateHealthTip() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (tip: TablesInsert<"health_tips">) => {
+      const { data, error } = await supabase.from("health_tips").insert(tip).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["health_tips"] }),
+  });
+}
+
+export function useDeleteHealthTip() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("health_tips").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["health_tips"] }),
+  });
+}
+
+// ─── Category CRUD ───
+export function useCreateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (cat: TablesInsert<"categories">) => {
+      const { data, error } = await supabase.from("categories").insert(cat).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
+  });
+}
+
+export function useDeleteCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("categories").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
+  });
+}
+
 // ─── Weekly Tips ───
 export type WeeklyTipRow = Tables<"weekly_tips">;
 
