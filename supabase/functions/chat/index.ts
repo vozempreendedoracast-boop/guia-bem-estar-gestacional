@@ -12,109 +12,72 @@ serve(async (req) => {
   try {
     const { messages } = await req.json();
 
-    // Get AI settings from DB
+    // Get AI settings from DB for system prompt
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: settings, error: settingsError } = await supabase
+    const { data: settings } = await supabase
       .from("ai_settings")
       .select("*")
       .limit(1)
       .single();
 
-    if (settingsError || !settings) {
-      return new Response(JSON.stringify({ error: "Configurações da IA não encontradas. Configure no painel admin." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (!settings.enabled) {
+    if (settings && !settings.enabled) {
       return new Response(JSON.stringify({ error: "A assistente de IA está desativada. Ative no painel admin." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (!settings.api_key_encrypted) {
-      return new Response(JSON.stringify({ error: "API Key não configurada. Insira a chave no painel admin." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const systemPrompt = settings?.system_prompt || "Você é uma assistente carinhosa e acolhedora especializada em gestação.";
+    const temperature = settings?.temperature ?? 0.7;
+    const maxTokens = settings?.max_tokens ?? 1024;
 
-    const apiKey = settings.api_key_encrypted;
-    const provider = settings.provider;
-    const model = settings.model;
-    const systemPrompt = settings.system_prompt;
-    const temperature = settings.temperature;
-    const maxTokens = settings.max_tokens;
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    let apiUrl: string;
-    let body: any;
-    let headers: Record<string, string>;
-
-    if (provider === "google") {
-      // Gemini API
-      apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      headers = { "Content-Type": "application/json" };
-      
-      const contents = [];
-      if (systemPrompt) {
-        contents.push({ role: "user", parts: [{ text: systemPrompt }] });
-        contents.push({ role: "model", parts: [{ text: "Entendido! Estou pronta para ajudar." }] });
-      }
-      for (const msg of messages) {
-        contents.push({
-          role: msg.role === "assistant" ? "model" : "user",
-          parts: [{ text: msg.content }],
-        });
-      }
-      body = JSON.stringify({
-        contents,
-        generationConfig: { temperature, maxOutputTokens: maxTokens },
-      });
-    } else {
-      // OpenAI-compatible API
-      apiUrl = provider === "openai" 
-        ? "https://api.openai.com/v1/chat/completions"
-        : `https://api.${provider}.com/v1/chat/completions`;
-      
-      headers = {
-        "Authorization": `Bearer ${apiKey}`,
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
-      };
-      body = JSON.stringify({
-        model,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,
         ],
         temperature,
         max_tokens: maxTokens,
-      });
-    }
-
-    const response = await fetch(apiUrl, { method: "POST", headers, body });
+        stream: false,
+      }),
+    });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI API error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: `Erro na API de IA (${response.status}): ${errorText.substring(0, 200)}` }), {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns instantes." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao workspace." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const t = await response.text();
+      console.error("AI gateway error:", response.status, t);
+      return new Response(JSON.stringify({ error: "Erro no gateway de IA" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const data = await response.json();
-
-    let assistantContent = "";
-    if (provider === "google") {
-      assistantContent = data.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui gerar uma resposta.";
-    } else {
-      assistantContent = data.choices?.[0]?.message?.content || "Desculpe, não consegui gerar uma resposta.";
-    }
+    const assistantContent = data.choices?.[0]?.message?.content || "Desculpe, não consegui gerar uma resposta.";
 
     return new Response(JSON.stringify({ content: assistantContent }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
