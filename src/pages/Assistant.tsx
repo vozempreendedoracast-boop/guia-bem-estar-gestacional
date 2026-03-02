@@ -35,15 +35,15 @@ const Assistant = () => {
     setIsLoading(true);
 
     try {
-      const contextMsg = `[Contexto: Gestante "${profile?.name}", semana ${currentWeek}, ${trimester}° trimestre]`;
-      const messagesForApi = [
-        { role: "user" as const, content: contextMsg },
-        { role: "assistant" as const, content: "Entendido, vou considerar esse contexto." },
-        ...updatedMessages,
-      ];
-
       const { data, error } = await supabase.functions.invoke("chat", {
-        body: { messages: messagesForApi },
+        body: {
+          messages: updatedMessages,
+          context: {
+            name: profile?.name,
+            week: currentWeek,
+            trimester,
+          },
+        },
       });
 
       if (error) throw error;
