@@ -1,0 +1,1 @@
+UPDATE public.ai_settings SET enabled = true WHERE id = '3a1bfa0e-3d05-4368-a11f-dcccfd79f20f';
