@@ -4,11 +4,21 @@ import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, FileText, Users, Settings, BookOpen, AlertCircle,
   Activity, Heart, Bot, BarChart3, Plus, Edit, Trash2, Eye, ArrowLeft,
-  TrendingUp, UserCheck, Calendar, Search
+  TrendingUp, UserCheck, Calendar, Search, Image, Save, X, Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+
+import cardJourney from "@/assets/card-journey.png";
+import cardSymptoms from "@/assets/card-symptoms.png";
+import cardExercises from "@/assets/card-exercises.png";
+import cardHealth from "@/assets/card-health.png";
+import cardDiary from "@/assets/card-diary.png";
+import cardAssistant from "@/assets/card-assistant.png";
 
 // Mock data
 const mockStats = {
@@ -33,8 +43,29 @@ const mockUsers = [
   { id: 5, name: "Fernanda Costa", email: "fernanda@email.com", week: 22, joined: "2026-01-28", active: true },
 ];
 
+interface DashboardCard {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  path: string;
+  image: string;
+  visible: boolean;
+  order: number;
+}
+
+const initialCards: DashboardCard[] = [
+  { id: "journey", title: "Minha Jornada", description: "Semana a semana", icon: "BookOpen", path: "/journey", image: cardJourney, visible: true, order: 1 },
+  { id: "symptoms", title: "Sintomas", description: "Guia completo", icon: "AlertCircle", path: "/symptoms", image: cardSymptoms, visible: true, order: 2 },
+  { id: "exercises", title: "Exercícios", description: "Atividades por trimestre", icon: "Activity", path: "/exercises", image: cardExercises, visible: true, order: 3 },
+  { id: "health", title: "Saúde Integral", description: "Corpo e mente", icon: "Heart", path: "/health", image: cardHealth, visible: true, order: 4 },
+  { id: "diary", title: "Diário", description: "Registros e progresso", icon: "BarChart3", path: "/diary", image: cardDiary, visible: true, order: 5 },
+  { id: "assistant", title: "Assistente IA", description: "Tire dúvidas", icon: "Bot", path: "/assistant", image: cardAssistant, visible: true, order: 6 },
+];
+
 const sidebarItems = [
   { id: "overview", label: "Visão Geral", icon: LayoutDashboard },
+  { id: "cards", label: "Cards", icon: Layers },
   { id: "content", label: "Conteúdos", icon: FileText },
   { id: "users", label: "Usuárias", icon: Users },
   { id: "settings", label: "Configurações", icon: Settings },
@@ -44,11 +75,30 @@ const Admin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
+  const [cards, setCards] = useState<DashboardCard[]>(initialCards);
+  const [editingCard, setEditingCard] = useState<DashboardCard | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const filteredUsers = mockUsers.filter(u =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleEditCard = (card: DashboardCard) => {
+    setEditingCard({ ...card });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveCard = () => {
+    if (!editingCard) return;
+    setCards(prev => prev.map(c => c.id === editingCard.id ? editingCard : c));
+    setEditDialogOpen(false);
+    setEditingCard(null);
+  };
+
+  const handleToggleVisibility = (id: string) => {
+    setCards(prev => prev.map(c => c.id === id ? { ...c, visible: !c.visible } : c));
+  };
 
   return (
     <div className="min-h-screen bg-muted/30 flex">
@@ -131,7 +181,6 @@ const Admin = () => {
               ))}
             </div>
 
-            {/* Distribution chart mock */}
             <div className="bg-card rounded-2xl p-6 border border-border shadow-card">
               <h3 className="font-semibold text-foreground mb-4">Distribuição por Trimestre</h3>
               <div className="flex items-end gap-2 h-40">
@@ -154,7 +203,6 @@ const Admin = () => {
               </div>
             </div>
 
-            {/* Recent activity */}
             <div className="bg-card rounded-2xl p-6 border border-border shadow-card">
               <h3 className="font-semibold text-foreground mb-4">Atividade Recente</h3>
               <div className="space-y-3">
@@ -173,6 +221,124 @@ const Admin = () => {
             </div>
           </motion.div>
         )}
+
+        {activeTab === "cards" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold font-display text-foreground">Cards do Dashboard</h1>
+                <p className="text-sm text-muted-foreground mt-1">Gerencie os cards exibidos no dashboard das gestantes.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              {cards.sort((a, b) => a.order - b.order).map(card => (
+                <div key={card.id} className={`bg-card rounded-2xl border border-border shadow-card overflow-hidden transition-opacity ${!card.visible ? "opacity-50" : ""}`}>
+                  <div className="flex items-stretch">
+                    <div className="w-32 h-28 flex-shrink-0 overflow-hidden">
+                      <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 p-4 flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-foreground">{card.title}</h3>
+                        <p className="text-sm text-muted-foreground mt-0.5">{card.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">Rota: {card.path}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${card.visible ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                            {card.visible ? "Visível" : "Oculto"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleEditCard(card)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleToggleVisibility(card.id)}>
+                          <Eye className={`w-4 h-4 ${!card.visible ? "text-muted-foreground" : ""}`} />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Edit Card Dialog */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Editar Card: {editingCard?.title}</DialogTitle>
+            </DialogHeader>
+            {editingCard && (
+              <div className="space-y-4 mt-2">
+                <div className="rounded-xl overflow-hidden border border-border">
+                  <img src={editingCard.image} alt={editingCard.title} className="w-full h-40 object-cover" />
+                </div>
+                <div>
+                  <Label htmlFor="card-image" className="text-sm font-medium">URL da Imagem</Label>
+                  <Input
+                    id="card-image"
+                    value={editingCard.image}
+                    onChange={e => setEditingCard({ ...editingCard, image: e.target.value })}
+                    placeholder="URL da imagem do card"
+                    className="mt-1 rounded-xl"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Cole a URL de uma nova imagem ou faça upload.</p>
+                </div>
+                <div>
+                  <Label htmlFor="card-title" className="text-sm font-medium">Título</Label>
+                  <Input
+                    id="card-title"
+                    value={editingCard.title}
+                    onChange={e => setEditingCard({ ...editingCard, title: e.target.value })}
+                    className="mt-1 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="card-desc" className="text-sm font-medium">Descrição</Label>
+                  <Textarea
+                    id="card-desc"
+                    value={editingCard.description}
+                    onChange={e => setEditingCard({ ...editingCard, description: e.target.value })}
+                    className="mt-1 rounded-xl"
+                    rows={2}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="card-path" className="text-sm font-medium">Rota</Label>
+                  <Input
+                    id="card-path"
+                    value={editingCard.path}
+                    onChange={e => setEditingCard({ ...editingCard, path: e.target.value })}
+                    className="mt-1 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="card-order" className="text-sm font-medium">Ordem de exibição</Label>
+                  <Input
+                    id="card-order"
+                    type="number"
+                    value={editingCard.order}
+                    onChange={e => setEditingCard({ ...editingCard, order: parseInt(e.target.value) || 1 })}
+                    className="mt-1 rounded-xl"
+                    min={1}
+                    max={10}
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button className="flex-1 rounded-xl" onClick={handleSaveCard}>
+                    <Save className="w-4 h-4 mr-2" /> Salvar alterações
+                  </Button>
+                  <Button variant="outline" className="rounded-xl" onClick={() => setEditDialogOpen(false)}>
+                    <X className="w-4 h-4 mr-2" /> Cancelar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {activeTab === "content" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
@@ -304,7 +470,7 @@ const Admin = () => {
                 { title: "Planos e Assinaturas", description: "Configurar planos gratuito e premium, preços e períodos." },
                 { title: "Notificações Push", description: "Configurar notificações automáticas para as gestantes." },
                 { title: "Integrações", description: "Conectar com serviços externos (pagamento, email, analytics)." },
-                { title: "Backup & Exportação", description: "Exportar dados e configurar backups automáticos." },
+                { title: "Backup e Exportação", description: "Exportar dados e configurar backups automáticos." },
               ].map(setting => (
                 <div key={setting.title} className="bg-card rounded-2xl p-5 border border-border shadow-card flex items-center justify-between">
                   <div>
