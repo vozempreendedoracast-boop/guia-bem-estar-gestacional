@@ -14,7 +14,307 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          description: string
+          display_order: number
+          icon: string
+          id: string
+          image_url: string
+          path: string
+          slug: string
+          title: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          image_url?: string
+          path?: string
+          slug: string
+          title: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          image_url?: string
+          path?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
+      exercises: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          contraindications: string
+          created_at: string
+          description: string
+          display_order: number
+          id: string
+          intensity: string
+          name: string
+          steps: string[]
+          trimester: number[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category_id?: string | null
+          contraindications?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          intensity?: string
+          name: string
+          steps?: string[]
+          trimester?: number[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category_id?: string | null
+          contraindications?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          intensity?: string
+          name?: string
+          steps?: string[]
+          trimester?: number[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercises_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_tips: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          created_at: string
+          display_order: number
+          icon: string
+          id: string
+          section_title: string
+          tips: string[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          section_title: string
+          tips?: string[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          section_title?: string
+          tips?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_tips_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      symptoms: {
+        Row: {
+          active: boolean
+          alert_level: string
+          category_id: string | null
+          created_at: string
+          description: string
+          display_order: number
+          id: string
+          name: string
+          trimester: number[]
+          updated_at: string
+          what_to_do: string
+          when_common: string
+          when_see_doctor: string
+        }
+        Insert: {
+          active?: boolean
+          alert_level?: string
+          category_id?: string | null
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          name: string
+          trimester?: number[]
+          updated_at?: string
+          what_to_do?: string
+          when_common?: string
+          when_see_doctor?: string
+        }
+        Update: {
+          active?: boolean
+          alert_level?: string
+          category_id?: string | null
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          name?: string
+          trimester?: number[]
+          updated_at?: string
+          what_to_do?: string
+          when_common?: string
+          when_see_doctor?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "symptoms_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      week_contents: {
+        Row: {
+          active: boolean
+          alerts: string[]
+          baby_development: string
+          baby_size: string
+          baby_size_comparison: string
+          category_id: string | null
+          common_symptoms: string[]
+          created_at: string
+          id: string
+          mother_changes: string
+          reviewed: boolean
+          status: string
+          tip: string
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          active?: boolean
+          alerts?: string[]
+          baby_development?: string
+          baby_size?: string
+          baby_size_comparison?: string
+          category_id?: string | null
+          common_symptoms?: string[]
+          created_at?: string
+          id?: string
+          mother_changes?: string
+          reviewed?: boolean
+          status?: string
+          tip?: string
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          active?: boolean
+          alerts?: string[]
+          baby_development?: string
+          baby_size?: string
+          baby_size_comparison?: string
+          category_id?: string | null
+          common_symptoms?: string[]
+          created_at?: string
+          id?: string
+          mother_changes?: string
+          reviewed?: boolean
+          status?: string
+          tip?: string
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "week_contents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_tips: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          content: string
+          created_at: string
+          display_order: number
+          id: string
+          title: string
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          active?: boolean
+          category_id?: string | null
+          content?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          title: string
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          active?: boolean
+          category_id?: string | null
+          content?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          title?: string
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_tips_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
