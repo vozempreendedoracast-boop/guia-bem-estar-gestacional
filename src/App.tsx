@@ -29,17 +29,17 @@ const App = () => (
         <PregnancyProvider>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/journey" element={<Journey />} />
-            <Route path="/journey/:week" element={<WeekDetail />} />
-            <Route path="/symptoms" element={<Symptoms />} />
-            <Route path="/exercises" element={<Exercises />} />
-            <Route path="/health" element={<Health />} />
-            <Route path="/diary" element={<Diary />} />
-            <Route path="/assistant" element={<Assistant />} />
-            <Route path="/sales" element={<Sales />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/cadastro" element={<Onboarding />} />
+            <Route path="/painel" element={<Dashboard />} />
+            <Route path="/jornada" element={<Journey />} />
+            <Route path="/jornada/:week" element={<WeekDetail />} />
+            <Route path="/sintomas" element={<Symptoms />} />
+            <Route path="/exercicios" element={<Exercises />} />
+            <Route path="/saude" element={<Health />} />
+            <Route path="/diario" element={<Diary />} />
+            <Route path="/assistente" element={<Assistant />} />
+            <Route path="/vendas" element={<Sales />} />
+            <Route path="/administracao" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </PregnancyProvider>

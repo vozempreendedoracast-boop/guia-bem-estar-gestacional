@@ -47,7 +47,7 @@ const Sales = () => {
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={() => scrollToSection("features")}>Recursos</Button>
             <Button variant="ghost" size="sm" onClick={() => scrollToSection("testimonials")}>Depoimentos</Button>
-            <Button size="sm" className="rounded-xl" onClick={() => navigate("/onboarding")}>
+            <Button size="sm" className="rounded-xl" onClick={() => navigate("/cadastro")}>
               Começar grátis
             </Button>
           </div>
@@ -74,7 +74,7 @@ const Sales = () => {
               Informação personalizada, apoio emocional e acompanhamento semana a semana. Tudo que você precisa em um único app.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
-              <Button size="lg" className="rounded-xl text-base h-14 px-8" onClick={() => navigate("/onboarding")}>
+              <Button size="lg" className="rounded-xl text-base h-14 px-8" onClick={() => navigate("/cadastro")}>
                 Começar agora — É grátis
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
@@ -155,7 +155,7 @@ const Sales = () => {
           <Button
             size="lg"
             className="mt-8 rounded-xl text-base h-14 px-10 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-            onClick={() => navigate("/onboarding")}
+            onClick={() => navigate("/cadastro")}
           >
             Começar grátis agora
             <ArrowRight className="w-5 h-5 ml-2" />
@@ -203,7 +203,7 @@ const Sales = () => {
           <p className="text-muted-foreground mt-3 max-w-md mx-auto">
             Crie sua conta gratuita em menos de 2 minutos e comece a acompanhar sua gestação com carinho e segurança.
           </p>
-          <Button size="lg" className="mt-8 rounded-xl text-base h-14 px-10" onClick={() => navigate("/onboarding")}>
+          <Button size="lg" className="mt-8 rounded-xl text-base h-14 px-10" onClick={() => navigate("/cadastro")}>
             Criar conta grátis
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>

@@ -30,7 +30,7 @@ const Symptoms = () => {
   return (
     <div className="min-h-screen bg-background pb-8">
       <div className="px-6 pt-6 pb-4 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="rounded-xl">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/painel")} className="rounded-xl">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="text-xl font-bold font-display">Sintomas</h1>

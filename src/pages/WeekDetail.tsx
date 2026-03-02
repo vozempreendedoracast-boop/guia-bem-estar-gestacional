@@ -13,7 +13,7 @@ const WeekDetail = () => {
   const data = getClosestWeekData(weekNum);
 
   if (weekNum > currentWeek) {
-    navigate("/journey");
+    navigate("/jornada");
     return null;
   }
 
@@ -29,7 +29,7 @@ const WeekDetail = () => {
       {/* Hero */}
       <div className="gradient-hero text-primary-foreground px-6 pt-6 pb-10 rounded-b-[2rem]">
         <div className="flex items-center gap-3 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/journey")} className="text-primary-foreground hover:bg-primary-foreground/10 rounded-xl">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/jornada")} className="text-primary-foreground hover:bg-primary-foreground/10 rounded-xl">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-xl font-bold font-display">Semana {data.week}</h1>

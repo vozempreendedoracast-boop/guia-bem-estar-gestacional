@@ -51,7 +51,7 @@ const Onboarding = () => {
       focus,
     };
     setProfile(profile);
-    navigate("/dashboard");
+    navigate("/painel");
   };
 
   const emojis = ["😢", "😟", "😐", "🙂", "😊"];
