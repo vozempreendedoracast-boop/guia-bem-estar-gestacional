@@ -132,7 +132,7 @@ const Admin = () => {
   const [editingSymptom, setEditingSymptom] = useState<Partial<SymptomRow> | null>(null);
   const [editSymptomOpen, setEditSymptomOpen] = useState(false);
 
-  const [editingExercise, setEditingExercise] = useState<Partial<ExerciseRow> | null>(null);
+  const [editingExercise, setEditingExercise] = useState<Partial<ExerciseRow> & { stepsText?: string } | null>(null);
   const [editExerciseOpen, setEditExerciseOpen] = useState(false);
 
   const [editingHealthTip, setEditingHealthTip] = useState<Partial<HealthTipRow> & { tipsText?: string } | null>(null);
@@ -226,10 +226,20 @@ const Admin = () => {
   const handleSaveSymptom = async () => {
     if (!editingSymptom) return;
     try {
+      const payload = {
+        name: editingSymptom.name,
+        description: editingSymptom.description,
+        alert_level: editingSymptom.alert_level,
+        category_id: editingSymptom.category_id,
+        trimester: editingSymptom.trimester || [1],
+        when_common: editingSymptom.when_common,
+        when_see_doctor: editingSymptom.when_see_doctor,
+        what_to_do: editingSymptom.what_to_do,
+      };
       if (editingSymptom.id) {
-        await updateSymptom.mutateAsync({ id: editingSymptom.id, name: editingSymptom.name, description: editingSymptom.description, alert_level: editingSymptom.alert_level, active: editingSymptom.active, category_id: editingSymptom.category_id });
+        await updateSymptom.mutateAsync({ id: editingSymptom.id, ...payload, active: editingSymptom.active });
       } else {
-        await createSymptom.mutateAsync({ name: editingSymptom.name || "", description: editingSymptom.description, alert_level: editingSymptom.alert_level, trimester: editingSymptom.trimester || [1], category_id: editingSymptom.category_id });
+        await createSymptom.mutateAsync({ ...payload, name: payload.name || "" });
       }
       toast.success("Sintoma salvo!");
       setEditSymptomOpen(false);
@@ -241,10 +251,20 @@ const Admin = () => {
   const handleSaveExercise = async () => {
     if (!editingExercise) return;
     try {
+      const stepsArr = ((editingExercise as any).stepsText || "").split("\n").filter((s: string) => s.trim());
+      const payload = {
+        name: editingExercise.name,
+        description: editingExercise.description,
+        intensity: editingExercise.intensity,
+        category_id: editingExercise.category_id,
+        trimester: editingExercise.trimester || [1],
+        contraindications: editingExercise.contraindications,
+        steps: stepsArr,
+      };
       if (editingExercise.id) {
-        await updateExercise.mutateAsync({ id: editingExercise.id, name: editingExercise.name, description: editingExercise.description, intensity: editingExercise.intensity, active: editingExercise.active, category_id: editingExercise.category_id });
+        await updateExercise.mutateAsync({ id: editingExercise.id, ...payload, active: editingExercise.active });
       } else {
-        await createExercise.mutateAsync({ name: editingExercise.name || "", description: editingExercise.description, intensity: editingExercise.intensity, trimester: editingExercise.trimester || [1], category_id: editingExercise.category_id });
+        await createExercise.mutateAsync({ ...payload, name: payload.name || "" });
       }
       toast.success("Exercício salvo!");
       setEditExerciseOpen(false);
@@ -596,7 +616,7 @@ const Admin = () => {
                 <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                   <div className="p-4 border-b border-border flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">Exercícios cadastrados ({exercisesData.length})</span>
-                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingExercise({ name: "", description: "", intensity: "Leve", trimester: [1], active: true, category_id: null }); setEditExerciseOpen(true); }}>
+                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingExercise({ name: "", description: "", intensity: "Leve", trimester: [1], active: true, category_id: null, contraindications: "", stepsText: "" }); setEditExerciseOpen(true); }}>
                       <Plus className="w-4 h-4 mr-1" /> Novo
                     </Button>
                   </div>
@@ -619,7 +639,7 @@ const Admin = () => {
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingExercise({ ...ex }); setEditExerciseOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingExercise({ ...ex, stepsText: (ex.steps || []).join("\n") }); setEditExerciseOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteExerciseMut.mutate(ex.id); toast.success("Exercício excluído"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
                           </div>
                         </div>
@@ -931,6 +951,32 @@ const Admin = () => {
                   <option value="high">Alto</option>
                 </select>
               </div>
+              <div>
+                <Label className="text-sm font-medium">Trimestres</Label>
+                <div className="flex gap-3 mt-1">
+                  {[1, 2, 3].map(t => (
+                    <label key={t} className="flex items-center gap-1.5 text-sm">
+                      <input type="checkbox" checked={(editingSymptom.trimester || []).includes(t)} onChange={e => {
+                        const current = editingSymptom.trimester || [];
+                        setEditingSymptom({ ...editingSymptom, trimester: e.target.checked ? [...current, t] : current.filter(x => x !== t) });
+                      }} className="rounded" />
+                      {t}º
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Quando é comum</Label>
+                <Textarea value={editingSymptom.when_common || ""} onChange={e => setEditingSymptom({ ...editingSymptom, when_common: e.target.value })} className="mt-1 rounded-xl" rows={2} />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">O que fazer</Label>
+                <Textarea value={editingSymptom.what_to_do || ""} onChange={e => setEditingSymptom({ ...editingSymptom, what_to_do: e.target.value })} className="mt-1 rounded-xl" rows={2} />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Quando procurar médico</Label>
+                <Textarea value={editingSymptom.when_see_doctor || ""} onChange={e => setEditingSymptom({ ...editingSymptom, when_see_doctor: e.target.value })} className="mt-1 rounded-xl" rows={2} />
+              </div>
               {editingSymptom.id && (
                 <div className="flex items-center gap-3">
                   <Switch checked={editingSymptom.active ?? true} onCheckedChange={v => setEditingSymptom({ ...editingSymptom, active: v })} />
@@ -970,6 +1016,28 @@ const Admin = () => {
                   <option value="Leve">Leve</option>
                   <option value="Moderado">Moderado</option>
                 </select>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Trimestres</Label>
+                <div className="flex gap-3 mt-1">
+                  {[1, 2, 3].map(t => (
+                    <label key={t} className="flex items-center gap-1.5 text-sm">
+                      <input type="checkbox" checked={(editingExercise.trimester || []).includes(t)} onChange={e => {
+                        const current = editingExercise.trimester || [];
+                        setEditingExercise({ ...editingExercise, trimester: e.target.checked ? [...current, t] : current.filter(x => x !== t) });
+                      }} className="rounded" />
+                      {t}º
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Passos (um por linha)</Label>
+                <Textarea value={(editingExercise as any).stepsText || ""} onChange={e => setEditingExercise({ ...editingExercise, stepsText: e.target.value } as any)} className="mt-1 rounded-xl" rows={5} placeholder="Cada linha será um passo" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Contraindicações</Label>
+                <Textarea value={editingExercise.contraindications || ""} onChange={e => setEditingExercise({ ...editingExercise, contraindications: e.target.value })} className="mt-1 rounded-xl" rows={2} />
               </div>
               {editingExercise.id && (
                 <div className="flex items-center gap-3">
