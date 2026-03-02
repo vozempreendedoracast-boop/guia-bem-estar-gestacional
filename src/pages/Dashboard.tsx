@@ -73,9 +73,9 @@ const Dashboard = () => {
             <h1 className="text-2xl font-bold font-display">Semana {currentWeek}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-12 h-12 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+            <button onClick={() => navigate("/perfil")} className="w-12 h-12 rounded-full bg-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/30 transition-colors">
               <Baby className="w-6 h-6" />
-            </div>
+            </button>
             <Button variant="ghost" size="icon" className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={logout}>
               <LogOut className="w-4 h-4" />
             </Button>
