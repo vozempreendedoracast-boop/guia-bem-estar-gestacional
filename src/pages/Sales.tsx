@@ -5,21 +5,21 @@ import { Button } from "@/components/ui/button";
 import heroLanding from "@/assets/hero-landing.png";
 
 const features = [
-  { icon: BookOpen, title: "Jornada Semana a Semana", description: "Conteúdo exclusivo das 40 semanas de gestação, liberado automaticamente conforme sua idade gestacional." },
-  { icon: Heart, title: "Saúde Integral", description: "Alimentação, sono, saúde emocional e preparação para o parto em um só lugar." },
-  { icon: Activity, title: "Exercícios Personalizados", description: "Atividades seguras organizadas por trimestre com instruções detalhadas." },
-  { icon: Bot, title: "Assistente IA 24h", description: "Tire dúvidas a qualquer momento com nossa inteligência artificial empática e acolhedora." },
-  { icon: Shield, title: "Diário & Progresso", description: "Registre humor, sintomas, peso e acompanhe sua evolução com gráficos claros." },
-  { icon: Star, title: "Conteúdo por Profissionais", description: "Todo conteúdo é revisado por profissionais de saúde para sua segurança." },
+  { icon: BookOpen, title: "Jornada Semana a Semana", description: "Acompanhe as 40 semanas de gestação com conteúdo liberado automaticamente conforme sua idade gestacional." },
+  { icon: Heart, title: "Saúde Integral", description: "Alimentação, sono, saúde emocional e preparação para o parto reunidos em um só lugar." },
+  { icon: Activity, title: "Exercícios Personalizados", description: "Atividades seguras organizadas por trimestre, com instruções claras e detalhadas." },
+  { icon: Bot, title: "Assistente IA 24h", description: "Tire suas dúvidas a qualquer momento com nossa inteligência artificial empática e acolhedora." },
+  { icon: Shield, title: "Diário e Progresso", description: "Registre humor, sintomas e peso. Acompanhe sua evolução com gráficos fáceis de entender." },
+  { icon: Star, title: "Conteúdo Profissional", description: "Todo o conteúdo é revisado por profissionais de saúde para garantir sua segurança." },
 ];
 
 const benefits = [
-  "Informação certa no momento certo",
+  "Informação certa na hora certa",
   "Reduz ansiedade e insegurança",
-  "Organiza toda sua jornada",
+  "Organiza toda a sua jornada",
   "Apoio emocional contínuo",
-  "100% gratuito para começar",
-  "Mobile-first e offline",
+  "Comece a usar gratuitamente",
+  "Funciona no celular e offline",
 ];
 
 const testimonials = [
@@ -148,7 +148,7 @@ const Sales = () => {
       {/* CTA mid */}
       <section className="gradient-hero py-16">
         <div className="max-w-3xl mx-auto px-6 text-center text-primary-foreground">
-          <h2 className="text-3xl font-bold font-display">Comece sua jornada hoje</h2>
+          <h2 className="text-3xl font-bold font-display">Comece agora, é grátis</h2>
           <p className="mt-3 opacity-90 max-w-lg mx-auto">
             Junte-se a milhares de gestantes que já usam o Minha Gestação para se sentirem mais seguras e informadas.
           </p>
