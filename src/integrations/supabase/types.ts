@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_settings: {
+        Row: {
+          api_key_encrypted: string
+          created_at: string
+          enabled: boolean
+          id: string
+          max_tokens: number
+          model: string
+          provider: string
+          system_prompt: string
+          temperature: number
+          updated_at: string
+        }
+        Insert: {
+          api_key_encrypted?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          max_tokens?: number
+          model?: string
+          provider?: string
+          system_prompt?: string
+          temperature?: number
+          updated_at?: string
+        }
+        Update: {
+          api_key_encrypted?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          max_tokens?: number
+          model?: string
+          provider?: string
+          system_prompt?: string
+          temperature?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -33,6 +33,7 @@ import {
   useWeeklyTips, useUpdateWeeklyTip, useCreateWeeklyTip, useDeleteWeeklyTip,
   type Category, type WeekContent, type SymptomRow, type ExerciseRow, type HealthTipRow, type WeeklyTipRow,
 } from "@/hooks/useSupabaseData";
+import { supabase } from "@/integrations/supabase/client";
 
 const localImages: Record<string, string> = {
   journey: cardJourney, symptoms: cardSymptoms, exercises: cardExercises,
@@ -61,6 +62,17 @@ interface SettingsState {
   planPremiumPrice: string;
   analyticsEnabled: boolean;
   backupEnabled: boolean;
+}
+
+interface AISettingsState {
+  id: string;
+  provider: string;
+  model: string;
+  api_key_encrypted: string;
+  system_prompt: string;
+  temperature: number;
+  max_tokens: number;
+  enabled: boolean;
 }
 
 const sidebarItems = [
@@ -154,6 +166,39 @@ const Admin = () => {
   });
   const [editSettingOpen, setEditSettingOpen] = useState(false);
   const [editSettingType, setEditSettingType] = useState("");
+
+  // AI Settings
+  const [aiSettings, setAiSettings] = useState<AISettingsState>({
+    id: "", provider: "google", model: "gemini-2.0-flash", api_key_encrypted: "",
+    system_prompt: "Você é uma assistente carinhosa e acolhedora especializada em gestação.", 
+    temperature: 0.7, max_tokens: 1024, enabled: false,
+  });
+  const [aiLoading, setAiLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.from("ai_settings").select("*").limit(1).single().then(({ data }) => {
+      if (data) setAiSettings(data as any);
+    });
+  }, []);
+
+  const handleSaveAiSettings = async () => {
+    setAiLoading(true);
+    try {
+      const { error } = await supabase.from("ai_settings").update({
+        provider: aiSettings.provider,
+        model: aiSettings.model,
+        api_key_encrypted: aiSettings.api_key_encrypted,
+        system_prompt: aiSettings.system_prompt,
+        temperature: aiSettings.temperature,
+        max_tokens: aiSettings.max_tokens,
+        enabled: aiSettings.enabled,
+      }).eq("id", aiSettings.id);
+      if (error) throw error;
+      toast.success("Configurações de IA salvas!");
+      setEditSettingOpen(false);
+    } catch { toast.error("Erro ao salvar configurações de IA"); }
+    finally { setAiLoading(false); }
+  };
 
   const filteredUsers = mockUsers.filter(u =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -766,7 +811,7 @@ const Admin = () => {
                 { type: "app", icon: Monitor, title: "Informações do App", description: `Nome: ${settings.appName}` },
                 { type: "plans", icon: CreditCard, title: "Planos e Assinaturas", description: `Premium: R$ ${settings.planPremiumPrice}/mês` },
                 { type: "push", icon: Bell, title: "Notificações Push", description: settings.pushEnabled ? `Ativadas · ${settings.pushFrequency}` : "Desativadas" },
-                { type: "integrations", icon: Link2, title: "Integrações", description: `Analytics: ${settings.analyticsEnabled ? "Ativado" : "Desativado"}` },
+                { type: "integrations", icon: Link2, title: "Integrações e IA", description: aiSettings.enabled ? `IA: ${aiSettings.provider}/${aiSettings.model}` : "IA desativada" },
                 { type: "backup", icon: Database, title: "Backup e Exportação", description: settings.backupEnabled ? "Backup automático ativado" : "Manual" },
               ].map(s => (
                 <div key={s.type} className="bg-card rounded-2xl border border-border shadow-card p-5">
@@ -1143,7 +1188,7 @@ const Admin = () => {
               {editSettingType === "app" && "Informações do App"}
               {editSettingType === "plans" && "Planos e Assinaturas"}
               {editSettingType === "push" && "Notificações Push"}
-              {editSettingType === "integrations" && "Integrações"}
+              {editSettingType === "integrations" && "Integrações e Assistente IA"}
               {editSettingType === "backup" && "Backup e Exportação"}
             </DialogTitle>
             <DialogDescription>Gerencie esta configuração.</DialogDescription>
@@ -1168,10 +1213,43 @@ const Admin = () => {
               </>
             )}
             {editSettingType === "integrations" && (
-              <>
-                <div className="flex items-center justify-between"><Label className="text-sm font-medium">Google Analytics</Label><Switch checked={settings.analyticsEnabled} onCheckedChange={v => setSettings({ ...settings, analyticsEnabled: v })} /></div>
-                <div className="bg-muted/50 rounded-xl p-4"><p className="text-xs text-muted-foreground">Integrações com pagamento e email serão configuradas após implementar autenticação.</p></div>
-              </>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Assistente IA ativada</Label>
+                  <Switch checked={aiSettings.enabled} onCheckedChange={v => setAiSettings({ ...aiSettings, enabled: v })} />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Provedor</Label>
+                  <select value={aiSettings.provider} onChange={e => setAiSettings({ ...aiSettings, provider: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
+                    <option value="google">Google (Gemini)</option>
+                    <option value="openai">OpenAI (GPT)</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Modelo</Label>
+                  <Input value={aiSettings.model} onChange={e => setAiSettings({ ...aiSettings, model: e.target.value })} className="mt-1 rounded-xl" placeholder="gemini-2.0-flash" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">API Key</Label>
+                  <Input type="password" value={aiSettings.api_key_encrypted} onChange={e => setAiSettings({ ...aiSettings, api_key_encrypted: e.target.value })} className="mt-1 rounded-xl" placeholder="Cole sua chave de API aqui" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Instruções do sistema (system prompt)</Label>
+                  <Textarea value={aiSettings.system_prompt} onChange={e => setAiSettings({ ...aiSettings, system_prompt: e.target.value })} className="mt-1 rounded-xl" rows={5} />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Temperatura ({aiSettings.temperature})</Label>
+                  <input type="range" min="0" max="1" step="0.1" value={aiSettings.temperature} onChange={e => setAiSettings({ ...aiSettings, temperature: parseFloat(e.target.value) })} className="mt-1 w-full" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Máximo de tokens</Label>
+                  <Input type="number" value={aiSettings.max_tokens} onChange={e => setAiSettings({ ...aiSettings, max_tokens: parseInt(e.target.value) || 1024 })} className="mt-1 rounded-xl" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Google Analytics</Label>
+                  <Switch checked={settings.analyticsEnabled} onCheckedChange={v => setSettings({ ...settings, analyticsEnabled: v })} />
+                </div>
+              </div>
             )}
             {editSettingType === "backup" && (
               <>
@@ -1180,7 +1258,9 @@ const Admin = () => {
               </>
             )}
             <div className="flex gap-2 pt-2">
-              <Button className="flex-1 rounded-xl" onClick={() => setEditSettingOpen(false)}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+              <Button className="flex-1 rounded-xl" onClick={() => editSettingType === "integrations" ? handleSaveAiSettings() : setEditSettingOpen(false)} disabled={aiLoading}>
+                {aiLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Salvar
+              </Button>
               <Button variant="outline" className="rounded-xl" onClick={() => setEditSettingOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
             </div>
           </div>
