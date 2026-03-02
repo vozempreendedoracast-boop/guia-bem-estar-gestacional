@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, context } = await req.json();
 
     // Get AI settings from DB for system prompt
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -19,7 +19,7 @@ serve(async (req) => {
 
     const { data: settings } = await supabase
       .from("ai_settings")
-      .select("*")
+      .select("system_prompt, enabled, temperature, max_tokens")
       .limit(1)
       .single();
 
@@ -30,9 +30,12 @@ serve(async (req) => {
       });
     }
 
-    const systemPrompt = settings?.system_prompt || "Você é uma assistente carinhosa e acolhedora especializada em gestação.";
-    const temperature = settings?.temperature ?? 0.7;
-    const maxTokens = settings?.max_tokens ?? 1024;
+    let systemPrompt = settings?.system_prompt || "Você é uma assistente carinhosa especializada em gestação.";
+    
+    // Append user context to system prompt instead of extra messages
+    if (context?.name || context?.week) {
+      systemPrompt += `\n\nContexto da gestante: nome "${context.name || 'não informado'}", semana ${context.week || '?'}, ${context.trimester || '?'}° trimestre.`;
+    }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -49,8 +52,8 @@ serve(async (req) => {
           { role: "system", content: systemPrompt },
           ...messages,
         ],
-        temperature,
-        max_tokens: maxTokens,
+        temperature: settings?.temperature ?? 0.7,
+        max_tokens: settings?.max_tokens ?? 1024,
         stream: false,
       }),
     });
