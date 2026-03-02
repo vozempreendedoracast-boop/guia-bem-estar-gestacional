@@ -39,15 +39,15 @@ const Sales = () => {
     <div className="min-h-screen bg-background">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Baby className="w-6 h-6 text-primary" />
-            <span className="font-display font-bold text-lg text-foreground">Minha Gestação</span>
+            <span className="font-display font-bold text-base sm:text-lg text-foreground">Minha Gestação</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => scrollToSection("features")}>Recursos</Button>
-            <Button variant="ghost" size="sm" onClick={() => scrollToSection("testimonials")}>Depoimentos</Button>
-            <Button size="sm" className="rounded-xl" onClick={() => navigate("/cadastro")}>
+          <div className="flex items-center gap-1 sm:gap-3">
+            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("features")}>Recursos</Button>
+            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("testimonials")}>Depoimentos</Button>
+            <Button size="sm" className="rounded-xl text-xs sm:text-sm" onClick={() => navigate("/cadastro")}>
               Começar grátis
             </Button>
           </div>
