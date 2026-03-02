@@ -1,0 +1,1 @@
+UPDATE public.ai_settings SET model = 'google/gemini-2.0-flash-exp:free' WHERE provider = 'openrouter';
