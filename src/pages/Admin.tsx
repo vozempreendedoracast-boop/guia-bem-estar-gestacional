@@ -5,7 +5,7 @@ import {
   LayoutDashboard, FileText, Users, Settings, BookOpen, AlertCircle,
   Activity, Heart, Bot, BarChart3, Plus, Edit, Trash2, Eye, ArrowLeft,
   TrendingUp, UserCheck, Calendar, Search, Save, X, Layers, Menu,
-  Bell, CreditCard, Link2, Database, Monitor
+  Bell, CreditCard, Link2, Database, Monitor, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { toast } from "sonner";
 
 import cardJourney from "@/assets/card-journey.png";
 import cardSymptoms from "@/assets/card-symptoms.png";
@@ -23,24 +24,24 @@ import cardHealth from "@/assets/card-health.png";
 import cardDiary from "@/assets/card-diary.png";
 import cardAssistant from "@/assets/card-assistant.png";
 
-// Mock data
-const mockStats = {
-  totalUsers: 2847,
-  activeUsers: 1623,
-  newToday: 34,
-  avgWeek: 18,
+import {
+  useCategories, useUpdateCategory,
+  useWeekContents, useUpdateWeekContent, useDeleteWeekContent,
+  useSymptoms, useUpdateSymptom, useCreateSymptom, useDeleteSymptom,
+  useExercises, useUpdateExercise, useCreateExercise, useDeleteExercise,
+  useWeeklyTips, useUpdateWeeklyTip, useCreateWeeklyTip, useDeleteWeeklyTip,
+  type Category, type WeekContent, type SymptomRow, type ExerciseRow, type WeeklyTipRow,
+} from "@/hooks/useSupabaseData";
+
+const localImages: Record<string, string> = {
+  journey: cardJourney, symptoms: cardSymptoms, exercises: cardExercises,
+  health: cardHealth, diary: cardDiary, assistant: cardAssistant,
 };
 
-const initialWeekContents = Array.from({ length: 40 }, (_, i) => ({
-  week: i + 1,
-  status: i < 20 ? "published" : i < 30 ? "draft" : "empty" as string,
-  lastUpdated: i < 20 ? "2026-02-28" : i < 30 ? "2026-02-15" : null,
-  reviewed: i < 15,
-  babyDevelopment: i < 20 ? `Conteúdo de desenvolvimento do bebê na semana ${i + 1}.` : "",
-  motherChanges: i < 20 ? `Mudanças no corpo da mãe na semana ${i + 1}.` : "",
-  tip: i < 20 ? `Dica prática para a semana ${i + 1}.` : "",
-  symptoms: i < 20 ? `Sintomas comuns na semana ${i + 1}.` : "",
-}));
+// Mock data (users/stats stay mock until auth is implemented)
+const mockStats = {
+  totalUsers: 2847, activeUsers: 1623, newToday: 34, avgWeek: 18,
+};
 
 const mockUsers = [
   { id: 1, name: "Camila Santos", email: "camila@email.com", week: 28, joined: "2026-01-15", active: true },
@@ -48,50 +49,6 @@ const mockUsers = [
   { id: 3, name: "Ana Paula Reis", email: "ana@email.com", week: 34, joined: "2025-12-20", active: true },
   { id: 4, name: "Beatriz Lima", email: "beatriz@email.com", week: 12, joined: "2026-02-20", active: false },
   { id: 5, name: "Fernanda Costa", email: "fernanda@email.com", week: 22, joined: "2026-01-28", active: true },
-];
-
-const mockSymptoms = [
-  { id: 1, name: "Náusea", trimester: [1], alertLevel: "low", description: "Enjoo matinal comum no primeiro trimestre." },
-  { id: 2, name: "Dor lombar", trimester: [2, 3], alertLevel: "moderate", description: "Dor nas costas causada pelo peso extra." },
-  { id: 3, name: "Inchaço", trimester: [3], alertLevel: "moderate", description: "Inchaço nos pés e tornozelos." },
-  { id: 4, name: "Azia", trimester: [2, 3], alertLevel: "low", description: "Sensação de queimação no estômago." },
-  { id: 5, name: "Cansaço", trimester: [1, 3], alertLevel: "low", description: "Fadiga excessiva comum na gestação." },
-];
-
-const mockExercises = [
-  { id: 1, name: "Respiração Diafragmática", trimester: [1, 2, 3], intensity: "Leve", description: "Exercício de respiração para relaxamento." },
-  { id: 2, name: "Caminhada Leve", trimester: [1, 2, 3], intensity: "Leve", description: "Caminhada em ritmo confortável." },
-  { id: 3, name: "Agachamento com Apoio", trimester: [2, 3], intensity: "Moderado", description: "Fortalece pernas e prepara para o parto." },
-  { id: 4, name: "Exercício de Kegel", trimester: [1, 2, 3], intensity: "Leve", description: "Fortalece o assoalho pélvico." },
-  { id: 5, name: "Yoga Pré-natal", trimester: [1, 2, 3], intensity: "Leve", description: "Posturas suaves para flexibilidade." },
-];
-
-const mockTips = [
-  { id: 1, week: 4, title: "Ácido fólico", content: "Inicie o uso de ácido fólico o quanto antes." },
-  { id: 2, week: 8, title: "Primeira consulta", content: "Agende sua primeira consulta de pré-natal." },
-  { id: 3, week: 12, title: "Ecografia", content: "Realize a ultrassonografia morfológica do primeiro trimestre." },
-  { id: 4, week: 20, title: "Morfológica", content: "Hora da ultrassonografia morfológica do segundo trimestre." },
-  { id: 5, week: 28, title: "Teste de glicose", content: "Realize o teste de tolerância à glicose." },
-];
-
-interface DashboardCard {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  path: string;
-  image: string;
-  visible: boolean;
-  order: number;
-}
-
-const initialCards: DashboardCard[] = [
-  { id: "journey", title: "Minha Jornada", description: "Semana a semana", icon: "BookOpen", path: "/jornada", image: cardJourney, visible: true, order: 1 },
-  { id: "symptoms", title: "Sintomas", description: "Guia completo", icon: "AlertCircle", path: "/sintomas", image: cardSymptoms, visible: true, order: 2 },
-  { id: "exercises", title: "Exercícios", description: "Atividades por trimestre", icon: "Activity", path: "/exercicios", image: cardExercises, visible: true, order: 3 },
-  { id: "health", title: "Saúde Integral", description: "Corpo e mente", icon: "Heart", path: "/saude", image: cardHealth, visible: true, order: 4 },
-  { id: "diary", title: "Diário", description: "Registros e progresso", icon: "BarChart3", path: "/diario", image: cardDiary, visible: true, order: 5 },
-  { id: "assistant", title: "Assistente IA", description: "Tire dúvidas", icon: "Bot", path: "/assistente", image: cardAssistant, visible: true, order: 6 },
 ];
 
 interface SettingsState {
@@ -119,28 +76,41 @@ const Admin = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Cards state
-  const [cards, setCards] = useState<DashboardCard[]>(initialCards);
-  const [editingCard, setEditingCard] = useState<DashboardCard | null>(null);
+  // Supabase data
+  const { data: categories = [], isLoading: loadingCategories } = useCategories();
+  const updateCategory = useUpdateCategory();
+  const { data: weekContents = [], isLoading: loadingWeeks } = useWeekContents();
+  const updateWeek = useUpdateWeekContent();
+  const deleteWeekContent = useDeleteWeekContent();
+  const { data: symptomsData = [], isLoading: loadingSymptoms } = useSymptoms();
+  const updateSymptom = useUpdateSymptom();
+  const createSymptom = useCreateSymptom();
+  const deleteSymptomMut = useDeleteSymptom();
+  const { data: exercisesData = [], isLoading: loadingExercises } = useExercises();
+  const updateExercise = useUpdateExercise();
+  const createExercise = useCreateExercise();
+  const deleteExerciseMut = useDeleteExercise();
+  const { data: tipsData = [], isLoading: loadingTips } = useWeeklyTips();
+  const updateTip = useUpdateWeeklyTip();
+  const createTip = useCreateWeeklyTip();
+  const deleteTipMut = useDeleteWeeklyTip();
+
+  // Editing states
+  const [editingCard, setEditingCard] = useState<Category | null>(null);
   const [editCardOpen, setEditCardOpen] = useState(false);
 
-  // Week content state
-  const [weekContents, setWeekContents] = useState(initialWeekContents);
-  const [editingWeek, setEditingWeek] = useState<typeof initialWeekContents[0] | null>(null);
+  const [editingWeek, setEditingWeek] = useState<WeekContent | null>(null);
   const [editWeekOpen, setEditWeekOpen] = useState(false);
   const [viewWeekOpen, setViewWeekOpen] = useState(false);
-  const [viewingWeek, setViewingWeek] = useState<typeof initialWeekContents[0] | null>(null);
+  const [viewingWeek, setViewingWeek] = useState<WeekContent | null>(null);
 
-  // Symptom editing
-  const [editingSymptom, setEditingSymptom] = useState<typeof mockSymptoms[0] | null>(null);
+  const [editingSymptom, setEditingSymptom] = useState<Partial<SymptomRow> | null>(null);
   const [editSymptomOpen, setEditSymptomOpen] = useState(false);
 
-  // Exercise editing
-  const [editingExercise, setEditingExercise] = useState<typeof mockExercises[0] | null>(null);
+  const [editingExercise, setEditingExercise] = useState<Partial<ExerciseRow> | null>(null);
   const [editExerciseOpen, setEditExerciseOpen] = useState(false);
 
-  // Tip editing
-  const [editingTip, setEditingTip] = useState<typeof mockTips[0] | null>(null);
+  const [editingTip, setEditingTip] = useState<Partial<WeeklyTipRow> | null>(null);
   const [editTipOpen, setEditTipOpen] = useState(false);
 
   // Settings state
@@ -163,40 +133,97 @@ const Admin = () => {
   );
 
   // Card handlers
-  const handleEditCard = (card: DashboardCard) => {
+  const handleEditCard = (card: Category) => {
     setEditingCard({ ...card });
     setEditCardOpen(true);
   };
-  const handleSaveCard = () => {
+  const handleSaveCard = async () => {
     if (!editingCard) return;
-    setCards(prev => prev.map(c => c.id === editingCard.id ? editingCard : c));
-    setEditCardOpen(false);
-    setEditingCard(null);
+    try {
+      await updateCategory.mutateAsync(editingCard);
+      toast.success("Card atualizado!");
+      setEditCardOpen(false);
+      setEditingCard(null);
+    } catch { toast.error("Erro ao salvar card"); }
   };
-  const handleToggleVisibility = (id: string) => {
-    setCards(prev => prev.map(c => c.id === id ? { ...c, visible: !c.visible } : c));
+  const handleToggleVisibility = async (card: Category) => {
+    try {
+      await updateCategory.mutateAsync({ id: card.id, visible: !card.visible });
+      toast.success(card.visible ? "Card ocultado" : "Card visível");
+    } catch { toast.error("Erro ao alterar visibilidade"); }
   };
 
   // Week handlers
-  const handleViewWeek = (w: typeof initialWeekContents[0]) => {
-    setViewingWeek(w);
-    setViewWeekOpen(true);
-  };
-  const handleEditWeek = (w: typeof initialWeekContents[0]) => {
-    setEditingWeek({ ...w });
-    setEditWeekOpen(true);
-  };
-  const handleSaveWeek = () => {
+  const handleSaveWeek = async () => {
     if (!editingWeek) return;
-    setWeekContents(prev => prev.map(w => w.week === editingWeek.week ? { ...editingWeek, status: editingWeek.babyDevelopment ? "draft" : "empty", lastUpdated: "2026-03-02" } : w));
-    setEditWeekOpen(false);
-    setEditingWeek(null);
+    try {
+      await updateWeek.mutateAsync({
+        id: editingWeek.id,
+        baby_development: editingWeek.baby_development,
+        mother_changes: editingWeek.mother_changes,
+        common_symptoms: editingWeek.common_symptoms,
+        tip: editingWeek.tip,
+        reviewed: editingWeek.reviewed,
+        status: editingWeek.baby_development ? "draft" : "empty",
+        active: editingWeek.active,
+      });
+      toast.success("Semana atualizada!");
+      setEditWeekOpen(false);
+      setEditingWeek(null);
+    } catch { toast.error("Erro ao salvar semana"); }
   };
-  const handleDeleteWeekContent = (weekNum: number) => {
-    setWeekContents(prev => prev.map(w => w.week === weekNum ? { ...w, status: "empty", babyDevelopment: "", motherChanges: "", tip: "", symptoms: "", lastUpdated: null, reviewed: false } : w));
+  const handleDeleteWeekContent = async (week: WeekContent) => {
+    try {
+      await deleteWeekContent.mutateAsync(week.id);
+      toast.success("Conteúdo limpo!");
+    } catch { toast.error("Erro ao limpar conteúdo"); }
   };
 
-  // Setting handlers
+  // Symptom handlers
+  const handleSaveSymptom = async () => {
+    if (!editingSymptom) return;
+    try {
+      if (editingSymptom.id) {
+        await updateSymptom.mutateAsync({ id: editingSymptom.id, name: editingSymptom.name, description: editingSymptom.description, alert_level: editingSymptom.alert_level, active: editingSymptom.active });
+      } else {
+        await createSymptom.mutateAsync({ name: editingSymptom.name || "", description: editingSymptom.description, alert_level: editingSymptom.alert_level, trimester: editingSymptom.trimester || [1] });
+      }
+      toast.success("Sintoma salvo!");
+      setEditSymptomOpen(false);
+      setEditingSymptom(null);
+    } catch { toast.error("Erro ao salvar sintoma"); }
+  };
+
+  // Exercise handlers
+  const handleSaveExercise = async () => {
+    if (!editingExercise) return;
+    try {
+      if (editingExercise.id) {
+        await updateExercise.mutateAsync({ id: editingExercise.id, name: editingExercise.name, description: editingExercise.description, intensity: editingExercise.intensity, active: editingExercise.active });
+      } else {
+        await createExercise.mutateAsync({ name: editingExercise.name || "", description: editingExercise.description, intensity: editingExercise.intensity, trimester: editingExercise.trimester || [1] });
+      }
+      toast.success("Exercício salvo!");
+      setEditExerciseOpen(false);
+      setEditingExercise(null);
+    } catch { toast.error("Erro ao salvar exercício"); }
+  };
+
+  // Tip handlers
+  const handleSaveTip = async () => {
+    if (!editingTip) return;
+    try {
+      if (editingTip.id) {
+        await updateTip.mutateAsync({ id: editingTip.id, title: editingTip.title, content: editingTip.content, week_number: editingTip.week_number, active: editingTip.active });
+      } else {
+        await createTip.mutateAsync({ title: editingTip.title || "", content: editingTip.content, week_number: editingTip.week_number || 1 });
+      }
+      toast.success("Dica salva!");
+      setEditTipOpen(false);
+      setEditingTip(null);
+    } catch { toast.error("Erro ao salvar dica"); }
+  };
+
   const openSetting = (type: string) => {
     setEditSettingType(type);
     setEditSettingOpen(true);
@@ -320,17 +347,18 @@ const Admin = () => {
             </div>
 
             <div className="bg-card rounded-2xl p-5 border border-border shadow-card">
-              <h3 className="font-semibold text-foreground mb-4">Atividade Recente</h3>
-              <div className="space-y-3">
+              <h3 className="font-semibold text-foreground mb-4">Resumo de Conteúdo</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { text: "Camila Santos registrou humor: 😊", time: "Há 5 min" },
-                  { text: "Nova usuária: Beatriz Lima", time: "Há 2h" },
-                  { text: "Conteúdo da Semana 21 atualizado", time: "Há 4h" },
-                  { text: "Juliana Martins usou o assistente IA", time: "Há 6h" },
-                ].map((activity, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <p className="text-sm text-foreground">{activity.text}</p>
-                    <span className="text-xs text-muted-foreground flex-shrink-0 ml-4">{activity.time}</span>
+                  { label: "Semanas", value: weekContents.length, sub: `${weekContents.filter(w => w.status === 'published').length} publicadas` },
+                  { label: "Sintomas", value: symptomsData.length, sub: `${symptomsData.filter(s => s.active).length} ativos` },
+                  { label: "Exercícios", value: exercisesData.length, sub: `${exercisesData.filter(e => e.active).length} ativos` },
+                  { label: "Dicas", value: tipsData.length, sub: `${tipsData.filter(t => t.active).length} ativas` },
+                ].map(item => (
+                  <div key={item.label} className="bg-muted/50 rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-foreground">{item.value}</p>
+                    <p className="text-xs text-muted-foreground">{item.label}</p>
+                    <p className="text-[10px] text-muted-foreground">{item.sub}</p>
                   </div>
                 ))}
               </div>
@@ -346,37 +374,41 @@ const Admin = () => {
               <p className="text-sm text-muted-foreground mt-1">Gerencie os cards exibidos no dashboard das gestantes.</p>
             </div>
 
-            <div className="grid gap-4">
-              {cards.sort((a, b) => a.order - b.order).map(card => (
-                <div key={card.id} className={`bg-card rounded-2xl border border-border shadow-card overflow-hidden transition-opacity ${!card.visible ? "opacity-50" : ""}`}>
-                  <div className="flex flex-col sm:flex-row sm:items-stretch">
-                    <div className="w-full sm:w-32 h-32 sm:h-28 flex-shrink-0 overflow-hidden">
-                      <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 p-4 flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-foreground">{card.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">{card.description}</p>
-                        <div className="flex flex-wrap items-center gap-2 mt-2">
-                          <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">Rota: {card.path}</span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${card.visible ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                            {card.visible ? "Visível" : "Oculto"}
-                          </span>
-                        </div>
+            {loadingCategories ? (
+              <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+            ) : (
+              <div className="grid gap-4">
+                {categories.sort((a, b) => a.display_order - b.display_order).map(card => (
+                  <div key={card.id} className={`bg-card rounded-2xl border border-border shadow-card overflow-hidden transition-opacity ${!card.visible ? "opacity-50" : ""}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-stretch">
+                      <div className="w-full sm:w-32 h-32 sm:h-28 flex-shrink-0 overflow-hidden">
+                        <img src={localImages[card.slug] || cardJourney} alt={card.title} className="w-full h-full object-cover" />
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleEditCard(card)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleToggleVisibility(card.id)}>
-                          <Eye className={`w-4 h-4 ${!card.visible ? "text-muted-foreground" : ""}`} />
-                        </Button>
+                      <div className="flex-1 p-4 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-foreground">{card.title}</h3>
+                          <p className="text-sm text-muted-foreground mt-0.5">{card.description}</p>
+                          <div className="flex flex-wrap items-center gap-2 mt-2">
+                            <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">Rota: {card.path}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${card.visible ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                              {card.visible ? "Visível" : "Oculto"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleEditCard(card)}>
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleToggleVisibility(card)}>
+                            <Eye className={`w-4 h-4 ${!card.visible ? "text-muted-foreground" : ""}`} />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -398,59 +430,58 @@ const Admin = () => {
               {/* Weeks tab */}
               <TabsContent value="weeks" className="mt-4">
                 <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
-                  {/* Desktop header */}
-                  <div className="hidden sm:grid grid-cols-[60px_1fr_100px_80px_120px] gap-2 p-4 border-b border-border text-xs font-medium text-muted-foreground">
-                    <span>Semana</span>
-                    <span>Status</span>
-                    <span>Atualizado</span>
-                    <span>Revisado</span>
-                    <span>Ações</span>
+                  <div className="hidden sm:grid grid-cols-[60px_1fr_100px_80px_80px_120px] gap-2 p-4 border-b border-border text-xs font-medium text-muted-foreground">
+                    <span>Semana</span><span>Status</span><span>Atualizado</span><span>Revisado</span><span>Ativo</span><span>Ações</span>
                   </div>
-                  <div className="max-h-[60vh] overflow-y-auto">
-                    {weekContents.map(w => (
-                      <div key={w.week} className="p-4 border-b border-border last:border-0">
-                        {/* Mobile layout */}
-                        <div className="sm:hidden flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <span className="font-semibold text-sm text-foreground w-8">S{w.week}</span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              w.status === "published" ? "bg-green-100 text-green-700" :
-                              w.status === "draft" ? "bg-yellow-100 text-yellow-700" :
-                              "bg-muted text-muted-foreground"
-                            }`}>
-                              {w.status === "published" ? "Publicado" : w.status === "draft" ? "Rascunho" : "Vazio"}
-                            </span>
-                            {w.reviewed && <span className="text-xs text-green-600">✓</span>}
+                  {loadingWeeks ? (
+                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                  ) : (
+                    <div className="max-h-[60vh] overflow-y-auto">
+                      {weekContents.map(w => (
+                        <div key={w.id} className="p-4 border-b border-border last:border-0">
+                          <div className="sm:hidden flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className="font-semibold text-sm text-foreground w-8">S{w.week_number}</span>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                w.status === "published" ? "bg-green-100 text-green-700" :
+                                w.status === "draft" ? "bg-yellow-100 text-yellow-700" :
+                                "bg-muted text-muted-foreground"
+                              }`}>
+                                {w.status === "published" ? "Publicado" : w.status === "draft" ? "Rascunho" : "Vazio"}
+                              </span>
+                              {w.reviewed && <span className="text-xs text-green-600">✓</span>}
+                              {!w.active && <span className="text-xs text-red-500">Inativo</span>}
+                            </div>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setViewingWeek(w); setViewWeekOpen(true); }}><Eye className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingWeek({ ...w }); setEditWeekOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteWeekContent(w)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                            </div>
                           </div>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewWeek(w)}><Eye className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditWeek(w)}><Edit className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteWeekContent(w.week)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                          <div className="hidden sm:grid grid-cols-[60px_1fr_100px_80px_80px_120px] gap-2 items-center">
+                            <span className="font-semibold text-sm text-foreground">{w.week_number}</span>
+                            <span>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                w.status === "published" ? "bg-green-100 text-green-700" :
+                                w.status === "draft" ? "bg-yellow-100 text-yellow-700" :
+                                "bg-muted text-muted-foreground"
+                              }`}>
+                                {w.status === "published" ? "Publicado" : w.status === "draft" ? "Rascunho" : "Vazio"}
+                              </span>
+                            </span>
+                            <span className="text-xs text-muted-foreground">{w.updated_at ? new Date(w.updated_at).toLocaleDateString("pt-BR") : "—"}</span>
+                            <span>{w.reviewed ? <span className="text-xs text-green-600">✓ Sim</span> : <span className="text-xs text-muted-foreground">Não</span>}</span>
+                            <span>{w.active ? <span className="text-xs text-green-600">Sim</span> : <span className="text-xs text-red-500">Não</span>}</span>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setViewingWeek(w); setViewWeekOpen(true); }}><Eye className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingWeek({ ...w }); setEditWeekOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteWeekContent(w)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                            </div>
                           </div>
                         </div>
-                        {/* Desktop layout */}
-                        <div className="hidden sm:grid grid-cols-[60px_1fr_100px_80px_120px] gap-2 items-center">
-                          <span className="font-semibold text-sm text-foreground">{w.week}</span>
-                          <span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              w.status === "published" ? "bg-green-100 text-green-700" :
-                              w.status === "draft" ? "bg-yellow-100 text-yellow-700" :
-                              "bg-muted text-muted-foreground"
-                            }`}>
-                              {w.status === "published" ? "Publicado" : w.status === "draft" ? "Rascunho" : "Vazio"}
-                            </span>
-                          </span>
-                          <span className="text-xs text-muted-foreground">{w.lastUpdated || "—"}</span>
-                          <span>{w.reviewed ? <span className="text-xs text-green-600">✓ Sim</span> : <span className="text-xs text-muted-foreground">Não</span>}</span>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewWeek(w)}><Eye className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditWeek(w)}><Edit className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteWeekContent(w.week)}><Trash2 className="w-3.5 h-3.5" /></Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
@@ -458,30 +489,35 @@ const Admin = () => {
               <TabsContent value="symptoms" className="mt-4">
                 <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                   <div className="p-4 border-b border-border flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">Sintomas cadastrados</span>
-                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingSymptom({ id: 0, name: "", trimester: [1], alertLevel: "low", description: "" }); setEditSymptomOpen(true); }}>
+                    <span className="text-sm font-medium text-foreground">Sintomas cadastrados ({symptomsData.length})</span>
+                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingSymptom({ name: "", description: "", alert_level: "low", trimester: [1], active: true }); setEditSymptomOpen(true); }}>
                       <Plus className="w-4 h-4 mr-1" /> Novo
                     </Button>
                   </div>
-                  <div className="divide-y divide-border">
-                    {mockSymptoms.map(s => (
-                      <div key={s.id} className="p-4 flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="font-medium text-sm text-foreground">{s.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{s.description}</p>
-                          <div className="flex gap-1 mt-1">
-                            {s.trimester.map(t => (
-                              <span key={t} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">{t}° tri</span>
-                            ))}
+                  {loadingSymptoms ? (
+                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                  ) : (
+                    <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
+                      {symptomsData.map(s => (
+                        <div key={s.id} className={`p-4 flex items-center justify-between gap-3 ${!s.active ? "opacity-50" : ""}`}>
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm text-foreground">{s.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{s.description}</p>
+                            <div className="flex gap-1 mt-1">
+                              {s.trimester.map(t => (
+                                <span key={t} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">{t}° tri</span>
+                              ))}
+                              {!s.active && <span className="text-[10px] bg-red-100 px-1.5 py-0.5 rounded-full text-red-700">Inativo</span>}
+                            </div>
+                          </div>
+                          <div className="flex gap-1 flex-shrink-0">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingSymptom({ ...s }); setEditSymptomOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteSymptomMut.mutate(s.id); toast.success("Sintoma excluído"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
                           </div>
                         </div>
-                        <div className="flex gap-1 flex-shrink-0">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingSymptom({ ...s }); setEditSymptomOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
@@ -489,31 +525,36 @@ const Admin = () => {
               <TabsContent value="exercises" className="mt-4">
                 <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                   <div className="p-4 border-b border-border flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">Exercícios cadastrados</span>
-                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingExercise({ id: 0, name: "", trimester: [1], intensity: "Leve", description: "" }); setEditExerciseOpen(true); }}>
+                    <span className="text-sm font-medium text-foreground">Exercícios cadastrados ({exercisesData.length})</span>
+                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingExercise({ name: "", description: "", intensity: "Leve", trimester: [1], active: true }); setEditExerciseOpen(true); }}>
                       <Plus className="w-4 h-4 mr-1" /> Novo
                     </Button>
                   </div>
-                  <div className="divide-y divide-border">
-                    {mockExercises.map(ex => (
-                      <div key={ex.id} className="p-4 flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="font-medium text-sm text-foreground">{ex.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{ex.description}</p>
-                          <div className="flex gap-1 mt-1">
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${ex.intensity === "Leve" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{ex.intensity}</span>
-                            {ex.trimester.map(t => (
-                              <span key={t} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">{t}° tri</span>
-                            ))}
+                  {loadingExercises ? (
+                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                  ) : (
+                    <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
+                      {exercisesData.map(ex => (
+                        <div key={ex.id} className={`p-4 flex items-center justify-between gap-3 ${!ex.active ? "opacity-50" : ""}`}>
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm text-foreground">{ex.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{ex.description}</p>
+                            <div className="flex gap-1 mt-1">
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${ex.intensity === "Leve" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{ex.intensity}</span>
+                              {ex.trimester.map(t => (
+                                <span key={t} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">{t}° tri</span>
+                              ))}
+                              {!ex.active && <span className="text-[10px] bg-red-100 px-1.5 py-0.5 rounded-full text-red-700">Inativo</span>}
+                            </div>
+                          </div>
+                          <div className="flex gap-1 flex-shrink-0">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingExercise({ ...ex }); setEditExerciseOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteExerciseMut.mutate(ex.id); toast.success("Exercício excluído"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
                           </div>
                         </div>
-                        <div className="flex gap-1 flex-shrink-0">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingExercise({ ...ex }); setEditExerciseOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
@@ -521,26 +562,33 @@ const Admin = () => {
               <TabsContent value="tips" className="mt-4">
                 <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                   <div className="p-4 border-b border-border flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">Dicas cadastradas</span>
-                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingTip({ id: 0, week: 1, title: "", content: "" }); setEditTipOpen(true); }}>
+                    <span className="text-sm font-medium text-foreground">Dicas cadastradas ({tipsData.length})</span>
+                    <Button size="sm" className="rounded-xl" onClick={() => { setEditingTip({ title: "", content: "", week_number: 1, active: true }); setEditTipOpen(true); }}>
                       <Plus className="w-4 h-4 mr-1" /> Nova
                     </Button>
                   </div>
-                  <div className="divide-y divide-border">
-                    {mockTips.map(tip => (
-                      <div key={tip.id} className="p-4 flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="font-medium text-sm text-foreground">{tip.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{tip.content}</p>
-                          <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground mt-1 inline-block">Semana {tip.week}</span>
+                  {loadingTips ? (
+                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                  ) : (
+                    <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
+                      {tipsData.map(tip => (
+                        <div key={tip.id} className={`p-4 flex items-center justify-between gap-3 ${!tip.active ? "opacity-50" : ""}`}>
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm text-foreground">{tip.title}</p>
+                            <p className="text-xs text-muted-foreground truncate">{tip.content}</p>
+                            <div className="flex gap-1 mt-1">
+                              <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">Semana {tip.week_number}</span>
+                              {!tip.active && <span className="text-[10px] bg-red-100 px-1.5 py-0.5 rounded-full text-red-700">Inativa</span>}
+                            </div>
+                          </div>
+                          <div className="flex gap-1 flex-shrink-0">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingTip({ ...tip }); setEditTipOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteTipMut.mutate(tip.id); toast.success("Dica excluída"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                          </div>
                         </div>
-                        <div className="flex gap-1 flex-shrink-0">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingTip({ ...tip }); setEditTipOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>
@@ -551,24 +599,16 @@ const Admin = () => {
         {activeTab === "users" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <h1 className="text-2xl font-bold font-display text-foreground">Usuárias</h1>
-
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Buscar por nome ou email..." className="pl-10 rounded-xl" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
             </div>
-
             <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
-              {/* Desktop header */}
               <div className="hidden md:grid grid-cols-[1fr_1fr_80px_100px_60px] gap-2 p-4 border-b border-border text-xs font-medium text-muted-foreground">
-                <span>Nome</span>
-                <span>Email</span>
-                <span>Semana</span>
-                <span>Cadastro</span>
-                <span>Status</span>
+                <span>Nome</span><span>Email</span><span>Semana</span><span>Cadastro</span><span>Status</span>
               </div>
               {filteredUsers.map(user => (
                 <div key={user.id} className="p-4 border-b border-border last:border-0">
-                  {/* Mobile */}
                   <div className="md:hidden flex items-center justify-between">
                     <div>
                       <p className="font-medium text-sm text-foreground">{user.name}</p>
@@ -577,7 +617,6 @@ const Admin = () => {
                     </div>
                     <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${user.active ? "bg-green-500" : "bg-muted-foreground/40"}`} />
                   </div>
-                  {/* Desktop */}
                   <div className="hidden md:grid grid-cols-[1fr_1fr_80px_100px_60px] gap-2 items-center">
                     <span className="font-medium text-sm text-foreground">{user.name}</span>
                     <span className="text-sm text-muted-foreground truncate">{user.email}</span>
@@ -595,7 +634,6 @@ const Admin = () => {
         {activeTab === "settings" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <h1 className="text-2xl font-bold font-display text-foreground">Configurações</h1>
-
             <div className="space-y-4">
               {[
                 { type: "app", icon: Monitor, title: "Informações do App", description: `Nome: ${settings.appName}` },
@@ -614,9 +652,7 @@ const Admin = () => {
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">{setting.description}</p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="rounded-xl flex-shrink-0" onClick={() => openSetting(setting.type)}>
-                    Configurar
-                  </Button>
+                  <Button variant="outline" size="sm" className="rounded-xl flex-shrink-0" onClick={() => openSetting(setting.type)}>Configurar</Button>
                 </div>
               ))}
             </div>
@@ -636,11 +672,7 @@ const Admin = () => {
           {editingCard && (
             <div className="space-y-4 mt-2">
               <div className="rounded-xl overflow-hidden border border-border">
-                <img src={editingCard.image} alt={editingCard.title} className="w-full h-40 object-cover" />
-              </div>
-              <div>
-                <Label className="text-sm font-medium">URL da Imagem</Label>
-                <Input value={editingCard.image} onChange={e => setEditingCard({ ...editingCard, image: e.target.value })} placeholder="URL da imagem" className="mt-1 rounded-xl" />
+                <img src={localImages[editingCard.slug] || cardJourney} alt={editingCard.title} className="w-full h-40 object-cover" />
               </div>
               <div>
                 <Label className="text-sm font-medium">Título</Label>
@@ -656,10 +688,12 @@ const Admin = () => {
               </div>
               <div>
                 <Label className="text-sm font-medium">Ordem de exibição</Label>
-                <Input type="number" value={editingCard.order} onChange={e => setEditingCard({ ...editingCard, order: parseInt(e.target.value) || 1 })} className="mt-1 rounded-xl" min={1} max={10} />
+                <Input type="number" value={editingCard.display_order} onChange={e => setEditingCard({ ...editingCard, display_order: parseInt(e.target.value) || 1 })} className="mt-1 rounded-xl" min={1} max={10} />
               </div>
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 rounded-xl" onClick={handleSaveCard}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSaveCard} disabled={updateCategory.isPending}>
+                  {updateCategory.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Salvar
+                </Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditCardOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
             </div>
@@ -671,15 +705,15 @@ const Admin = () => {
       <Dialog open={viewWeekOpen} onOpenChange={setViewWeekOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Semana {viewingWeek?.week} — Visualização</DialogTitle>
+            <DialogTitle>Semana {viewingWeek?.week_number} — Visualização</DialogTitle>
             <DialogDescription>Conteúdo atualmente salvo para esta semana.</DialogDescription>
           </DialogHeader>
           {viewingWeek && (
             <div className="space-y-4 mt-2">
               {[
-                { label: "Desenvolvimento do bebê", value: viewingWeek.babyDevelopment },
-                { label: "Mudanças no corpo", value: viewingWeek.motherChanges },
-                { label: "Sintomas comuns", value: viewingWeek.symptoms },
+                { label: "Desenvolvimento do bebê", value: viewingWeek.baby_development },
+                { label: "Mudanças no corpo", value: viewingWeek.mother_changes },
+                { label: "Sintomas comuns", value: viewingWeek.common_symptoms.join(", ") },
                 { label: "Dica prática", value: viewingWeek.tip },
               ].map(item => (
                 <div key={item.label} className="bg-muted/50 rounded-xl p-4">
@@ -691,6 +725,8 @@ const Admin = () => {
                 <span>Status: {viewingWeek.status === "published" ? "Publicado" : viewingWeek.status === "draft" ? "Rascunho" : "Vazio"}</span>
                 <span>·</span>
                 <span>Revisado: {viewingWeek.reviewed ? "Sim" : "Não"}</span>
+                <span>·</span>
+                <span>Ativo: {viewingWeek.active ? "Sim" : "Não"}</span>
               </div>
             </div>
           )}
@@ -701,22 +737,18 @@ const Admin = () => {
       <Dialog open={editWeekOpen} onOpenChange={setEditWeekOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Editar Semana {editingWeek?.week}</DialogTitle>
+            <DialogTitle>Editar Semana {editingWeek?.week_number}</DialogTitle>
             <DialogDescription>Edite o conteúdo exibido para esta semana.</DialogDescription>
           </DialogHeader>
           {editingWeek && (
             <div className="space-y-4 mt-2">
               <div>
                 <Label className="text-sm font-medium">Desenvolvimento do bebê</Label>
-                <Textarea value={editingWeek.babyDevelopment} onChange={e => setEditingWeek({ ...editingWeek, babyDevelopment: e.target.value })} className="mt-1 rounded-xl" rows={3} />
+                <Textarea value={editingWeek.baby_development} onChange={e => setEditingWeek({ ...editingWeek, baby_development: e.target.value })} className="mt-1 rounded-xl" rows={3} />
               </div>
               <div>
                 <Label className="text-sm font-medium">Mudanças no corpo da mãe</Label>
-                <Textarea value={editingWeek.motherChanges} onChange={e => setEditingWeek({ ...editingWeek, motherChanges: e.target.value })} className="mt-1 rounded-xl" rows={3} />
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Sintomas comuns</Label>
-                <Textarea value={editingWeek.symptoms} onChange={e => setEditingWeek({ ...editingWeek, symptoms: e.target.value })} className="mt-1 rounded-xl" rows={2} />
+                <Textarea value={editingWeek.mother_changes} onChange={e => setEditingWeek({ ...editingWeek, mother_changes: e.target.value })} className="mt-1 rounded-xl" rows={3} />
               </div>
               <div>
                 <Label className="text-sm font-medium">Dica prática</Label>
@@ -724,10 +756,16 @@ const Admin = () => {
               </div>
               <div className="flex items-center gap-3">
                 <Switch checked={editingWeek.reviewed} onCheckedChange={v => setEditingWeek({ ...editingWeek, reviewed: v })} />
-                <Label className="text-sm">Marcado como revisado</Label>
+                <Label className="text-sm">Revisado</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch checked={editingWeek.active} onCheckedChange={v => setEditingWeek({ ...editingWeek, active: v })} />
+                <Label className="text-sm">Ativo</Label>
               </div>
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 rounded-xl" onClick={handleSaveWeek}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSaveWeek} disabled={updateWeek.isPending}>
+                  {updateWeek.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Salvar
+                </Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditWeekOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
             </div>
@@ -739,33 +777,35 @@ const Admin = () => {
       <Dialog open={editSymptomOpen} onOpenChange={setEditSymptomOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingSymptom?.id === 0 ? "Novo Sintoma" : `Editar: ${editingSymptom?.name}`}</DialogTitle>
+            <DialogTitle>{!editingSymptom?.id ? "Novo Sintoma" : `Editar: ${editingSymptom?.name}`}</DialogTitle>
             <DialogDescription>Preencha as informações do sintoma.</DialogDescription>
           </DialogHeader>
           {editingSymptom && (
             <div className="space-y-4 mt-2">
               <div>
                 <Label className="text-sm font-medium">Nome</Label>
-                <Input value={editingSymptom.name} onChange={e => setEditingSymptom({ ...editingSymptom, name: e.target.value })} className="mt-1 rounded-xl" />
+                <Input value={editingSymptom.name || ""} onChange={e => setEditingSymptom({ ...editingSymptom, name: e.target.value })} className="mt-1 rounded-xl" />
               </div>
               <div>
                 <Label className="text-sm font-medium">Descrição</Label>
-                <Textarea value={editingSymptom.description} onChange={e => setEditingSymptom({ ...editingSymptom, description: e.target.value })} className="mt-1 rounded-xl" rows={3} />
+                <Textarea value={editingSymptom.description || ""} onChange={e => setEditingSymptom({ ...editingSymptom, description: e.target.value })} className="mt-1 rounded-xl" rows={3} />
               </div>
               <div>
                 <Label className="text-sm font-medium">Nível de alerta</Label>
-                <select
-                  value={editingSymptom.alertLevel}
-                  onChange={e => setEditingSymptom({ ...editingSymptom, alertLevel: e.target.value })}
-                  className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
-                >
+                <select value={editingSymptom.alert_level || "low"} onChange={e => setEditingSymptom({ ...editingSymptom, alert_level: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
                   <option value="low">Baixo</option>
                   <option value="moderate">Moderado</option>
                   <option value="high">Alto</option>
                 </select>
               </div>
+              {editingSymptom.id && (
+                <div className="flex items-center gap-3">
+                  <Switch checked={editingSymptom.active ?? true} onCheckedChange={v => setEditingSymptom({ ...editingSymptom, active: v })} />
+                  <Label className="text-sm">Ativo</Label>
+                </div>
+              )}
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 rounded-xl" onClick={() => setEditSymptomOpen(false)}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSaveSymptom}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditSymptomOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
             </div>
@@ -777,32 +817,34 @@ const Admin = () => {
       <Dialog open={editExerciseOpen} onOpenChange={setEditExerciseOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingExercise?.id === 0 ? "Novo Exercício" : `Editar: ${editingExercise?.name}`}</DialogTitle>
+            <DialogTitle>{!editingExercise?.id ? "Novo Exercício" : `Editar: ${editingExercise?.name}`}</DialogTitle>
             <DialogDescription>Preencha as informações do exercício.</DialogDescription>
           </DialogHeader>
           {editingExercise && (
             <div className="space-y-4 mt-2">
               <div>
                 <Label className="text-sm font-medium">Nome</Label>
-                <Input value={editingExercise.name} onChange={e => setEditingExercise({ ...editingExercise, name: e.target.value })} className="mt-1 rounded-xl" />
+                <Input value={editingExercise.name || ""} onChange={e => setEditingExercise({ ...editingExercise, name: e.target.value })} className="mt-1 rounded-xl" />
               </div>
               <div>
                 <Label className="text-sm font-medium">Descrição</Label>
-                <Textarea value={editingExercise.description} onChange={e => setEditingExercise({ ...editingExercise, description: e.target.value })} className="mt-1 rounded-xl" rows={3} />
+                <Textarea value={editingExercise.description || ""} onChange={e => setEditingExercise({ ...editingExercise, description: e.target.value })} className="mt-1 rounded-xl" rows={3} />
               </div>
               <div>
                 <Label className="text-sm font-medium">Intensidade</Label>
-                <select
-                  value={editingExercise.intensity}
-                  onChange={e => setEditingExercise({ ...editingExercise, intensity: e.target.value })}
-                  className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
-                >
+                <select value={editingExercise.intensity || "Leve"} onChange={e => setEditingExercise({ ...editingExercise, intensity: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
                   <option value="Leve">Leve</option>
                   <option value="Moderado">Moderado</option>
                 </select>
               </div>
+              {editingExercise.id && (
+                <div className="flex items-center gap-3">
+                  <Switch checked={editingExercise.active ?? true} onCheckedChange={v => setEditingExercise({ ...editingExercise, active: v })} />
+                  <Label className="text-sm">Ativo</Label>
+                </div>
+              )}
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 rounded-xl" onClick={() => setEditExerciseOpen(false)}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSaveExercise}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditExerciseOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
             </div>
@@ -814,25 +856,31 @@ const Admin = () => {
       <Dialog open={editTipOpen} onOpenChange={setEditTipOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingTip?.id === 0 ? "Nova Dica" : `Editar: ${editingTip?.title}`}</DialogTitle>
+            <DialogTitle>{!editingTip?.id ? "Nova Dica" : `Editar: ${editingTip?.title}`}</DialogTitle>
             <DialogDescription>Preencha as informações da dica.</DialogDescription>
           </DialogHeader>
           {editingTip && (
             <div className="space-y-4 mt-2">
               <div>
                 <Label className="text-sm font-medium">Título</Label>
-                <Input value={editingTip.title} onChange={e => setEditingTip({ ...editingTip, title: e.target.value })} className="mt-1 rounded-xl" />
+                <Input value={editingTip.title || ""} onChange={e => setEditingTip({ ...editingTip, title: e.target.value })} className="mt-1 rounded-xl" />
               </div>
               <div>
                 <Label className="text-sm font-medium">Semana</Label>
-                <Input type="number" value={editingTip.week} onChange={e => setEditingTip({ ...editingTip, week: parseInt(e.target.value) || 1 })} className="mt-1 rounded-xl" min={1} max={40} />
+                <Input type="number" value={editingTip.week_number || 1} onChange={e => setEditingTip({ ...editingTip, week_number: parseInt(e.target.value) || 1 })} className="mt-1 rounded-xl" min={1} max={40} />
               </div>
               <div>
                 <Label className="text-sm font-medium">Conteúdo</Label>
-                <Textarea value={editingTip.content} onChange={e => setEditingTip({ ...editingTip, content: e.target.value })} className="mt-1 rounded-xl" rows={4} />
+                <Textarea value={editingTip.content || ""} onChange={e => setEditingTip({ ...editingTip, content: e.target.value })} className="mt-1 rounded-xl" rows={4} />
               </div>
+              {editingTip.id && (
+                <div className="flex items-center gap-3">
+                  <Switch checked={editingTip.active ?? true} onCheckedChange={v => setEditingTip({ ...editingTip, active: v })} />
+                  <Label className="text-sm">Ativa</Label>
+                </div>
+              )}
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 rounded-xl" onClick={() => setEditTipOpen(false)}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSaveTip}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditTipOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
             </div>
@@ -856,68 +904,32 @@ const Admin = () => {
           <div className="space-y-4 mt-2">
             {editSettingType === "app" && (
               <>
-                <div>
-                  <Label className="text-sm font-medium">Nome do app</Label>
-                  <Input value={settings.appName} onChange={e => setSettings({ ...settings, appName: e.target.value })} className="mt-1 rounded-xl" />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Descrição</Label>
-                  <Textarea value={settings.appDescription} onChange={e => setSettings({ ...settings, appDescription: e.target.value })} className="mt-1 rounded-xl" rows={3} />
-                </div>
+                <div><Label className="text-sm font-medium">Nome do app</Label><Input value={settings.appName} onChange={e => setSettings({ ...settings, appName: e.target.value })} className="mt-1 rounded-xl" /></div>
+                <div><Label className="text-sm font-medium">Descrição</Label><Textarea value={settings.appDescription} onChange={e => setSettings({ ...settings, appDescription: e.target.value })} className="mt-1 rounded-xl" rows={3} /></div>
               </>
             )}
             {editSettingType === "plans" && (
               <>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Plano gratuito ativo</Label>
-                  <Switch checked={settings.planFreeEnabled} onCheckedChange={v => setSettings({ ...settings, planFreeEnabled: v })} />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Preço do Premium (R$/mês)</Label>
-                  <Input value={settings.planPremiumPrice} onChange={e => setSettings({ ...settings, planPremiumPrice: e.target.value })} className="mt-1 rounded-xl" />
-                </div>
+                <div className="flex items-center justify-between"><Label className="text-sm font-medium">Plano gratuito ativo</Label><Switch checked={settings.planFreeEnabled} onCheckedChange={v => setSettings({ ...settings, planFreeEnabled: v })} /></div>
+                <div><Label className="text-sm font-medium">Preço do Premium (R$/mês)</Label><Input value={settings.planPremiumPrice} onChange={e => setSettings({ ...settings, planPremiumPrice: e.target.value })} className="mt-1 rounded-xl" /></div>
               </>
             )}
             {editSettingType === "push" && (
               <>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Notificações ativas</Label>
-                  <Switch checked={settings.pushEnabled} onCheckedChange={v => setSettings({ ...settings, pushEnabled: v })} />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Frequência</Label>
-                  <select
-                    value={settings.pushFrequency}
-                    onChange={e => setSettings({ ...settings, pushFrequency: e.target.value })}
-                    className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
-                  >
-                    <option value="diária">Diária</option>
-                    <option value="semanal">Semanal</option>
-                    <option value="quinzenal">Quinzenal</option>
-                  </select>
-                </div>
+                <div className="flex items-center justify-between"><Label className="text-sm font-medium">Notificações ativas</Label><Switch checked={settings.pushEnabled} onCheckedChange={v => setSettings({ ...settings, pushEnabled: v })} /></div>
+                <div><Label className="text-sm font-medium">Frequência</Label><select value={settings.pushFrequency} onChange={e => setSettings({ ...settings, pushFrequency: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"><option value="diária">Diária</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option></select></div>
               </>
             )}
             {editSettingType === "integrations" && (
               <>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Google Analytics</Label>
-                  <Switch checked={settings.analyticsEnabled} onCheckedChange={v => setSettings({ ...settings, analyticsEnabled: v })} />
-                </div>
-                <div className="bg-muted/50 rounded-xl p-4">
-                  <p className="text-xs text-muted-foreground">Integrações com pagamento e email serão configuradas após conectar o backend.</p>
-                </div>
+                <div className="flex items-center justify-between"><Label className="text-sm font-medium">Google Analytics</Label><Switch checked={settings.analyticsEnabled} onCheckedChange={v => setSettings({ ...settings, analyticsEnabled: v })} /></div>
+                <div className="bg-muted/50 rounded-xl p-4"><p className="text-xs text-muted-foreground">Integrações com pagamento e email serão configuradas após implementar autenticação.</p></div>
               </>
             )}
             {editSettingType === "backup" && (
               <>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Backup automático</Label>
-                  <Switch checked={settings.backupEnabled} onCheckedChange={v => setSettings({ ...settings, backupEnabled: v })} />
-                </div>
-                <div className="bg-muted/50 rounded-xl p-4">
-                  <p className="text-xs text-muted-foreground">Exportação de dados estará disponível após conectar o backend.</p>
-                </div>
+                <div className="flex items-center justify-between"><Label className="text-sm font-medium">Backup automático</Label><Switch checked={settings.backupEnabled} onCheckedChange={v => setSettings({ ...settings, backupEnabled: v })} /></div>
+                <div className="bg-muted/50 rounded-xl p-4"><p className="text-xs text-muted-foreground">Os dados já estão sendo salvos no Supabase. Exportação avançada virá em breve.</p></div>
               </>
             )}
             <div className="flex gap-2 pt-2">

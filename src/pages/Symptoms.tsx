@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { symptoms, Symptom } from "@/data/symptoms";
+import { useActiveSymptoms, type SymptomRow } from "@/hooks/useSupabaseData";
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Search, AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { ArrowLeft, Search, AlertCircle, AlertTriangle, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -16,8 +16,9 @@ const alertConfig = {
 const Symptoms = () => {
   const navigate = useNavigate();
   const { trimester } = usePregnancy();
+  const { data: symptoms = [], isLoading } = useActiveSymptoms();
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<Symptom | null>(null);
+  const [selected, setSelected] = useState<SymptomRow | null>(null);
 
   const filtered = symptoms.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -26,6 +27,14 @@ const Symptoms = () => {
 
   const relevant = filtered.filter(s => s.trimester.includes(trimester));
   const other = filtered.filter(s => !s.trimester.includes(trimester));
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -49,7 +58,7 @@ const Symptoms = () => {
                 <h2 className="text-sm font-semibold text-muted-foreground mb-2">Comuns no {trimester}° trimestre</h2>
                 <div className="space-y-2">
                   {relevant.map((s, i) => {
-                    const cfg = alertConfig[s.alertLevel];
+                    const cfg = alertConfig[s.alert_level as keyof typeof alertConfig] || alertConfig.low;
                     return (
                       <motion.button key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} onClick={() => setSelected(s)}
                         className="w-full flex items-center gap-3 p-4 rounded-2xl bg-card border border-border shadow-card text-left hover:shadow-elevated transition-shadow">
@@ -72,7 +81,7 @@ const Symptoms = () => {
                 <h2 className="text-sm font-semibold text-muted-foreground mb-2">Outros sintomas</h2>
                 <div className="space-y-2">
                   {other.map((s, i) => {
-                    const cfg = alertConfig[s.alertLevel];
+                    const cfg = alertConfig[s.alert_level as keyof typeof alertConfig] || alertConfig.low;
                     return (
                       <motion.button key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} onClick={() => setSelected(s)}
                         className="w-full flex items-center gap-3 p-4 rounded-2xl bg-card border border-border shadow-card text-left">
@@ -100,9 +109,9 @@ const Symptoms = () => {
               <p className="text-sm text-muted-foreground">{selected.description}</p>
 
               {[
-                { label: "Quando é comum", value: selected.whenCommon },
-                { label: "O que fazer", value: selected.whatToDo },
-                { label: "⚠️ Quando procurar médico", value: selected.whenSeeDoctor },
+                { label: "Quando é comum", value: selected.when_common },
+                { label: "O que fazer", value: selected.what_to_do },
+                { label: "⚠️ Quando procurar médico", value: selected.when_see_doctor },
               ].map(item => (
                 <div key={item.label} className="bg-muted/50 rounded-xl p-4">
                   <p className="font-semibold text-sm mb-1">{item.label}</p>

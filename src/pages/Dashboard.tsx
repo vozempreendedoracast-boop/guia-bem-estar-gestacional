@@ -1,5 +1,5 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
-import { getClosestWeekData } from "@/data/weeks";
+import { useWeekContents, useCategories } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Baby, BookOpen, Activity, Heart, BarChart3, Bot, Smile, AlertCircle, Sparkles, LogOut } from "lucide-react";
@@ -15,12 +15,30 @@ import cardAssistant from "@/assets/card-assistant.png";
 
 const moodEmojis = ["😢", "😟", "😐", "🙂", "😊"];
 
+const localImages: Record<string, string> = {
+  journey: cardJourney,
+  symptoms: cardSymptoms,
+  exercises: cardExercises,
+  health: cardHealth,
+  diary: cardDiary,
+  assistant: cardAssistant,
+};
+
+const iconMap: Record<string, React.ElementType> = {
+  BookOpen, AlertCircle, Activity, Heart, BarChart3, Bot,
+};
+
 const Dashboard = () => {
   const { profile, currentWeek, trimester, progressPercent, addMood, moods, logout } = usePregnancy();
   const navigate = useNavigate();
-  const weekData = getClosestWeekData(currentWeek);
+  const { data: weeks = [] } = useWeekContents();
+  const { data: categories = [] } = useCategories();
   const [showMoodPicker, setShowMoodPicker] = useState(false);
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
+
+  // Find the closest week data from DB
+  const weekData = weeks.find(w => w.week_number === currentWeek)
+    || [...weeks].sort((a, b) => Math.abs(a.week_number - currentWeek) - Math.abs(b.week_number - currentWeek))[0];
 
   const todayMood = moods.find(m => new Date(m.date).toDateString() === new Date().toDateString());
 
@@ -31,14 +49,16 @@ const Dashboard = () => {
     setTimeout(() => setSelectedMood(null), 2000);
   };
 
-  const cards = [
-    { title: "Minha Jornada", description: "Semana a semana", icon: BookOpen, path: "/jornada", gradient: "gradient-peach", image: cardJourney },
-    { title: "Sintomas", description: "Guia completo", icon: AlertCircle, path: "/sintomas", gradient: "gradient-lilac", image: cardSymptoms },
-    { title: "Exercícios", description: `${trimester}° trimestre`, icon: Activity, path: "/exercicios", gradient: "gradient-sage", image: cardExercises },
-    { title: "Saúde Integral", description: "Corpo e mente", icon: Heart, path: "/saude", gradient: "gradient-peach", image: cardHealth },
-    { title: "Diário", description: "Registros", icon: BarChart3, path: "/diario", gradient: "gradient-lilac", image: cardDiary },
-    { title: "Assistente IA", description: "Tire dúvidas", icon: Bot, path: "/assistente", gradient: "gradient-sage", image: cardAssistant },
-  ];
+  const visibleCards = categories
+    .filter(c => c.visible)
+    .sort((a, b) => a.display_order - b.display_order)
+    .map(c => ({
+      title: c.title,
+      description: c.description,
+      icon: iconMap[c.icon] || BookOpen,
+      path: c.path,
+      image: localImages[c.slug] || cardJourney,
+    }));
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
   const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -79,40 +99,44 @@ const Dashboard = () => {
         </div>
 
         {/* Baby info */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-5 bg-primary-foreground/10 rounded-2xl p-4 backdrop-blur-sm"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{weekData.babySizeComparison.split(" ")[0]}</span>
-            <div>
-              <p className="font-semibold text-sm">Seu bebê tem ~{weekData.babySize}</p>
-              <p className="text-xs opacity-80">{weekData.babySizeComparison}</p>
+        {weekData && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-5 bg-primary-foreground/10 rounded-2xl p-4 backdrop-blur-sm"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{weekData.baby_size_comparison.split(" ")[0]}</span>
+              <div>
+                <p className="font-semibold text-sm">Seu bebê tem ~{weekData.baby_size}</p>
+                <p className="text-xs opacity-80">{weekData.baby_size_comparison}</p>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
       </div>
 
       <div className="px-6 -mt-4 space-y-6">
         {/* Quick tip */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="bg-card rounded-2xl p-4 shadow-card border border-border"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-peach flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 text-peach-foreground" />
+        {weekData && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="bg-card rounded-2xl p-4 shadow-card border border-border"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-peach flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-peach-foreground" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Dica da semana</p>
+                <p className="text-sm text-muted-foreground mt-1">{weekData.tip}</p>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-sm">Dica da semana</p>
-              <p className="text-sm text-muted-foreground mt-1">{weekData.tip}</p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Mood check */}
         <motion.div
@@ -150,7 +174,7 @@ const Dashboard = () => {
 
         {/* Cards grid */}
         <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 gap-3">
-          {cards.map(card => (
+          {visibleCards.map(card => (
             <motion.button
               key={card.title}
               variants={item}

@@ -1,21 +1,32 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
-import { weeksData } from "@/data/weeks";
+import { useWeekContents } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Lock, ChevronRight } from "lucide-react";
+import { ArrowLeft, Lock, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Journey = () => {
   const { currentWeek } = usePregnancy();
   const navigate = useNavigate();
+  const { data: weeks, isLoading } = useWeekContents();
 
   const trimesterLabels = ["1° Trimestre (1-13)", "2° Trimestre (14-27)", "3° Trimestre (28-40)"];
 
+  const activeWeeks = (weeks || []).filter(w => w.active);
+
   const groupedWeeks = [
-    weeksData.filter(w => w.week <= 13),
-    weeksData.filter(w => w.week >= 14 && w.week <= 27),
-    weeksData.filter(w => w.week >= 28),
+    activeWeeks.filter(w => w.week_number <= 13),
+    activeWeeks.filter(w => w.week_number >= 14 && w.week_number <= 27),
+    activeWeeks.filter(w => w.week_number >= 28),
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -32,16 +43,16 @@ const Journey = () => {
             <h2 className="text-sm font-semibold text-muted-foreground mb-3">{trimesterLabels[gi]}</h2>
             <div className="space-y-2">
               {group.map((week, i) => {
-                const isUnlocked = week.week <= currentWeek;
-                const isCurrent = week.week === currentWeek || (currentWeek > week.week && (group[i + 1] ? currentWeek < group[i + 1].week : gi < 2 ? currentWeek < groupedWeeks[gi + 1]?.[0]?.week : true));
+                const isUnlocked = week.week_number <= currentWeek;
+                const isCurrent = week.week_number === currentWeek || (currentWeek > week.week_number && (group[i + 1] ? currentWeek < group[i + 1].week_number : gi < 2 ? currentWeek < groupedWeeks[gi + 1]?.[0]?.week_number : true));
 
                 return (
                   <motion.button
-                    key={week.week}
+                    key={week.week_number}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.03 }}
-                    onClick={() => isUnlocked && navigate(`/jornada/${week.week}`)}
+                    onClick={() => isUnlocked && navigate(`/jornada/${week.week_number}`)}
                     disabled={!isUnlocked}
                     className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${
                       isCurrent
@@ -51,13 +62,13 @@ const Journey = () => {
                         : "border-border/50 bg-muted/30 opacity-50"
                     }`}
                   >
-                    <span className="text-2xl">{week.babySizeComparison.split(" ")[0]}</span>
+                    <span className="text-2xl">{week.baby_size_comparison.split(" ")[0]}</span>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm">
-                        Semana {week.week}
+                        Semana {week.week_number}
                         {isCurrent && <span className="ml-2 text-xs font-normal text-primary">← Você está aqui</span>}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate">{week.babySizeComparison.split(" ").slice(1).join(" ")} · {week.babySize}</p>
+                      <p className="text-xs text-muted-foreground truncate">{week.baby_size_comparison.split(" ").slice(1).join(" ")} · {week.baby_size}</p>
                     </div>
                     {isUnlocked ? (
                       <ChevronRight className="w-4 h-4 text-muted-foreground" />
