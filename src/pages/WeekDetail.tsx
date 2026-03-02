@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { getClosestWeekData } from "@/data/weeks";
+import { useWeekContent } from "@/hooks/useSupabaseData";
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Baby, Heart, AlertTriangle, Lightbulb, Stethoscope } from "lucide-react";
+import { ArrowLeft, Baby, Heart, AlertTriangle, Lightbulb, Stethoscope, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const WeekDetail = () => {
@@ -10,17 +10,25 @@ const WeekDetail = () => {
   const navigate = useNavigate();
   const { currentWeek } = usePregnancy();
   const weekNum = parseInt(week || "1");
-  const data = getClosestWeekData(weekNum);
+  const { data, isLoading } = useWeekContent(weekNum);
 
   if (weekNum > currentWeek) {
     navigate("/jornada");
     return null;
   }
 
+  if (isLoading || !data) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   const sections = [
-    { icon: Baby, title: "Desenvolvimento do bebê", content: data.babyDevelopment, color: "bg-peach" },
-    { icon: Heart, title: "Mudanças no seu corpo", content: data.motherChanges, color: "bg-lilac" },
-    { icon: Stethoscope, title: "Sintomas comuns", content: data.commonSymptoms.join(", "), color: "bg-sage" },
+    { icon: Baby, title: "Desenvolvimento do bebê", content: data.baby_development, color: "bg-peach" },
+    { icon: Heart, title: "Mudanças no seu corpo", content: data.mother_changes, color: "bg-lilac" },
+    { icon: Stethoscope, title: "Sintomas comuns", content: data.common_symptoms.join(", "), color: "bg-sage" },
     { icon: Lightbulb, title: "Dica prática", content: data.tip, color: "bg-peach" },
   ];
 
@@ -32,12 +40,12 @@ const WeekDetail = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate("/jornada")} className="text-primary-foreground hover:bg-primary-foreground/10 rounded-xl">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-bold font-display">Semana {data.week}</h1>
+          <h1 className="text-xl font-bold font-display">Semana {data.week_number}</h1>
         </div>
         <div className="text-center">
-          <span className="text-6xl block mb-3">{data.babySizeComparison.split(" ")[0]}</span>
-          <p className="text-lg font-semibold">{data.babySizeComparison}</p>
-          <p className="text-sm opacity-80 mt-1">Tamanho: ~{data.babySize}</p>
+          <span className="text-6xl block mb-3">{data.baby_size_comparison.split(" ")[0]}</span>
+          <p className="text-lg font-semibold">{data.baby_size_comparison}</p>
+          <p className="text-sm opacity-80 mt-1">Tamanho: ~{data.baby_size}</p>
         </div>
       </div>
 

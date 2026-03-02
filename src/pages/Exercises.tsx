@@ -1,33 +1,25 @@
 import { useNavigate } from "react-router-dom";
 import { usePregnancy } from "@/contexts/PregnancyContext";
+import { useActiveExercises } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
-import { ArrowLeft, Dumbbell } from "lucide-react";
+import { ArrowLeft, Dumbbell, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface Exercise {
-  name: string;
-  description: string;
-  steps: string[];
-  intensity: "Leve" | "Moderado";
-  contraindications: string;
-  trimester: number[];
-}
-
-const exercises: Exercise[] = [
-  { name: "Respiração Diafragmática", description: "Exercício de respiração profunda para relaxamento e oxigenação.", steps: ["Deite-se confortavelmente", "Coloque uma mão no peito e outra na barriga", "Inspire pelo nariz, expandindo a barriga", "Expire pela boca lentamente", "Repita 10 vezes"], intensity: "Leve", contraindications: "Nenhuma", trimester: [1, 2, 3] },
-  { name: "Caminhada Leve", description: "Caminhada em ritmo confortável para manter a circulação.", steps: ["Use calçado confortável", "Caminhe em terreno plano", "Mantenha ritmo conversacional", "15-30 minutos", "Hidrate-se bem"], intensity: "Leve", contraindications: "Restrição médica de atividade física", trimester: [1, 2, 3] },
-  { name: "Alongamento para Lombar", description: "Alivia dores nas costas causadas pelo peso extra.", steps: ["Fique de quatro apoios", "Arqueie as costas para cima (gato)", "Depois deixe a barriga pender (vaca)", "Alterne lentamente", "Repita 10 vezes"], intensity: "Leve", contraindications: "Dor aguda na lombar", trimester: [2, 3] },
-  { name: "Agachamento com Apoio", description: "Fortalece pernas e prepara para o parto.", steps: ["Apoie as costas na parede", "Pés afastados na largura dos quadris", "Desça lentamente até 90°", "Segure 5 segundos", "Suba devagar. Repita 8x"], intensity: "Moderado", contraindications: "Problemas nos joelhos, restrição médica", trimester: [2, 3] },
-  { name: "Exercício de Kegel", description: "Fortalece o assoalho pélvico para o parto e recuperação.", steps: ["Sente-se ou deite confortavelmente", "Contraia os músculos como se fosse segurar urina", "Segure por 5 segundos", "Relaxe por 5 segundos", "Repita 10-15 vezes, 3x ao dia"], intensity: "Leve", contraindications: "Nenhuma", trimester: [1, 2, 3] },
-  { name: "Yoga Pré-natal", description: "Posturas suaves que melhoram flexibilidade e relaxamento.", steps: ["Postura da criança modificada", "Guerreiro II suave", "Borboleta sentada", "Mantenha cada postura 30s", "Foque na respiração"], intensity: "Leve", contraindications: "Evite posturas invertidas e deitada de barriga para cima após 20 semanas", trimester: [1, 2, 3] },
-];
 
 const Exercises = () => {
   const navigate = useNavigate();
   const { trimester } = usePregnancy();
+  const { data: exercises = [], isLoading } = useActiveExercises();
 
   const recommended = exercises.filter(e => e.trimester.includes(trimester));
   const others = exercises.filter(e => !e.trimester.includes(trimester));
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -48,7 +40,7 @@ const Exercises = () => {
 
         {recommended.map((ex, i) => (
           <motion.div
-            key={ex.name}
+            key={ex.id}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
@@ -73,7 +65,7 @@ const Exercises = () => {
                 </p>
               ))}
             </div>
-            {ex.contraindications !== "Nenhuma" && (
+            {ex.contraindications !== "Nenhuma" && ex.contraindications !== "Nenhuma contraindicação. Seguro em todas as fases da gestação." && ex.contraindications !== "Nenhuma contraindicação. Pode ser feito em qualquer posição e a qualquer momento do dia, inclusive durante atividades cotidianas." && (
               <p className="text-xs text-warm-orange-foreground mt-2">⚠️ {ex.contraindications}</p>
             )}
           </motion.div>
@@ -82,8 +74,8 @@ const Exercises = () => {
         {others.length > 0 && (
           <>
             <h2 className="text-sm font-semibold text-muted-foreground">Outros exercícios</h2>
-            {others.map((ex, i) => (
-              <div key={ex.name} className="bg-card rounded-2xl p-4 shadow-card border border-border opacity-60">
+            {others.map((ex) => (
+              <div key={ex.id} className="bg-card rounded-2xl p-4 shadow-card border border-border opacity-60">
                 <p className="font-semibold text-sm">{ex.name}</p>
                 <p className="text-xs text-muted-foreground">{ex.description}</p>
                 <p className="text-xs text-muted-foreground mt-1">Recomendado para: {ex.trimester.map(t => `${t}° tri`).join(", ")}</p>
