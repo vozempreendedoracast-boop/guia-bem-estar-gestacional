@@ -6,6 +6,13 @@ import { Baby, BookOpen, Activity, Heart, BarChart3, Bot, Smile, AlertCircle, Sp
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
+import cardJourney from "@/assets/card-journey.png";
+import cardSymptoms from "@/assets/card-symptoms.png";
+import cardExercises from "@/assets/card-exercises.png";
+import cardHealth from "@/assets/card-health.png";
+import cardDiary from "@/assets/card-diary.png";
+import cardAssistant from "@/assets/card-assistant.png";
+
 const moodEmojis = ["😢", "😟", "😐", "🙂", "😊"];
 
 const Dashboard = () => {
@@ -25,12 +32,12 @@ const Dashboard = () => {
   };
 
   const cards = [
-    { title: "Minha Jornada", description: "Semana a semana", icon: BookOpen, path: "/journey", gradient: "gradient-peach" },
-    { title: "Sintomas", description: "Guia completo", icon: AlertCircle, path: "/symptoms", gradient: "gradient-lilac" },
-    { title: "Exercícios", description: `${trimester}° trimestre`, icon: Activity, path: "/exercises", gradient: "gradient-sage" },
-    { title: "Saúde Integral", description: "Corpo e mente", icon: Heart, path: "/health", gradient: "gradient-peach" },
-    { title: "Diário", description: "Registros", icon: BarChart3, path: "/diary", gradient: "gradient-lilac" },
-    { title: "Assistente IA", description: "Tire dúvidas", icon: Bot, path: "/assistant", gradient: "gradient-sage" },
+    { title: "Minha Jornada", description: "Semana a semana", icon: BookOpen, path: "/journey", gradient: "gradient-peach", image: cardJourney },
+    { title: "Sintomas", description: "Guia completo", icon: AlertCircle, path: "/symptoms", gradient: "gradient-lilac", image: cardSymptoms },
+    { title: "Exercícios", description: `${trimester}° trimestre`, icon: Activity, path: "/exercises", gradient: "gradient-sage", image: cardExercises },
+    { title: "Saúde Integral", description: "Corpo e mente", icon: Heart, path: "/health", gradient: "gradient-peach", image: cardHealth },
+    { title: "Diário", description: "Registros", icon: BarChart3, path: "/diary", gradient: "gradient-lilac", image: cardDiary },
+    { title: "Assistente IA", description: "Tire dúvidas", icon: Bot, path: "/assistant", gradient: "gradient-sage", image: cardAssistant },
   ];
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
@@ -148,13 +155,15 @@ const Dashboard = () => {
               key={card.title}
               variants={item}
               onClick={() => navigate(card.path)}
-              className="bg-card rounded-2xl p-4 shadow-card border border-border text-left hover:shadow-elevated transition-shadow"
+              className="bg-card rounded-2xl shadow-card border border-border text-left hover:shadow-elevated transition-shadow overflow-hidden"
             >
-              <div className={`w-11 h-11 rounded-xl ${card.gradient} flex items-center justify-center mb-3`}>
-                <card.icon className="w-5 h-5 text-foreground/70" />
+              <div className="w-full h-24 overflow-hidden">
+                <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
               </div>
-              <p className="font-semibold text-sm">{card.title}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{card.description}</p>
+              <div className="p-3">
+                <p className="font-semibold text-sm">{card.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{card.description}</p>
+              </div>
             </motion.button>
           ))}
         </motion.div>
