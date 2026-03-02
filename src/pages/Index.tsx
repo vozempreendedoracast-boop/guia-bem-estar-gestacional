@@ -10,7 +10,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isOnboarded) navigate("/dashboard");
+    if (isOnboarded) navigate("/painel");
   }, [isOnboarded, navigate]);
 
   return (
@@ -53,7 +53,7 @@ const Index = () => {
         </div>
 
         <Button
-          onClick={() => navigate("/onboarding")}
+          onClick={() => navigate("/cadastro")}
           className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
         >
           Começar agora

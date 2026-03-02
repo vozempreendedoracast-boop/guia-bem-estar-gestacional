@@ -32,12 +32,12 @@ const Dashboard = () => {
   };
 
   const cards = [
-    { title: "Minha Jornada", description: "Semana a semana", icon: BookOpen, path: "/journey", gradient: "gradient-peach", image: cardJourney },
-    { title: "Sintomas", description: "Guia completo", icon: AlertCircle, path: "/symptoms", gradient: "gradient-lilac", image: cardSymptoms },
-    { title: "Exercícios", description: `${trimester}° trimestre`, icon: Activity, path: "/exercises", gradient: "gradient-sage", image: cardExercises },
-    { title: "Saúde Integral", description: "Corpo e mente", icon: Heart, path: "/health", gradient: "gradient-peach", image: cardHealth },
-    { title: "Diário", description: "Registros", icon: BarChart3, path: "/diary", gradient: "gradient-lilac", image: cardDiary },
-    { title: "Assistente IA", description: "Tire dúvidas", icon: Bot, path: "/assistant", gradient: "gradient-sage", image: cardAssistant },
+    { title: "Minha Jornada", description: "Semana a semana", icon: BookOpen, path: "/jornada", gradient: "gradient-peach", image: cardJourney },
+    { title: "Sintomas", description: "Guia completo", icon: AlertCircle, path: "/sintomas", gradient: "gradient-lilac", image: cardSymptoms },
+    { title: "Exercícios", description: `${trimester}° trimestre`, icon: Activity, path: "/exercicios", gradient: "gradient-sage", image: cardExercises },
+    { title: "Saúde Integral", description: "Corpo e mente", icon: Heart, path: "/saude", gradient: "gradient-peach", image: cardHealth },
+    { title: "Diário", description: "Registros", icon: BarChart3, path: "/diario", gradient: "gradient-lilac", image: cardDiary },
+    { title: "Assistente IA", description: "Tire dúvidas", icon: Bot, path: "/assistente", gradient: "gradient-sage", image: cardAssistant },
   ];
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };

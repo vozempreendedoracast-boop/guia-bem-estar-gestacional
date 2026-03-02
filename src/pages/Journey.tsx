@@ -20,7 +20,7 @@ const Journey = () => {
   return (
     <div className="min-h-screen bg-background pb-8">
       <div className="px-6 pt-6 pb-4 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="rounded-xl">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/painel")} className="rounded-xl">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="text-xl font-bold font-display">Minha Jornada</h1>
@@ -41,7 +41,7 @@ const Journey = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.03 }}
-                    onClick={() => isUnlocked && navigate(`/journey/${week.week}`)}
+                    onClick={() => isUnlocked && navigate(`/jornada/${week.week}`)}
                     disabled={!isUnlocked}
                     className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${
                       isCurrent

@@ -55,12 +55,12 @@ interface DashboardCard {
 }
 
 const initialCards: DashboardCard[] = [
-  { id: "journey", title: "Minha Jornada", description: "Semana a semana", icon: "BookOpen", path: "/journey", image: cardJourney, visible: true, order: 1 },
-  { id: "symptoms", title: "Sintomas", description: "Guia completo", icon: "AlertCircle", path: "/symptoms", image: cardSymptoms, visible: true, order: 2 },
-  { id: "exercises", title: "Exercícios", description: "Atividades por trimestre", icon: "Activity", path: "/exercises", image: cardExercises, visible: true, order: 3 },
-  { id: "health", title: "Saúde Integral", description: "Corpo e mente", icon: "Heart", path: "/health", image: cardHealth, visible: true, order: 4 },
-  { id: "diary", title: "Diário", description: "Registros e progresso", icon: "BarChart3", path: "/diary", image: cardDiary, visible: true, order: 5 },
-  { id: "assistant", title: "Assistente IA", description: "Tire dúvidas", icon: "Bot", path: "/assistant", image: cardAssistant, visible: true, order: 6 },
+  { id: "journey", title: "Minha Jornada", description: "Semana a semana", icon: "BookOpen", path: "/jornada", image: cardJourney, visible: true, order: 1 },
+  { id: "symptoms", title: "Sintomas", description: "Guia completo", icon: "AlertCircle", path: "/sintomas", image: cardSymptoms, visible: true, order: 2 },
+  { id: "exercises", title: "Exercícios", description: "Atividades por trimestre", icon: "Activity", path: "/exercicios", image: cardExercises, visible: true, order: 3 },
+  { id: "health", title: "Saúde Integral", description: "Corpo e mente", icon: "Heart", path: "/saude", image: cardHealth, visible: true, order: 4 },
+  { id: "diary", title: "Diário", description: "Registros e progresso", icon: "BarChart3", path: "/diario", image: cardDiary, visible: true, order: 5 },
+  { id: "assistant", title: "Assistente IA", description: "Tire dúvidas", icon: "Bot", path: "/assistente", image: cardAssistant, visible: true, order: 6 },
 ];
 
 const sidebarItems = [
@@ -125,7 +125,7 @@ const Admin = () => {
           ))}
         </nav>
         <div className="mt-auto pt-8">
-          <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={() => navigate("/dashboard")}>
+          <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={() => navigate("/painel")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar ao app
           </Button>
@@ -139,7 +139,7 @@ const Admin = () => {
             <LayoutDashboard className="w-5 h-5 text-primary" />
             <span className="font-display font-bold text-foreground">Admin</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/painel")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </div>
