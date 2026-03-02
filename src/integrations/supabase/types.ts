@@ -17,6 +17,7 @@ export type Database = {
       ai_settings: {
         Row: {
           api_key_encrypted: string
+          base_url: string
           created_at: string
           enabled: boolean
           id: string
@@ -29,6 +30,7 @@ export type Database = {
         }
         Insert: {
           api_key_encrypted?: string
+          base_url?: string
           created_at?: string
           enabled?: boolean
           id?: string
@@ -41,6 +43,7 @@ export type Database = {
         }
         Update: {
           api_key_encrypted?: string
+          base_url?: string
           created_at?: string
           enabled?: boolean
           id?: string
