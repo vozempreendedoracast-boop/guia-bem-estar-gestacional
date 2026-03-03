@@ -253,7 +253,7 @@ const Admin = () => {
         common_symptoms: editingWeek.common_symptoms,
         tip: editingWeek.tip,
         reviewed: editingWeek.reviewed,
-        status: editingWeek.baby_development ? "draft" : "empty",
+        status: editingWeek.status === "published" ? "published" : (editingWeek.baby_development ? "draft" : "empty"),
         active: editingWeek.active,
         category_id: editingWeek.category_id,
       });

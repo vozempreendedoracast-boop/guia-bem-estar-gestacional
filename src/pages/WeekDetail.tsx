@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Baby, Heart, Warning, Lightbulb, Stethoscope, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
+import { useEffect } from "react";
 
 const WeekDetail = () => {
   const { week } = useParams();
@@ -13,8 +14,13 @@ const WeekDetail = () => {
   const weekNum = parseInt(week || "1");
   const { data, isLoading } = useWeekContent(weekNum);
 
+  useEffect(() => {
+    if (weekNum > currentWeek) {
+      navigate("/jornada", { replace: true });
+    }
+  }, [weekNum, currentWeek, navigate]);
+
   if (weekNum > currentWeek) {
-    navigate("/jornada");
     return null;
   }
 
