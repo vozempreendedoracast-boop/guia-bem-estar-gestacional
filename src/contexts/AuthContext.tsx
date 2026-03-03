@@ -18,7 +18,10 @@ interface AuthContextType {
   session: Session | null;
   userProfile: UserProfile | null;
   loading: boolean;
+  isAdmin: boolean;
   signInWithMagicLink: (email: string) => Promise<{ error: Error | null }>;
+  signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -30,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
@@ -38,6 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("user_id", userId)
       .single();
     if (data) setUserProfile(data as UserProfile);
+
+    // Check admin role
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    setIsAdmin(!!roleData);
   };
 
   useEffect(() => {
@@ -50,9 +63,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Use setTimeout to avoid Supabase deadlock
           setTimeout(() => fetchProfile(session.user.id), 0);
         } else {
-          setUserProfile(null);
-        }
-        setLoading(false);
+        setUserProfile(null);
+        setIsAdmin(false);
+      }
+      setLoading(false);
       }
     );
 
@@ -79,11 +93,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null };
   };
 
+  const signInWithPassword = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error as Error | null };
+  };
+
+  const signUp = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin + "/cadastro",
+      },
+    });
+    return { error: error as Error | null };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setUserProfile(null);
+    setIsAdmin(false);
   };
 
   const refreshProfile = async () => {
@@ -91,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, userProfile, loading, signInWithMagicLink, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, userProfile, loading, isAdmin, signInWithMagicLink, signInWithPassword, signUp, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
