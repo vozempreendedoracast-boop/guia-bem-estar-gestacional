@@ -18,7 +18,7 @@ const benefits = [
   "Reduz ansiedade e insegurança",
   "Organiza toda a sua jornada",
   "Apoio emocional contínuo",
-  "Comece a usar gratuitamente",
+  "A partir de R$ 47 (pagamento único)",
   "Funciona no celular e offline",
 ];
 
