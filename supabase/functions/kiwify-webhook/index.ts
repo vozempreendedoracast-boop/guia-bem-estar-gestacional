@@ -40,7 +40,7 @@ serve(async (req) => {
     // Validate webhook signature
     const webhookSecret = Deno.env.get("KIWIFY_WEBHOOK_SECRET");
     if (webhookSecret && signature) {
-      const expectedSig = hmac("sha256", webhookSecret, body, "utf8", "hex");
+      const expectedSig = await hmacSha256(webhookSecret, body);
       if (signature !== expectedSig) {
         console.error("Invalid webhook signature");
         return new Response(JSON.stringify({ error: "Invalid signature" }), {
