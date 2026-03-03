@@ -177,6 +177,8 @@ const Login = () => {
             </div>
           </form>
         )}
+
+        <div className="space-y-2">
           <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => navigate("/planos")}>
             Ainda não tem conta? Veja os planos
           </Button>
