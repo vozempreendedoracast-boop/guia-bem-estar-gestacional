@@ -42,13 +42,14 @@ const Sales = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Baby className="w-6 h-6 text-primary" />
-            <span className="font-display font-bold text-base sm:text-lg text-foreground">Minha Gestação</span>
+            <span className="font-display font-bold text-base sm:text-lg text-foreground">MamyBoo</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
             <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("features")}>Recursos</Button>
             <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("testimonials")}>Depoimentos</Button>
-            <Button size="sm" className="rounded-xl text-xs sm:text-sm" onClick={() => navigate("/cadastro")}>
-              Começar grátis
+            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/login")}>Entrar</Button>
+            <Button size="sm" className="rounded-xl text-xs sm:text-sm" onClick={() => navigate("/planos")}>
+              Ver planos
             </Button>
           </div>
         </div>
