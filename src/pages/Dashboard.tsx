@@ -1,4 +1,5 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useWeekContents, useCategories } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 const Dashboard = () => {
   const { profile, currentWeek, trimester, progressPercent, addMood, moods, logout } = usePregnancy();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
   const { data: weeks = [] } = useWeekContents();
   const { data: categories = [] } = useCategories();
@@ -77,7 +79,7 @@ const Dashboard = () => {
             <button onClick={() => navigate("/perfil")} className="w-12 h-12 rounded-full bg-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/30 transition-colors">
               <Baby className="w-6 h-6" />
             </button>
-            <Button variant="ghost" size="icon" className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={logout}>
+            <Button variant="ghost" size="icon" className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={() => { logout(); signOut(); }}>
               <SignOut className="w-4 h-4" />
             </Button>
           </div>

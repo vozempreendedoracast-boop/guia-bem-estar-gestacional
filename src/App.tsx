@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PregnancyProvider } from "@/contexts/PregnancyContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -15,6 +17,8 @@ import Health from "./pages/Health";
 import Diary from "./pages/Diary";
 import Assistant from "./pages/Assistant";
 import Sales from "./pages/Sales";
+import Plans from "./pages/Plans";
+import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -27,24 +31,31 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <PregnancyProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/cadastro" element={<Onboarding />} />
-            <Route path="/painel" element={<Dashboard />} />
-            <Route path="/jornada" element={<Journey />} />
-            <Route path="/jornada/:week" element={<WeekDetail />} />
-            <Route path="/sintomas" element={<Symptoms />} />
-            <Route path="/exercicios" element={<Exercises />} />
-            <Route path="/saude" element={<Health />} />
-            <Route path="/diario" element={<Diary />} />
-            <Route path="/assistente" element={<Assistant />} />
-            <Route path="/vendas" element={<Sales />} />
-            <Route path="/perfil" element={<Profile />} />
-            <Route path="/administracao" element={<Admin />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </PregnancyProvider>
+        <AuthProvider>
+          <PregnancyProvider>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/vendas" element={<Sales />} />
+              <Route path="/planos" element={<Plans />} />
+              <Route path="/login" element={<Login />} />
+
+              {/* Protected routes */}
+              <Route path="/cadastro" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+              <Route path="/painel" element={<ProtectedRoute requirePlan><Dashboard /></ProtectedRoute>} />
+              <Route path="/jornada" element={<ProtectedRoute requirePlan><Journey /></ProtectedRoute>} />
+              <Route path="/jornada/:week" element={<ProtectedRoute requirePlan><WeekDetail /></ProtectedRoute>} />
+              <Route path="/sintomas" element={<ProtectedRoute requirePlan><Symptoms /></ProtectedRoute>} />
+              <Route path="/exercicios" element={<ProtectedRoute requirePlan><Exercises /></ProtectedRoute>} />
+              <Route path="/saude" element={<ProtectedRoute requirePlan><Health /></ProtectedRoute>} />
+              <Route path="/diario" element={<ProtectedRoute requirePlan><Diary /></ProtectedRoute>} />
+              <Route path="/assistente" element={<ProtectedRoute requirePlan><Assistant /></ProtectedRoute>} />
+              <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/administracao" element={<Admin />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </PregnancyProvider>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

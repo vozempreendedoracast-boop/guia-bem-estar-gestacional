@@ -18,7 +18,7 @@ const benefits = [
   "Reduz ansiedade e insegurança",
   "Organiza toda a sua jornada",
   "Apoio emocional contínuo",
-  "Comece a usar gratuitamente",
+  "A partir de R$ 47 (pagamento único)",
   "Funciona no celular e offline",
 ];
 
@@ -42,13 +42,14 @@ const Sales = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Baby className="w-6 h-6 text-primary" />
-            <span className="font-display font-bold text-base sm:text-lg text-foreground">Minha Gestação</span>
+            <span className="font-display font-bold text-base sm:text-lg text-foreground">MamyBoo</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
             <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("features")}>Recursos</Button>
             <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("testimonials")}>Depoimentos</Button>
-            <Button size="sm" className="rounded-xl text-xs sm:text-sm" onClick={() => navigate("/cadastro")}>
-              Começar grátis
+            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/login")}>Entrar</Button>
+            <Button size="sm" className="rounded-xl text-xs sm:text-sm" onClick={() => navigate("/planos")}>
+              Ver planos
             </Button>
           </div>
         </div>
@@ -64,7 +65,7 @@ const Sales = () => {
             className="flex-1 text-center md:text-left"
           >
             <span className="inline-block bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full mb-4">
-              ✨ 100% Gratuito para começar
+              ✨ A partir de R$ 47 · Pagamento único
             </span>
             <h1 className="text-4xl md:text-5xl font-bold font-display text-foreground leading-tight">
               Sua companheira durante toda a
@@ -74,8 +75,8 @@ const Sales = () => {
               Informação personalizada, apoio emocional e acompanhamento semana a semana. Tudo que você precisa em um único app.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
-              <Button size="lg" className="rounded-xl text-base h-14 px-8" onClick={() => navigate("/cadastro")}>
-                Começar agora — É grátis
+              <Button size="lg" className="rounded-xl text-base h-14 px-8" onClick={() => navigate("/planos")}>
+                Ver planos e preços
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               <Button size="lg" variant="outline" className="rounded-xl text-base h-14 px-8" onClick={() => scrollToSection("features")}>
@@ -148,16 +149,16 @@ const Sales = () => {
       {/* CTA mid */}
       <section className="gradient-hero py-16">
         <div className="max-w-3xl mx-auto px-6 text-center text-primary-foreground">
-          <h2 className="text-3xl font-bold font-display">Comece agora, é grátis</h2>
+          <h2 className="text-3xl font-bold font-display">Comece sua jornada agora</h2>
           <p className="mt-3 opacity-90 max-w-lg mx-auto">
-            Junte-se a milhares de gestantes que já usam o Minha Gestação para se sentirem mais seguras e informadas.
+            Junte-se a milhares de gestantes que já usam o MamyBoo para se sentirem mais seguras e informadas.
           </p>
           <Button
             size="lg"
             className="mt-8 rounded-xl text-base h-14 px-10 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-            onClick={() => navigate("/cadastro")}
+            onClick={() => navigate("/planos")}
           >
-            Começar grátis agora
+            Ver planos e preços
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
@@ -201,10 +202,10 @@ const Sales = () => {
           <Baby className="w-12 h-12 text-primary mx-auto mb-4" />
           <h2 className="text-3xl font-bold font-display text-foreground">Pronta para começar?</h2>
           <p className="text-muted-foreground mt-3 max-w-md mx-auto">
-            Crie sua conta gratuita em menos de 2 minutos e comece a acompanhar sua gestação com carinho e segurança.
+            Escolha seu plano e comece a acompanhar sua gestação com carinho e segurança.
           </p>
-          <Button size="lg" className="mt-8 rounded-xl text-base h-14 px-10" onClick={() => navigate("/cadastro")}>
-            Criar conta grátis
+          <Button size="lg" className="mt-8 rounded-xl text-base h-14 px-10" onClick={() => navigate("/planos")}>
+            Ver planos
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
           <p className="text-xs text-muted-foreground/60 mt-4">
@@ -218,9 +219,9 @@ const Sales = () => {
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Baby className="w-5 h-5 text-primary" />
-            <span className="font-display font-semibold text-foreground">Minha Gestação</span>
+            <span className="font-display font-semibold text-foreground">MamyBoo</span>
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 Minha Gestação. Todos os direitos reservados.</p>
+          <p className="text-xs text-muted-foreground">© 2026 MamyBoo. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

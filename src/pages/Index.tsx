@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -6,12 +7,18 @@ import { Heart, Baby, Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  const { user, loading } = useAuth();
   const { isOnboarded } = usePregnancy();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isOnboarded) navigate("/painel");
-  }, [isOnboarded, navigate]);
+    if (loading) return;
+    if (user && isOnboarded) {
+      navigate("/painel");
+    } else if (user) {
+      navigate("/cadastro");
+    }
+  }, [user, isOnboarded, navigate, loading]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
@@ -30,7 +37,7 @@ const Index = () => {
 
         <div className="space-y-3">
           <h1 className="text-3xl font-bold font-display text-foreground">
-            Minha Gestação
+            MamyBoo
           </h1>
           <p className="text-muted-foreground leading-relaxed">
             Sua companheira durante toda a jornada da gravidez. Informação certa, no momento certo. 💕
@@ -52,12 +59,21 @@ const Index = () => {
           </div>
         </div>
 
-        <Button
-          onClick={() => navigate("/cadastro")}
-          className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
-        >
-          Começar agora
-        </Button>
+        <div className="space-y-3">
+          <Button
+            onClick={() => navigate("/planos")}
+            className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
+          >
+            Começar agora
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/login")}
+            className="w-full h-12 rounded-xl"
+          >
+            Já tenho conta
+          </Button>
+        </div>
 
         <p className="text-xs text-muted-foreground/50">
           Este app não substitui acompanhamento médico.
