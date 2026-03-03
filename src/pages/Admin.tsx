@@ -828,7 +828,7 @@ const Admin = () => {
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="rounded-xl" onClick={() => openSetting(s.type)}>
-                      <Edit className="w-3.5 h-3.5 mr-1" /> Editar
+                      <PencilSimple className="w-3.5 h-3.5 mr-1" /> Editar
                     </Button>
                   </div>
                 </div>
@@ -862,7 +862,7 @@ const Admin = () => {
               </div>
               <div className="flex gap-2 pt-2">
                 <Button className="flex-1 rounded-xl" onClick={handleSaveCard} disabled={updateCategory.isPending}>
-                  {updateCategory.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Salvar
+                  {updateCategory.isPending ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
                 </Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditCardOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
@@ -891,7 +891,7 @@ const Admin = () => {
             </div>
             <div className="flex gap-2 pt-2">
               <Button className="flex-1 rounded-xl" onClick={handleCreateCard} disabled={createCategory.isPending}>
-                {createCategory.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />} Criar Card
+                {createCategory.isPending ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />} Criar Card
               </Button>
               <Button variant="outline" className="rounded-xl" onClick={() => setNewCardOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
             </div>
@@ -963,7 +963,7 @@ const Admin = () => {
               </div>
               <div className="flex gap-2 pt-2">
                 <Button className="flex-1 rounded-xl" onClick={handleSaveWeek} disabled={updateWeek.isPending}>
-                  {updateWeek.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Salvar
+                  {updateWeek.isPending ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
                 </Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditWeekOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
@@ -1031,7 +1031,7 @@ const Admin = () => {
                 </div>
               )}
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 rounded-xl" onClick={handleSaveSymptom}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSaveSymptom}><FloppyDisk className="w-4 h-4 mr-2" /> Salvar</Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditSymptomOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
             </div>
@@ -1093,7 +1093,7 @@ const Admin = () => {
                 </div>
               )}
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 rounded-xl" onClick={handleSaveExercise}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSaveExercise}><FloppyDisk className="w-4 h-4 mr-2" /> Salvar</Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditExerciseOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
             </div>
@@ -1137,7 +1137,7 @@ const Admin = () => {
                 </div>
               )}
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 rounded-xl" onClick={handleSaveHealthTip}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSaveHealthTip}><FloppyDisk className="w-4 h-4 mr-2" /> Salvar</Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditHealthTipOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
             </div>
@@ -1174,7 +1174,7 @@ const Admin = () => {
                 </div>
               )}
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 rounded-xl" onClick={handleSaveTip}><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSaveTip}><FloppyDisk className="w-4 h-4 mr-2" /> Salvar</Button>
                 <Button variant="outline" className="rounded-xl" onClick={() => setEditTipOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
               </div>
             </div>
@@ -1270,7 +1270,7 @@ const Admin = () => {
             )}
             <div className="flex gap-2 pt-2">
               <Button className="flex-1 rounded-xl" onClick={() => editSettingType === "integrations" ? handleSaveAiSettings() : setEditSettingOpen(false)} disabled={aiLoading}>
-                {aiLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Salvar
+                {aiLoading ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
               </Button>
               <Button variant="outline" className="rounded-xl" onClick={() => setEditSettingOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
             </div>
