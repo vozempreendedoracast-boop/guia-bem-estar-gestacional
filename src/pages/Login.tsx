@@ -1,20 +1,37 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Baby, EnvelopeSimple, ArrowRight, SpinnerGap, CheckCircle } from "@phosphor-icons/react";
+import { Baby, EnvelopeSimple, ArrowRight, SpinnerGap, CheckCircle, Lock, Eye, EyeSlash } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+type AuthMode = "login" | "magic" | "magic-sent";
+
 const Login = () => {
   const navigate = useNavigate();
-  const { signInWithMagicLink } = useAuth();
+  const { signInWithMagicLink, signInWithPassword } = useAuth();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [mode, setMode] = useState<AuthMode>("login");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) return;
+    setLoading(true);
+    const { error } = await signInWithPassword(email.trim(), password.trim());
+    setLoading(false);
+    if (error) {
+      toast.error("Email ou senha incorretos.");
+    } else {
+      navigate("/painel");
+    }
+  };
+
+  const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
@@ -23,7 +40,7 @@ const Login = () => {
     if (error) {
       toast.error("Erro ao enviar link. Tente novamente.");
     } else {
-      setSent(true);
+      setMode("magic-sent");
     }
   };
 
@@ -44,16 +61,18 @@ const Login = () => {
 
         <div className="space-y-2">
           <h1 className="text-2xl font-bold font-display text-foreground">
-            {sent ? "Link enviado! ✨" : "Entrar no MamyBoo"}
+            {mode === "magic-sent" ? "Link enviado! ✨" : "Entrar no MamyBoo"}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {sent
+            {mode === "magic-sent"
               ? `Enviamos um link mágico para ${email}. Verifique sua caixa de entrada e spam.`
-              : "Digite seu email para receber um link de acesso seguro."}
+              : mode === "magic"
+              ? "Digite seu email para receber um link de acesso seguro."
+              : "Entre com seu email e senha."}
           </p>
         </div>
 
-        {sent ? (
+        {mode === "magic-sent" ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -62,12 +81,12 @@ const Login = () => {
             <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center">
               <CheckCircle className="w-8 h-8 text-accent-foreground" />
             </div>
-            <Button variant="outline" className="rounded-xl" onClick={() => { setSent(false); setEmail(""); }}>
-              Usar outro email
+            <Button variant="outline" className="rounded-xl" onClick={() => { setMode("login"); setEmail(""); }}>
+              Voltar ao login
             </Button>
           </motion.div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+        ) : mode === "magic" ? (
+          <form onSubmit={handleMagicLink} className="space-y-4">
             <div className="relative">
               <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -85,11 +104,55 @@ const Login = () => {
               className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
             >
               {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (
-                <>
-                  Enviar link de acesso
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </>
+                <>Enviar link mágico <ArrowRight className="w-5 h-5 ml-2" /></>
               )}
+            </Button>
+            <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("login")}>
+              Entrar com senha
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handlePasswordLogin} className="space-y-4">
+            <div className="relative">
+              <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="h-14 rounded-xl pl-10 text-base border-2 border-muted focus:border-primary"
+                required
+              />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Sua senha"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="h-14 rounded-xl pl-10 pr-12 text-base border-2 border-muted focus:border-primary"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            <Button
+              type="submit"
+              disabled={loading || !email.trim() || !password.trim()}
+              className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
+            >
+              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (
+                <>Entrar <ArrowRight className="w-5 h-5 ml-2" /></>
+              )}
+            </Button>
+            <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("magic")}>
+              Entrar com link mágico
             </Button>
           </form>
         )}

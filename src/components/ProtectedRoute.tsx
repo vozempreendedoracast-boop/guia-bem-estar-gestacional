@@ -5,10 +5,11 @@ import { SpinnerGap } from "@phosphor-icons/react";
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requirePlan?: boolean;
+  requireAdmin?: boolean;
 }
 
-const ProtectedRoute = ({ children, requirePlan = false }: ProtectedRouteProps) => {
-  const { user, userProfile, loading } = useAuth();
+const ProtectedRoute = ({ children, requirePlan = false, requireAdmin = false }: ProtectedRouteProps) => {
+  const { user, userProfile, loading, isAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -22,7 +23,10 @@ const ProtectedRoute = ({ children, requirePlan = false }: ProtectedRouteProps) 
     return <Navigate to="/login" replace />;
   }
 
-  // Check if user has an active plan when required
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/painel" replace />;
+  }
+
   if (requirePlan && userProfile) {
     const hasActivePlan = userProfile.plan !== "none" && userProfile.plan_status === "active";
     if (!hasActivePlan) {

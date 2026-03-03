@@ -51,7 +51,7 @@ const App = () => (
               <Route path="/diario" element={<ProtectedRoute requirePlan><Diary /></ProtectedRoute>} />
               <Route path="/assistente" element={<ProtectedRoute requirePlan><Assistant /></ProtectedRoute>} />
               <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/administracao" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+              <Route path="/administracao" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </PregnancyProvider>
