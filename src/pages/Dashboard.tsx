@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Baby, BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import WeekIcon from "@/components/WeekIcon";
+import { getWeekEmoji } from "@/data/weeks";
 import { useState } from "react";
 
 import cardJourney from "@/assets/card-journey.png";
@@ -108,8 +108,8 @@ const Dashboard = () => {
             className="mt-5 bg-primary-foreground/10 rounded-2xl p-4 backdrop-blur-sm"
           >
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-xl bg-primary-foreground/20 flex items-center justify-center backdrop-blur-sm text-primary-foreground">
-                <WeekIcon week={currentWeek} size={36} />
+              <div className="w-14 h-14 rounded-xl bg-primary-foreground/20 flex items-center justify-center text-3xl backdrop-blur-sm">
+                {getWeekEmoji(currentWeek)}
               </div>
               <div>
                 <p className="font-semibold text-sm">Seu bebê tem ~{weekData.baby_size}</p>

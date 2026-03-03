@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock, CaretRight, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import WeekIcon from "@/components/WeekIcon";
+import { getWeekEmoji } from "@/data/weeks";
 
 const Journey = () => {
   const { currentWeek } = usePregnancy();
@@ -63,8 +63,8 @@ const Journey = () => {
                         : "border-border/50 bg-muted/30 opacity-50"
                     }`}
                   >
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
-                      <WeekIcon week={week.week_number} size={28} />
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl flex-shrink-0">
+                      {getWeekEmoji(week.week_number)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm">
