@@ -2,7 +2,7 @@ import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart, Baby, Sparkles } from "lucide-react";
+import { Heart, Baby, Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
@@ -43,7 +43,7 @@ const Index = () => {
             <span className="text-xs">Acolhimento</span>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <Sparkles className="w-5 h-5 text-primary" />
+            <Sparkle className="w-5 h-5 text-primary" />
             <span className="text-xs">Personalizado</span>
           </div>
           <div className="flex flex-col items-center gap-1">

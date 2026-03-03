@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useActiveExercises } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
-import { ArrowLeft, Dumbbell, Loader2 } from "lucide-react";
+import { ArrowLeft, Barbell, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 const Exercises = () => {
@@ -16,7 +16,7 @@ const Exercises = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <SpinnerGap className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -48,7 +48,7 @@ const Exercises = () => {
           >
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl gradient-sage flex items-center justify-center">
-                <Dumbbell className="w-5 h-5 text-foreground/70" />
+                <Barbell className="w-5 h-5 text-foreground/70" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-sm">{ex.name}</p>

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Smile, TrendingUp, Calendar } from "lucide-react";
+import { ArrowLeft, Smiley, TrendUp, CalendarBlank } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -32,7 +32,7 @@ const Diary = () => {
         {/* Quick mood */}
         <div className="bg-card rounded-2xl p-5 shadow-card border border-border">
           <h2 className="font-semibold mb-4 flex items-center gap-2">
-            <Smile className="w-5 h-5 text-primary" /> Registrar humor agora
+            <Smiley className="w-5 h-5 text-primary" /> Registrar humor agora
           </h2>
           <div className="flex justify-around">
             {moodEmojis.map((emoji, i) => (
@@ -47,12 +47,12 @@ const Diary = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-card rounded-2xl p-4 shadow-card border border-border text-center">
-            <TrendingUp className="w-5 h-5 text-primary mx-auto mb-2" />
+            <TrendUp className="w-5 h-5 text-primary mx-auto mb-2" />
             <p className="text-2xl font-bold">{avgMood}</p>
             <p className="text-xs text-muted-foreground">Humor médio</p>
           </div>
           <div className="bg-card rounded-2xl p-4 shadow-card border border-border text-center">
-            <Calendar className="w-5 h-5 text-primary mx-auto mb-2" />
+            <CalendarBlank className="w-5 h-5 text-primary mx-auto mb-2" />
             <p className="text-2xl font-bold">{moods.length}</p>
             <p className="text-xs text-muted-foreground">Registros</p>
           </div>
@@ -63,7 +63,7 @@ const Diary = () => {
           <h2 className="font-semibold text-sm text-muted-foreground mb-3">Histórico</h2>
           {sortedMoods.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Smile className="w-10 h-10 mx-auto mb-2 opacity-30" />
+              <Smiley className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p className="text-sm">Nenhum registro ainda</p>
               <p className="text-xs">Registre seu humor acima!</p>
             </div>

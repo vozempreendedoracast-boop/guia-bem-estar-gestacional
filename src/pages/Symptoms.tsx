@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useActiveSymptoms, type SymptomRow } from "@/hooks/useSupabaseData";
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Search, AlertCircle, AlertTriangle, Info, Loader2 } from "lucide-react";
+import { ArrowLeft, MagnifyingGlass, WarningCircle, Warning, Info, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const alertConfig = {
   low: { icon: Info, color: "bg-sage", textColor: "text-sage-foreground", label: "Baixo" },
-  moderate: { icon: AlertCircle, color: "bg-warm-orange/20", textColor: "text-warm-orange-foreground", label: "Moderado" },
-  high: { icon: AlertTriangle, color: "bg-destructive/10", textColor: "text-destructive", label: "Alto" },
+  moderate: { icon: WarningCircle, color: "bg-warm-orange/20", textColor: "text-warm-orange-foreground", label: "Moderado" },
+  high: { icon: Warning, color: "bg-destructive/10", textColor: "text-destructive", label: "Alto" },
 };
 
 const Symptoms = () => {
@@ -31,7 +31,7 @@ const Symptoms = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <SpinnerGap className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -47,7 +47,7 @@ const Symptoms = () => {
 
       <div className="px-6 space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar sintoma..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 h-12 rounded-xl" />
         </div>
 

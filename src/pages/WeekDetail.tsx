@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useWeekContent } from "@/hooks/useSupabaseData";
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Baby, Heart, AlertTriangle, Lightbulb, Stethoscope, Loader2 } from "lucide-react";
+import { ArrowLeft, Baby, Heart, Warning, Lightbulb, Stethoscope, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
 
@@ -21,7 +21,7 @@ const WeekDetail = () => {
   if (isLoading || !data) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <SpinnerGap className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -80,7 +80,7 @@ const WeekDetail = () => {
           >
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl bg-warm-orange/30 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-warm-orange-foreground" />
+                <Warning className="w-5 h-5 text-warm-orange-foreground" />
               </div>
               <h2 className="font-semibold">Alertas importantes</h2>
             </div>

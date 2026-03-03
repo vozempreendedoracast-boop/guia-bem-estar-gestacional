@@ -1,6 +1,6 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Baby, Calendar, Heart, Briefcase, Stethoscope, User, Mail, Phone } from "lucide-react";
+import { ArrowLeft, Baby, CalendarBlank, Heart, Briefcase, Stethoscope, User, EnvelopeSimple, Phone } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,7 +115,7 @@ const Profile = () => {
 
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-lilac flex items-center justify-center flex-shrink-0">
-                <Mail className="w-4 h-4 text-lilac-foreground" />
+                <EnvelopeSimple className="w-4 h-4 text-lilac-foreground" />
               </div>
               {editing ? (
                 <div className="flex-1">
@@ -163,7 +163,7 @@ const Profile = () => {
           <h3 className="font-semibold text-sm">Dados da Gestação</h3>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { icon: Calendar, label: "Data prevista", value: dueDate.toLocaleDateString("pt-BR"), bg: "bg-peach", color: "text-peach-foreground" },
+              { icon: CalendarBlank, label: "Data prevista", value: dueDate.toLocaleDateString("pt-BR"), bg: "bg-peach", color: "text-peach-foreground" },
               { icon: Baby, label: "Idade", value: `${profile.age} anos`, bg: "bg-lilac", color: "text-lilac-foreground" },
               { icon: Heart, label: "Primeira gestação", value: profile.firstPregnancy ? "Sim" : "Não", bg: "bg-sage", color: "text-sage-foreground" },
               { icon: Briefcase, label: "Trabalhando", value: profile.working ? "Sim" : "Não", bg: "bg-peach", color: "text-peach-foreground" },

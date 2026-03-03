@@ -2,7 +2,7 @@ import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useWeekContents } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Lock, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, Lock, CaretRight, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
 
@@ -24,7 +24,7 @@ const Journey = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <SpinnerGap className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -74,7 +74,7 @@ const Journey = () => {
                       <p className="text-xs text-muted-foreground truncate">{week.baby_size_comparison} · {week.baby_size}</p>
                     </div>
                     {isUnlocked ? (
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      <CaretRight className="w-4 h-4 text-muted-foreground" />
                     ) : (
                       <Lock className="w-4 h-4 text-muted-foreground/50" />
                     )}
