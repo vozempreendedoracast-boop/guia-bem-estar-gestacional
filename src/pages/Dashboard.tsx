@@ -1,4 +1,5 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useWeekContents, useCategories } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
