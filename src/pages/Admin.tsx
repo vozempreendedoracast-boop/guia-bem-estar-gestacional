@@ -1439,6 +1439,97 @@ const Admin = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={editUserOpen} onOpenChange={setEditUserOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Usuária</DialogTitle>
+            <DialogDescription>Altere o plano ou status desta usuária.</DialogDescription>
+          </DialogHeader>
+          {editingUser && (
+            <div className="space-y-4 mt-2">
+              <div>
+                <Label className="text-sm font-medium">Email</Label>
+                <Input value={editingUser.email || ""} disabled className="mt-1 rounded-xl opacity-60" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Plano</Label>
+                <select
+                  value={editingUser.plan || "none"}
+                  onChange={e => setEditingUser({ ...editingUser, plan: e.target.value as any })}
+                  className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                >
+                  <option value="none">Sem plano</option>
+                  <option value="essential">Essencial</option>
+                  <option value="premium">Premium</option>
+                </select>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Status</Label>
+                <select
+                  value={editingUser.plan_status || "none"}
+                  onChange={e => setEditingUser({ ...editingUser, plan_status: e.target.value as any })}
+                  className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                >
+                  <option value="none">Inativo</option>
+                  <option value="active">Ativo</option>
+                  <option value="expired">Expirado</option>
+                </select>
+              </div>
+              {editingUser.purchased_at && (
+                <p className="text-xs text-muted-foreground">Compra: {new Date(editingUser.purchased_at).toLocaleDateString("pt-BR")}</p>
+              )}
+              {editingUser.expires_at && (
+                <p className="text-xs text-muted-foreground">Expira: {new Date(editingUser.expires_at).toLocaleDateString("pt-BR")}</p>
+              )}
+              {editingUser.kiwify_order_id && (
+                <p className="text-xs text-muted-foreground">Kiwify: {editingUser.kiwify_order_id}</p>
+              )}
+              <div className="flex gap-2 pt-2">
+                <Button className="flex-1 rounded-xl" onClick={handleUpdateUser} disabled={userActionLoading}>
+                  {userActionLoading ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => setEditUserOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* New User Dialog */}
+      <Dialog open={newUserOpen} onOpenChange={setNewUserOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nova Usuária</DialogTitle>
+            <DialogDescription>Crie uma conta manualmente com o plano desejado.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label className="text-sm font-medium">Email</Label>
+              <Input value={newUserData.email} onChange={e => setNewUserData({ ...newUserData, email: e.target.value })} className="mt-1 rounded-xl" placeholder="email@exemplo.com" />
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Plano</Label>
+              <select
+                value={newUserData.plan}
+                onChange={e => setNewUserData({ ...newUserData, plan: e.target.value, plan_status: e.target.value !== "none" ? "active" : "none" })}
+                className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+              >
+                <option value="none">Sem plano</option>
+                <option value="essential">Essencial (R$ 47)</option>
+                <option value="premium">Premium (R$ 97)</option>
+              </select>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button className="flex-1 rounded-xl" onClick={handleCreateUser} disabled={userActionLoading || !newUserData.email}>
+                {userActionLoading ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />} Criar Usuária
+              </Button>
+              <Button variant="outline" className="rounded-xl" onClick={() => setNewUserOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
