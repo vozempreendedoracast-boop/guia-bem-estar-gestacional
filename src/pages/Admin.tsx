@@ -1224,35 +1224,28 @@ const Admin = () => {
                 <div className="bg-muted/50 rounded-xl p-4 space-y-1">
                   <p className="text-xs font-semibold text-foreground">💡 Como funciona?</p>
                   <p className="text-xs text-muted-foreground">
-                    <strong>Lovable IA</strong>: usa o gateway integrado, sem necessidade de chave externa. 
-                    <strong>OpenRouter</strong>: cole sua chave de API obtida em openrouter.ai/keys.
+                    A IA usa <strong>OpenRouter</strong> como provedor principal. Se falhar (créditos esgotados, erro etc.), 
+                    o <strong>Lovable IA</strong> entra automaticamente como fallback.
                   </p>
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium">Provedor</Label>
-                  <select value={aiSettings.provider} onChange={e => setAiSettings({ ...aiSettings, provider: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
-                    <option value="lovable">Lovable IA (recomendado)</option>
-                    <option value="openrouter">OpenRouter</option>
+                  <Label className="text-sm font-medium">API Key (OpenRouter)</Label>
+                  <Input type="password" value={aiSettings.api_key_encrypted} onChange={e => setAiSettings({ ...aiSettings, api_key_encrypted: e.target.value })} className="mt-1 rounded-xl" placeholder="Cole sua chave OpenRouter aqui" />
+                  <p className="text-[10px] text-muted-foreground mt-1">Obtenha em: openrouter.ai/keys</p>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Modelo (OpenRouter)</Label>
+                  <select value={aiSettings.model} onChange={e => setAiSettings({ ...aiSettings, model: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
+                    <option value="google/gemini-2.5-flash-lite">Gemini 2.5 Flash Lite (mais barato)</option>
+                    <option value="google/gemini-2.5-flash">Gemini 2.5 Flash (equilibrado)</option>
+                    <option value="google/gemini-2.5-pro">Gemini 2.5 Pro (mais inteligente)</option>
+                    <option value="google/gemini-3-flash-preview">Gemini 3 Flash Preview</option>
+                    <option value="meta-llama/llama-4-scout">Llama 4 Scout</option>
+                    <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
                   </select>
-                </div>
-
-                {aiSettings.provider === "openrouter" && (
-                  <div>
-                    <Label className="text-sm font-medium">API Key (OpenRouter)</Label>
-                    <Input type="password" value={aiSettings.api_key_encrypted} onChange={e => setAiSettings({ ...aiSettings, api_key_encrypted: e.target.value })} className="mt-1 rounded-xl" placeholder="Cole sua chave OpenRouter aqui" />
-                    <p className="text-[10px] text-muted-foreground mt-1">Obtenha em: openrouter.ai/keys</p>
-                  </div>
-                )}
-
-                <div>
-                  <Label className="text-sm font-medium">Modelo</Label>
-                  <Input value={aiSettings.model} onChange={e => setAiSettings({ ...aiSettings, model: e.target.value })} className="mt-1 rounded-xl" placeholder={
-                    aiSettings.provider === "lovable" ? "google/gemini-3-flash-preview" : "google/gemini-2.5-flash-lite"
-                  } />
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {aiSettings.provider === "lovable" ? "Modelos: google/gemini-3-flash-preview, google/gemini-2.5-flash, openai/gpt-5-mini" : "Use o formato provedor/modelo. Ex: google/gemini-2.5-flash-lite"}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">O modelo do fallback (Lovable IA) é selecionado automaticamente.</p>
                 </div>
 
                 <div>

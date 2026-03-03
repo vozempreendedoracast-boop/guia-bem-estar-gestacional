@@ -29,8 +29,7 @@ serve(async (req) => {
       });
     }
 
-    const provider = settings?.provider || "lovable";
-    const model = settings?.model || "google/gemini-3-flash-preview";
+    const model = settings?.model || "google/gemini-2.5-flash-lite";
     const temperature = settings?.temperature ?? 0.7;
     const maxTokens = settings?.max_tokens ?? 1024;
 
@@ -39,78 +38,83 @@ serve(async (req) => {
       systemPrompt += `\n\nContexto da gestante: nome "${context.name || 'não informado'}", semana ${context.week || '?'}, ${context.trimester || '?'}° trimestre.`;
     }
 
-    let apiUrl: string;
-    let headers: Record<string, string>;
-    let body: string;
+    const openaiMessages = [{ role: "system", content: systemPrompt }, ...messages];
 
-    if (provider === "lovable") {
-      // Lovable AI Gateway
-      const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-      if (!lovableKey) {
-        return new Response(JSON.stringify({ error: "LOVABLE_API_KEY não configurada." }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // --- Try OpenRouter first ---
+    const openrouterKey = settings?.api_key_encrypted || "";
+    if (openrouterKey) {
+      console.log(`Chat request → trying OpenRouter first, model: ${model}`);
+      try {
+        const orResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${openrouterKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ model, messages: openaiMessages, temperature, max_tokens: maxTokens }),
         });
+
+        if (orResponse.ok) {
+          const data = await orResponse.json();
+          const content = data.choices?.[0]?.message?.content || "Desculpe, não consegui gerar uma resposta.";
+          return new Response(JSON.stringify({ content, provider: "openrouter" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const errorText = await orResponse.text();
+        console.error(`OpenRouter failed (${orResponse.status}):`, errorText);
+
+        // If auth error, don't fallback — it's a config issue
+        if (orResponse.status === 401 || orResponse.status === 403) {
+          return new Response(JSON.stringify({ error: "Chave OpenRouter inválida. Verifique no painel admin." }), {
+            status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Rate limit or credits exhausted → fallback to Lovable IA
+        console.log("OpenRouter unavailable, falling back to Lovable IA...");
+      } catch (e) {
+        console.error("OpenRouter network error:", e);
+        console.log("Falling back to Lovable IA...");
       }
-      apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
-      headers = { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" };
-      body = JSON.stringify({
-        model: model || "google/gemini-3-flash-preview",
-        messages: [{ role: "system", content: systemPrompt }, ...messages],
-        temperature,
-        max_tokens: maxTokens,
-      });
-    } else {
-      // OpenRouter
-      const apiKey = settings?.api_key_encrypted || "";
-      if (!apiKey) {
-        return new Response(JSON.stringify({ error: "Nenhuma chave de API configurada. Adicione sua chave OpenRouter no painel admin." }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      apiUrl = "https://openrouter.ai/api/v1/chat/completions";
-      headers = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
-      body = JSON.stringify({
-        model: model || "google/gemini-2.5-flash-lite",
-        messages: [{ role: "system", content: systemPrompt }, ...messages],
-        temperature,
-        max_tokens: maxTokens,
-      });
     }
 
-    console.log(`Chat request → provider: ${provider}, model: ${model}, url: ${apiUrl}`);
-
-    const response = await fetch(apiUrl, { method: "POST", headers, body });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`API error (${provider}): ${response.status}`, errorText);
-
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Aguarde alguns instantes e tente novamente." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao seu workspace." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 401 || response.status === 403) {
-        return new Response(JSON.stringify({ error: "Chave de API inválida ou sem permissão. Verifique sua chave no painel admin." }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: `Erro na API (${response.status}). Verifique sua chave e modelo configurados.` }), {
+    // --- Fallback: Lovable IA ---
+    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!lovableKey) {
+      return new Response(JSON.stringify({ error: "OpenRouter falhou e LOVABLE_API_KEY não está configurada como fallback." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const data = await response.json();
-    const assistantContent = data.choices?.[0]?.message?.content || "Desculpe, não consegui gerar uma resposta.";
+    console.log("Chat request → using Lovable IA fallback, model: google/gemini-3-flash-preview");
+    const lovResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: openaiMessages, temperature, max_tokens: maxTokens }),
+    });
 
-    return new Response(JSON.stringify({ content: assistantContent, provider }), {
+    if (!lovResponse.ok) {
+      const errText = await lovResponse.text();
+      console.error(`Lovable IA fallback failed (${lovResponse.status}):`, errText);
+
+      if (lovResponse.status === 429) {
+        return new Response(JSON.stringify({ error: "Limite de requisições excedido em ambos os provedores. Tente novamente em instantes." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (lovResponse.status === 402) {
+        return new Response(JSON.stringify({ error: "Créditos insuficientes em ambos os provedores." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ error: `Erro no fallback Lovable IA (${lovResponse.status}).` }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const lovData = await lovResponse.json();
+    const content = lovData.choices?.[0]?.message?.content || "Desculpe, não consegui gerar uma resposta.";
+
+    return new Response(JSON.stringify({ content, provider: "lovable (fallback)" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
