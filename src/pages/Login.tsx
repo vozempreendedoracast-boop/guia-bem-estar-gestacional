@@ -1,18 +1,33 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Baby, EnvelopeSimple, ArrowRight, SpinnerGap, CheckCircle, Lock, Eye, EyeSlash } from "@phosphor-icons/react";
+import { Baby, EnvelopeSimple, ArrowRight, SpinnerGap, Lock, Eye, EyeSlash } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type AuthMode = "login" | "signup" | "magic" | "magic-sent";
+type AuthMode = "login" | "signup";
+
+const parseAuthErrorMessage = (error: unknown, fallback: string) => {
+  const message = String((error as { message?: string } | null)?.message ?? "").toLowerCase();
+
+  if (
+    message.includes("over_email_send_rate_limit") ||
+    message.includes("rate limit") ||
+    message.includes("429")
+  ) {
+    return "Muitas tentativas de envio. Aguarde 60 segundos e tente novamente.";
+  }
+
+  return fallback;
+};
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signInWithMagicLink, signInWithPassword, signUp } = useAuth();
+  const { signInWithPassword, signUp } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,16 +35,17 @@ const Login = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
+  const [recoveryCooldownUntil, setRecoveryCooldownUntil] = useState<number>(0);
 
   const getPostLoginRoute = async (userId: string) => {
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
+    const { data: adminData, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
 
-    return roleData ? "/administracao" : "/painel";
+    if (error) {
+      console.error("Erro ao validar role admin:", error);
+      return "/painel";
+    }
+
+    return adminData ? "/administracao" : "/painel";
   };
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
@@ -38,6 +54,7 @@ const Login = () => {
 
     setLoading(true);
     const { error, user } = await signInWithPassword(email.trim(), password.trim());
+
     if (error || !user) {
       setLoading(false);
       toast.error("Email ou senha incorretos.");
@@ -79,17 +96,37 @@ const Login = () => {
     setMode("login");
   };
 
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setLoading(true);
-    const { error } = await signInWithMagicLink(email.trim());
-    setLoading(false);
-    if (error) {
-      toast.error("Erro ao enviar link. Tente novamente.");
-    } else {
-      setMode("magic-sent");
+  const handleForgotPassword = async () => {
+    const now = Date.now();
+
+    if (!email.trim()) {
+      toast.error("Digite seu email primeiro para recuperar a senha.");
+      return;
     }
+
+    if (now < recoveryCooldownUntil) {
+      const remainingSeconds = Math.ceil((recoveryCooldownUntil - now) / 1000);
+      toast.error(`Aguarde ${remainingSeconds}s para tentar enviar novamente.`);
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+
+    if (error) {
+      const message = parseAuthErrorMessage(error, "Erro ao enviar email de recuperação.");
+      if (message.includes("Aguarde 60 segundos")) {
+        setRecoveryCooldownUntil(Date.now() + 60_000);
+      }
+      toast.error(message);
+      return;
+    }
+
+    toast.success("Email de recuperação enviado! Verifique sua caixa de entrada.");
+    setRecoveryCooldownUntil(Date.now() + 60_000);
   };
 
   return (
@@ -109,59 +146,16 @@ const Login = () => {
 
         <div className="space-y-2">
           <h1 className="text-2xl font-bold font-display text-foreground">
-            {mode === "magic-sent" ? "Link enviado! ✨" : mode === "signup" ? "Criar conta" : "Entrar no MamyBoo"}
+            {mode === "signup" ? "Criar conta" : "Entrar no MamyBoo"}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {mode === "magic-sent"
-              ? `Enviamos um link mágico para ${email}. Verifique sua caixa de entrada e spam.`
-              : mode === "magic"
-              ? "Digite seu email para receber um link de acesso seguro."
-              : mode === "signup"
+            {mode === "signup"
               ? "Cadastre-se com email e senha para acessar o app."
               : "Entre com seu email e senha."}
           </p>
         </div>
 
-        {mode === "magic-sent" ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center gap-4"
-          >
-            <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center">
-              <CheckCircle className="w-8 h-8 text-accent-foreground" />
-            </div>
-            <Button variant="outline" className="rounded-xl" onClick={() => { setMode("login"); setEmail(""); }}>
-              Voltar ao login
-            </Button>
-          </motion.div>
-        ) : mode === "magic" ? (
-          <form onSubmit={handleMagicLink} className="space-y-4">
-            <div className="relative">
-              <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="h-14 rounded-xl pl-10 text-base border-2 border-muted focus:border-primary"
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={loading || !email.trim()}
-              className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
-            >
-              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (
-                <>Enviar link mágico <ArrowRight className="w-5 h-5 ml-2" /></>
-              )}
-            </Button>
-            <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("login")}>
-              Entrar com senha
-            </Button>
-          </form>
-        ) : mode === "signup" ? (
+        {mode === "signup" ? (
           <form onSubmit={handleSignUpWithPassword} className="space-y-4">
             <div className="relative">
               <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -174,6 +168,7 @@ const Login = () => {
                 required
               />
             </div>
+
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -192,6 +187,7 @@ const Login = () => {
                 {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -210,6 +206,7 @@ const Login = () => {
                 {showConfirmPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+
             <Button
               type="submit"
               disabled={loading || !email.trim() || !password.trim() || !confirmPassword.trim()}
@@ -219,7 +216,13 @@ const Login = () => {
                 <>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>
               )}
             </Button>
-            <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("login")}>
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-sm text-muted-foreground"
+              onClick={() => setMode("login")}
+            >
               Já tenho conta
             </Button>
           </form>
@@ -236,6 +239,7 @@ const Login = () => {
                 required
               />
             </div>
+
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -254,6 +258,7 @@ const Login = () => {
                 {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+
             <Button
               type="submit"
               disabled={loading || !email.trim() || !password.trim()}
@@ -263,40 +268,35 @@ const Login = () => {
                 <>Entrar <ArrowRight className="w-5 h-5 ml-2" /></>
               )}
             </Button>
+
             <div className="flex flex-col gap-2">
-              <Button variant="ghost" className="text-sm text-muted-foreground" onClick={async () => {
-                if (!email.trim()) {
-                  toast.error("Digite seu email primeiro para recuperar a senha.");
-                  return;
-                }
-                setLoading(true);
-                const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-                  redirectTo: `${window.location.origin}/reset-password`,
-                });
-                setLoading(false);
-                if (error) {
-                  toast.error("Erro ao enviar email de recuperação.");
-                } else {
-                  toast.success("Email de recuperação enviado! Verifique sua caixa de entrada.");
-                }
-              }}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-sm text-muted-foreground"
+                onClick={handleForgotPassword}
+                disabled={loading}
+              >
                 Esqueci minha senha
               </Button>
-              <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("signup")}>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-sm text-muted-foreground"
+                onClick={() => setMode("signup")}
+              >
                 Criar conta com email e senha
-              </Button>
-              <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("magic")}>
-                Entrar com link mágico
               </Button>
             </div>
           </form>
         )}
 
         <div className="space-y-2">
-          <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => navigate("/planos")}>
+          <Button type="button" variant="ghost" className="text-sm text-muted-foreground" onClick={() => navigate("/planos")}>
             Ainda não tem conta? Veja os planos
           </Button>
-          <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => navigate("/vendas")}>
+          <Button type="button" variant="ghost" className="text-sm text-muted-foreground" onClick={() => navigate("/vendas")}>
             Conhecer o app
           </Button>
         </div>
