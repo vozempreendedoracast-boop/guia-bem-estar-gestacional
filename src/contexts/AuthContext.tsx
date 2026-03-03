@@ -42,6 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("user_id", userId)
       .single();
     if (data) setUserProfile(data as UserProfile);
+
+    // Check admin role
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    setIsAdmin(!!roleData);
   };
 
   useEffect(() => {
