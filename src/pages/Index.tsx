@@ -7,18 +7,20 @@ import { Heart, Baby, Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const { isOnboarded } = usePregnancy();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
-    if (user && isOnboarded) {
+    if (user && isAdmin) {
+      navigate("/administracao");
+    } else if (user && isOnboarded) {
       navigate("/painel");
     } else if (user) {
       navigate("/cadastro");
     }
-  }, [user, isOnboarded, navigate, loading]);
+  }, [user, isOnboarded, isAdmin, navigate, loading]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
