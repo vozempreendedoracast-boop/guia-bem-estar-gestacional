@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   SquaresFour, FileText, Users, Gear, BookOpen, WarningCircle,
   Heartbeat, Heart, Robot, ChartBar, Plus, PencilSimple, Trash, Eye, ArrowLeft,
-  TrendUp, UserCheck, CalendarBlank, MagnifyingGlass, FloppyDisk, X, Stack, List,
+  TrendUp, UserCheck, MagnifyingGlass, FloppyDisk, X, Stack, List,
   Bell, CreditCard, Link, Database, Monitor, SpinnerGap
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -40,18 +40,25 @@ const localImages: Record<string, string> = {
   health: cardHealth, diary: cardDiary, assistant: cardAssistant,
 };
 
-// Mock data (users/stats stay mock until auth is implemented)
-const mockStats = {
-  totalUsers: 2847, activeUsers: 1623, newToday: 34, avgWeek: 18,
-};
+interface UserProfile {
+  id: string;
+  user_id: string;
+  email: string;
+  plan: "none" | "essential" | "premium";
+  plan_status: "none" | "active" | "expired";
+  kiwify_order_id: string | null;
+  purchased_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+}
 
-const mockUsers = [
-  { id: 1, name: "Camila Santos", email: "camila@email.com", week: 28, joined: "2026-01-15", active: true },
-  { id: 2, name: "Juliana Martins", email: "juliana@email.com", week: 16, joined: "2026-02-01", active: true },
-  { id: 3, name: "Ana Paula Reis", email: "ana@email.com", week: 34, joined: "2025-12-20", active: true },
-  { id: 4, name: "Beatriz Lima", email: "beatriz@email.com", week: 12, joined: "2026-02-20", active: false },
-  { id: 5, name: "Fernanda Costa", email: "fernanda@email.com", week: 22, joined: "2026-01-28", active: true },
-];
+interface AdminStats {
+  totalUsers: number;
+  activeUsers: number;
+  newToday: number;
+  essentialCount: number;
+  premiumCount: number;
+}
 
 interface SettingsState {
   appName: string;
@@ -132,6 +139,111 @@ const Admin = () => {
   const deleteTipMut = useDeleteWeeklyTip();
 
   // Editing states
+  // Real user data
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, activeUsers: 0, newToday: 0, essentialCount: 0, premiumCount: 0 });
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState<Partial<UserProfile> | null>(null);
+  const [editUserOpen, setEditUserOpen] = useState(false);
+  const [newUserOpen, setNewUserOpen] = useState(false);
+  const [newUserData, setNewUserData] = useState({ email: "", plan: "none" as string, plan_status: "none" as string });
+  const [userActionLoading, setUserActionLoading] = useState(false);
+
+  const fetchUsers = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await supabase.functions.invoke("admin-users", {
+        body: null,
+        method: "GET",
+        headers: {},
+      });
+      // Use fetch directly since invoke doesn't support query params well
+      const baseUrl = (supabase as any).supabaseUrl || "https://hmtrjnosuwtmulerhgnr.supabase.co";
+      const [usersRes, statsRes] = await Promise.all([
+        fetch(`${baseUrl}/functions/v1/admin-users?action=list`, {
+          headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        }),
+        fetch(`${baseUrl}/functions/v1/admin-users?action=stats`, {
+          headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        }),
+      ]);
+      if (usersRes.ok) setUsers(await usersRes.json());
+      if (statsRes.ok) setStats(await statsRes.json());
+    } catch (e) {
+      console.error("Failed to fetch users:", e);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
+
+  const handleCreateUser = async () => {
+    setUserActionLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const baseUrl = "https://hmtrjnosuwtmulerhgnr.supabase.co";
+      const res = await fetch(`${baseUrl}/functions/v1/admin-users?action=create`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(newUserData),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      toast.success("Usuária criada com sucesso!");
+      setNewUserOpen(false);
+      setNewUserData({ email: "", plan: "none", plan_status: "none" });
+      fetchUsers();
+    } catch (e: any) { toast.error(e.message || "Erro ao criar usuária"); }
+    finally { setUserActionLoading(false); }
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser?.id) return;
+    setUserActionLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const baseUrl = "https://hmtrjnosuwtmulerhgnr.supabase.co";
+      const res = await fetch(`${baseUrl}/functions/v1/admin-users?action=update`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingUser.id, plan: editingUser.plan, plan_status: editingUser.plan_status }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      toast.success("Plano atualizado!");
+      setEditUserOpen(false);
+      setEditingUser(null);
+      fetchUsers();
+    } catch (e: any) { toast.error(e.message || "Erro ao atualizar"); }
+    finally { setUserActionLoading(false); }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm("Tem certeza que deseja excluir esta usuária? Esta ação é irreversível.")) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const baseUrl = "https://hmtrjnosuwtmulerhgnr.supabase.co";
+      const res = await fetch(`${baseUrl}/functions/v1/admin-users?action=delete`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      toast.success("Usuária excluída!");
+      fetchUsers();
+    } catch (e: any) { toast.error(e.message || "Erro ao excluir"); }
+  };
+
+  const filteredUsers = users.filter(u =>
+    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const [editingCard, setEditingCard] = useState<Category | null>(null);
   const [editCardOpen, setEditCardOpen] = useState(false);
   const [newCardOpen, setNewCardOpen] = useState(false);
@@ -202,10 +314,6 @@ const Admin = () => {
     finally { setAiLoading(false); }
   };
 
-  const filteredUsers = mockUsers.filter(u =>
-    u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   // Card handlers
   const handleEditCard = (card: Category) => {
@@ -437,10 +545,10 @@ const Admin = () => {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { label: "Total de Usuárias", value: mockStats.totalUsers.toLocaleString(), icon: Users, color: "text-primary" },
-                { label: "Ativas Hoje", value: mockStats.activeUsers.toLocaleString(), icon: UserCheck, color: "text-green-600" },
-                { label: "Novas Hoje", value: `+${mockStats.newToday}`, icon: TrendUp, color: "text-blue-600" },
-                { label: "Semana Média", value: `${mockStats.avgWeek}ª`, icon: CalendarBlank, color: "text-orange-600" },
+                { label: "Total de Usuárias", value: stats.totalUsers.toLocaleString(), icon: Users, color: "text-primary" },
+                { label: "Plano Ativo", value: stats.activeUsers.toLocaleString(), icon: UserCheck, color: "text-green-600" },
+                { label: "Novas Hoje", value: `+${stats.newToday}`, icon: TrendUp, color: "text-blue-600" },
+                { label: "Premium", value: stats.premiumCount.toString(), icon: CreditCard, color: "text-orange-600" },
               ].map(stat => (
                 <div key={stat.label} className="bg-card rounded-2xl p-4 md:p-5 border border-border shadow-card">
                   <stat.icon className={`w-5 h-5 ${stat.color} mb-2`} />
@@ -772,34 +880,88 @@ const Admin = () => {
         {/* ===== USERS ===== */}
         {activeTab === "users" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            <h1 className="text-2xl font-bold font-display text-foreground">Usuárias</h1>
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold font-display text-foreground">Usuárias</h1>
+              <Button size="sm" className="rounded-xl" onClick={() => { setNewUserData({ email: "", plan: "none", plan_status: "none" }); setNewUserOpen(true); }}>
+                <Plus className="w-4 h-4 mr-1" /> Nova Usuária
+              </Button>
+            </div>
             <div className="relative">
               <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Buscar por nome ou email..." className="pl-10 rounded-xl" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+              <Input placeholder="Buscar por email..." className="pl-10 rounded-xl" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
             </div>
             <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
-              <div className="hidden md:grid grid-cols-[1fr_1fr_80px_100px_60px] gap-2 p-4 border-b border-border text-xs font-medium text-muted-foreground">
-                <span>Nome</span><span>Email</span><span>Semana</span><span>Cadastro</span><span>Status</span>
+              <div className="hidden md:grid grid-cols-[1fr_100px_100px_100px_120px] gap-2 p-4 border-b border-border text-xs font-medium text-muted-foreground">
+                <span>Email</span><span>Plano</span><span>Status</span><span>Cadastro</span><span>Ações</span>
               </div>
-              {filteredUsers.map(user => (
-                <div key={user.id} className="p-4 border-b border-border last:border-0">
-                  <div className="md:hidden flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-sm text-foreground">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Semana {user.week}ª · {user.joined}</p>
+              {usersLoading ? (
+                <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground text-sm">Nenhuma usuária encontrada.</div>
+              ) : (
+                <div className="max-h-[60vh] overflow-y-auto">
+                  {filteredUsers.map(user => (
+                    <div key={user.id} className="p-4 border-b border-border last:border-0">
+                      <div className="md:hidden flex items-center justify-between">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm text-foreground truncate">{user.email}</p>
+                          <div className="flex gap-1.5 mt-1">
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                              user.plan === "premium" ? "bg-primary/15 text-primary" :
+                              user.plan === "essential" ? "bg-blue-100 text-blue-700" :
+                              "bg-muted text-muted-foreground"
+                            }`}>
+                              {user.plan === "premium" ? "Premium" : user.plan === "essential" ? "Essencial" : "Sem plano"}
+                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                              user.plan_status === "active" ? "bg-green-100 text-green-700" :
+                              user.plan_status === "expired" ? "bg-red-100 text-red-700" :
+                              "bg-muted text-muted-foreground"
+                            }`}>
+                              {user.plan_status === "active" ? "Ativo" : user.plan_status === "expired" ? "Expirado" : "Inativo"}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-1">{new Date(user.created_at).toLocaleDateString("pt-BR")}</p>
+                        </div>
+                        <div className="flex gap-1 flex-shrink-0">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingUser({ ...user }); setEditUserOpen(true); }}>
+                            <PencilSimple className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteUser(user.user_id)}>
+                            <Trash className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="hidden md:grid grid-cols-[1fr_100px_100px_100px_120px] gap-2 items-center">
+                        <span className="font-medium text-sm text-foreground truncate">{user.email}</span>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          user.plan === "premium" ? "bg-primary/15 text-primary" :
+                          user.plan === "essential" ? "bg-blue-100 text-blue-700" :
+                          "bg-muted text-muted-foreground"
+                        }`}>
+                          {user.plan === "premium" ? "Premium" : user.plan === "essential" ? "Essencial" : "Nenhum"}
+                        </span>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${
+                          user.plan_status === "active" ? "bg-green-100 text-green-700" :
+                          user.plan_status === "expired" ? "bg-red-100 text-red-700" :
+                          "bg-muted text-muted-foreground"
+                        }`}>
+                          {user.plan_status === "active" ? "Ativo" : user.plan_status === "expired" ? "Expirado" : "—"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{new Date(user.created_at).toLocaleDateString("pt-BR")}</span>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingUser({ ...user }); setEditUserOpen(true); }}>
+                            <PencilSimple className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteUser(user.user_id)}>
+                            <Trash className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${user.active ? "bg-green-500" : "bg-muted-foreground/40"}`} />
-                  </div>
-                  <div className="hidden md:grid grid-cols-[1fr_1fr_80px_100px_60px] gap-2 items-center">
-                    <span className="font-medium text-sm text-foreground">{user.name}</span>
-                    <span className="text-sm text-muted-foreground truncate">{user.email}</span>
-                    <span className="text-sm text-foreground">{user.week}ª</span>
-                    <span className="text-xs text-muted-foreground">{user.joined}</span>
-                    <span className={`w-2.5 h-2.5 rounded-full ${user.active ? "bg-green-500" : "bg-muted-foreground/40"}`} />
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </motion.div>
         )}
@@ -1273,6 +1435,97 @@ const Admin = () => {
                 {aiLoading ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
               </Button>
               <Button variant="outline" className="rounded-xl" onClick={() => setEditSettingOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={editUserOpen} onOpenChange={setEditUserOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Usuária</DialogTitle>
+            <DialogDescription>Altere o plano ou status desta usuária.</DialogDescription>
+          </DialogHeader>
+          {editingUser && (
+            <div className="space-y-4 mt-2">
+              <div>
+                <Label className="text-sm font-medium">Email</Label>
+                <Input value={editingUser.email || ""} disabled className="mt-1 rounded-xl opacity-60" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Plano</Label>
+                <select
+                  value={editingUser.plan || "none"}
+                  onChange={e => setEditingUser({ ...editingUser, plan: e.target.value as any })}
+                  className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                >
+                  <option value="none">Sem plano</option>
+                  <option value="essential">Essencial</option>
+                  <option value="premium">Premium</option>
+                </select>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Status</Label>
+                <select
+                  value={editingUser.plan_status || "none"}
+                  onChange={e => setEditingUser({ ...editingUser, plan_status: e.target.value as any })}
+                  className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                >
+                  <option value="none">Inativo</option>
+                  <option value="active">Ativo</option>
+                  <option value="expired">Expirado</option>
+                </select>
+              </div>
+              {editingUser.purchased_at && (
+                <p className="text-xs text-muted-foreground">Compra: {new Date(editingUser.purchased_at).toLocaleDateString("pt-BR")}</p>
+              )}
+              {editingUser.expires_at && (
+                <p className="text-xs text-muted-foreground">Expira: {new Date(editingUser.expires_at).toLocaleDateString("pt-BR")}</p>
+              )}
+              {editingUser.kiwify_order_id && (
+                <p className="text-xs text-muted-foreground">Kiwify: {editingUser.kiwify_order_id}</p>
+              )}
+              <div className="flex gap-2 pt-2">
+                <Button className="flex-1 rounded-xl" onClick={handleUpdateUser} disabled={userActionLoading}>
+                  {userActionLoading ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => setEditUserOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* New User Dialog */}
+      <Dialog open={newUserOpen} onOpenChange={setNewUserOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nova Usuária</DialogTitle>
+            <DialogDescription>Crie uma conta manualmente com o plano desejado.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label className="text-sm font-medium">Email</Label>
+              <Input value={newUserData.email} onChange={e => setNewUserData({ ...newUserData, email: e.target.value })} className="mt-1 rounded-xl" placeholder="email@exemplo.com" />
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Plano</Label>
+              <select
+                value={newUserData.plan}
+                onChange={e => setNewUserData({ ...newUserData, plan: e.target.value, plan_status: e.target.value !== "none" ? "active" : "none" })}
+                className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+              >
+                <option value="none">Sem plano</option>
+                <option value="essential">Essencial (R$ 47)</option>
+                <option value="premium">Premium (R$ 97)</option>
+              </select>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button className="flex-1 rounded-xl" onClick={handleCreateUser} disabled={userActionLoading || !newUserData.email}>
+                {userActionLoading ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />} Criar Usuária
+              </Button>
+              <Button variant="outline" className="rounded-xl" onClick={() => setNewUserOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
             </div>
           </div>
         </DialogContent>
