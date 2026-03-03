@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-interface UserProfile {
+export interface UserProfile {
   id: string;
   user_id: string;
   email: string;
@@ -61,43 +61,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const clearState = useCallback(() => {
+    setUser(null);
+    setSession(null);
+    setUserProfile(null);
+    setIsAdmin(false);
+  }, []);
+
   useEffect(() => {
     let mounted = true;
 
-    // 1. Get initial session first
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+    // 1. Set up auth listener FIRST (Supabase best practice)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        if (!mounted) return;
+
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+
+        if (currentSession?.user) {
+          // Use setTimeout to avoid potential deadlocks with Supabase auth
+          setTimeout(async () => {
+            if (!mounted) return;
+            await fetchProfile(currentSession.user.id);
+            if (mounted) setLoading(false);
+          }, 0);
+        } else {
+          clearState();
+          // Keep session/user as null (already set above)
+          if (mounted) setLoading(false);
+        }
+      }
+    );
+
+    // 2. Then get initial session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       if (!mounted) return;
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
 
       if (currentSession?.user) {
-        await fetchProfile(currentSession.user.id);
-      }
-      if (mounted) setLoading(false);
-    });
-
-    // 2. Then listen for changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, currentSession) => {
-        if (!mounted) return;
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-
-        if (currentSession?.user) {
-          await fetchProfile(currentSession.user.id);
-        } else {
-          setUserProfile(null);
-          setIsAdmin(false);
-        }
+        fetchProfile(currentSession.user.id).then(() => {
+          if (mounted) setLoading(false);
+        });
+      } else {
         if (mounted) setLoading(false);
       }
-    );
+    });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, [fetchProfile, clearState]);
 
   const signInWithPassword = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -117,10 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setUserProfile(null);
-    setIsAdmin(false);
+    clearState();
   };
 
   const refreshProfile = async () => {

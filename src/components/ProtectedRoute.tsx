@@ -19,15 +19,19 @@ const ProtectedRoute = ({ children, requirePlan = false, requireAdmin = false }:
     );
   }
 
+  // Not authenticated → login
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
+  // Admin route but not admin → dashboard
   if (requireAdmin && !isAdmin) {
     return <Navigate to="/painel" replace />;
   }
 
-  if (requirePlan && userProfile) {
+  // Requires plan but no active plan → plans page
+  // Admins bypass plan requirement
+  if (requirePlan && !isAdmin && userProfile) {
     const hasActivePlan = userProfile.plan !== "none" && userProfile.plan_status === "active";
     if (!hasActivePlan) {
       return <Navigate to="/planos" replace />;

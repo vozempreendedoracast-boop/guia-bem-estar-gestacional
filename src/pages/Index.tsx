@@ -13,14 +13,21 @@ const Index = () => {
 
   useEffect(() => {
     if (loading) return;
-    if (user && isAdmin) {
-      navigate("/administracao");
-    } else if (user && isOnboarded) {
-      navigate("/painel");
-    } else if (user) {
-      navigate("/cadastro");
+    if (!user) return; // Not logged in, show landing
+
+    if (isAdmin) {
+      navigate("/administracao", { replace: true });
+    } else if (isOnboarded) {
+      navigate("/painel", { replace: true });
+    } else {
+      navigate("/cadastro", { replace: true });
     }
   }, [user, isOnboarded, isAdmin, navigate, loading]);
+
+  // If loading or redirecting, show nothing
+  if (loading || user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
