@@ -8,28 +8,75 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type AuthMode = "login" | "magic" | "magic-sent";
+type AuthMode = "login" | "signup" | "magic" | "magic-sent";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signInWithMagicLink, signInWithPassword } = useAuth();
+  const { signInWithMagicLink, signInWithPassword, signUp } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
+
+  const getPostLoginRoute = async (userId: string) => {
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    return roleData ? "/administracao" : "/painel";
+  };
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
+
     setLoading(true);
-    const { error } = await signInWithPassword(email.trim(), password.trim());
-    setLoading(false);
-    if (error) {
+    const { error, user } = await signInWithPassword(email.trim(), password.trim());
+    if (error || !user) {
+      setLoading(false);
       toast.error("Email ou senha incorretos.");
-    } else {
-      navigate("/painel");
+      return;
     }
+
+    const redirectPath = await getPostLoginRoute(user.id);
+    setLoading(false);
+    navigate(redirectPath, { replace: true });
+  };
+
+  const handleSignUpWithPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email.trim() || !password.trim() || !confirmPassword.trim()) return;
+    if (password !== confirmPassword) {
+      toast.error("As senhas não conferem.");
+      return;
+    }
+
+    setLoading(true);
+    const { error, user } = await signUp(email.trim(), password.trim());
+
+    if (error) {
+      setLoading(false);
+      toast.error("Erro ao criar conta. Tente novamente.");
+      return;
+    }
+
+    if (user) {
+      const redirectPath = await getPostLoginRoute(user.id);
+      setLoading(false);
+      navigate(redirectPath, { replace: true });
+      return;
+    }
+
+    setLoading(false);
+    toast.success("Conta criada! Verifique seu email para confirmar o acesso.");
+    setMode("login");
   };
 
   const handleMagicLink = async (e: React.FormEvent) => {
@@ -62,13 +109,15 @@ const Login = () => {
 
         <div className="space-y-2">
           <h1 className="text-2xl font-bold font-display text-foreground">
-            {mode === "magic-sent" ? "Link enviado! ✨" : "Entrar no MamyBoo"}
+            {mode === "magic-sent" ? "Link enviado! ✨" : mode === "signup" ? "Criar conta" : "Entrar no MamyBoo"}
           </h1>
           <p className="text-muted-foreground text-sm">
             {mode === "magic-sent"
               ? `Enviamos um link mágico para ${email}. Verifique sua caixa de entrada e spam.`
               : mode === "magic"
               ? "Digite seu email para receber um link de acesso seguro."
+              : mode === "signup"
+              ? "Cadastre-se com email e senha para acessar o app."
               : "Entre com seu email e senha."}
           </p>
         </div>
@@ -110,6 +159,68 @@ const Login = () => {
             </Button>
             <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("login")}>
               Entrar com senha
+            </Button>
+          </form>
+        ) : mode === "signup" ? (
+          <form onSubmit={handleSignUpWithPassword} className="space-y-4">
+            <div className="relative">
+              <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="h-14 rounded-xl pl-10 text-base border-2 border-muted focus:border-primary"
+                required
+              />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Crie uma senha"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="h-14 rounded-xl pl-10 pr-12 text-base border-2 border-muted focus:border-primary"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirme a senha"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="h-14 rounded-xl pl-10 pr-12 text-base border-2 border-muted focus:border-primary"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                {showConfirmPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            <Button
+              type="submit"
+              disabled={loading || !email.trim() || !password.trim() || !confirmPassword.trim()}
+              className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
+            >
+              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (
+                <>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>
+              )}
+            </Button>
+            <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("login")}>
+              Já tenho conta
             </Button>
           </form>
         ) : (
@@ -170,6 +281,9 @@ const Login = () => {
                 }
               }}>
                 Esqueci minha senha
+              </Button>
+              <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("signup")}>
+                Criar conta com email e senha
               </Button>
               <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("magic")}>
                 Entrar com link mágico
