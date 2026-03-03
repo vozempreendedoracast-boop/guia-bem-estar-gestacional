@@ -32,6 +32,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 const Dashboard = () => {
   const { profile, currentWeek, trimester, progressPercent, addMood, moods, logout } = usePregnancy();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
   const { data: weeks = [] } = useWeekContents();
   const { data: categories = [] } = useCategories();
