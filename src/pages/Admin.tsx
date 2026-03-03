@@ -40,18 +40,25 @@ const localImages: Record<string, string> = {
   health: cardHealth, diary: cardDiary, assistant: cardAssistant,
 };
 
-// Mock data (users/stats stay mock until auth is implemented)
-const mockStats = {
-  totalUsers: 2847, activeUsers: 1623, newToday: 34, avgWeek: 18,
-};
+interface UserProfile {
+  id: string;
+  user_id: string;
+  email: string;
+  plan: "none" | "essential" | "premium";
+  plan_status: "none" | "active" | "expired";
+  kiwify_order_id: string | null;
+  purchased_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+}
 
-const mockUsers = [
-  { id: 1, name: "Camila Santos", email: "camila@email.com", week: 28, joined: "2026-01-15", active: true },
-  { id: 2, name: "Juliana Martins", email: "juliana@email.com", week: 16, joined: "2026-02-01", active: true },
-  { id: 3, name: "Ana Paula Reis", email: "ana@email.com", week: 34, joined: "2025-12-20", active: true },
-  { id: 4, name: "Beatriz Lima", email: "beatriz@email.com", week: 12, joined: "2026-02-20", active: false },
-  { id: 5, name: "Fernanda Costa", email: "fernanda@email.com", week: 22, joined: "2026-01-28", active: true },
-];
+interface AdminStats {
+  totalUsers: number;
+  activeUsers: number;
+  newToday: number;
+  essentialCount: number;
+  premiumCount: number;
+}
 
 interface SettingsState {
   appName: string;
