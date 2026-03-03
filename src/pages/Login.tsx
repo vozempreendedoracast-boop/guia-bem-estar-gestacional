@@ -10,20 +10,6 @@ import { toast } from "sonner";
 
 type AuthMode = "login" | "signup";
 
-const parseAuthErrorMessage = (error: unknown, fallback: string) => {
-  const message = String((error as { message?: string } | null)?.message ?? "").toLowerCase();
-
-  if (
-    message.includes("over_email_send_rate_limit") ||
-    message.includes("rate limit") ||
-    message.includes("429")
-  ) {
-    return "Muitas tentativas de envio. Aguarde 60 segundos e tente novamente.";
-  }
-
-  return fallback;
-};
-
 const Login = () => {
   const navigate = useNavigate();
   const { signInWithPassword, signUp } = useAuth();
@@ -37,76 +23,83 @@ const Login = () => {
   const [mode, setMode] = useState<AuthMode>("login");
   const [recoveryCooldownUntil, setRecoveryCooldownUntil] = useState<number>(0);
 
-  const getPostLoginRoute = async (userId: string) => {
-    const { data: adminData, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-
-    if (error) {
-      console.error("Erro ao validar role admin:", error);
-      return "/painel";
-    }
-
-    return adminData ? "/administracao" : "/painel";
-  };
-
-  const handlePasswordLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
 
     setLoading(true);
-    const { error, user } = await signInWithPassword(email.trim(), password.trim());
+    const { error } = await signInWithPassword(email.trim(), password.trim());
+    setLoading(false);
 
-    if (error || !user) {
-      setLoading(false);
+    if (error) {
       toast.error("Email ou senha incorretos.");
       return;
     }
 
-    const redirectPath = await getPostLoginRoute(user.id);
-    setLoading(false);
-    navigate(redirectPath, { replace: true });
+    // After successful login, onAuthStateChange will update context.
+    // We just need to navigate. The AuthContext will have the profile loaded
+    // by the time ProtectedRoute checks.
+    // Small delay to let onAuthStateChange fire and fetch profile.
+    setTimeout(() => {
+      navigate("/painel", { replace: true });
+    }, 100);
   };
 
-  const handleSignUpWithPassword = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!email.trim() || !password.trim() || !confirmPassword.trim()) return;
+
     if (password !== confirmPassword) {
       toast.error("As senhas não conferem.");
       return;
     }
 
+    if (password.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
     setLoading(true);
     const { error, user } = await signUp(email.trim(), password.trim());
+    setLoading(false);
 
     if (error) {
-      setLoading(false);
-      toast.error("Erro ao criar conta. Tente novamente.");
+      const msg = String(error.message || "").toLowerCase();
+      if (msg.includes("already registered") || msg.includes("already been registered")) {
+        toast.error("Este email já está cadastrado. Tente fazer login.");
+      } else {
+        toast.error("Erro ao criar conta. Tente novamente.");
+      }
+      return;
+    }
+
+    if (user?.identities?.length === 0) {
+      // Email already exists but unconfirmed
+      toast.error("Este email já está cadastrado. Verifique sua caixa de entrada.");
       return;
     }
 
     if (user) {
-      const redirectPath = await getPostLoginRoute(user.id);
-      setLoading(false);
-      navigate(redirectPath, { replace: true });
-      return;
+      toast.success("Conta criada com sucesso!");
+      setTimeout(() => {
+        navigate("/cadastro", { replace: true });
+      }, 100);
+    } else {
+      toast.success("Conta criada! Verifique seu email para confirmar o acesso.");
+      setMode("login");
     }
-
-    setLoading(false);
-    toast.success("Conta criada! Verifique seu email para confirmar o acesso.");
-    setMode("login");
   };
 
   const handleForgotPassword = async () => {
-    const now = Date.now();
-
     if (!email.trim()) {
       toast.error("Digite seu email primeiro para recuperar a senha.");
       return;
     }
 
+    const now = Date.now();
     if (now < recoveryCooldownUntil) {
       const remainingSeconds = Math.ceil((recoveryCooldownUntil - now) / 1000);
-      toast.error(`Aguarde ${remainingSeconds}s para tentar enviar novamente.`);
+      toast.error(`Aguarde ${remainingSeconds}s para tentar novamente.`);
       return;
     }
 
@@ -117,11 +110,13 @@ const Login = () => {
     setLoading(false);
 
     if (error) {
-      const message = parseAuthErrorMessage(error, "Erro ao enviar email de recuperação.");
-      if (message.includes("Aguarde 60 segundos")) {
+      const msg = String(error.message || "").toLowerCase();
+      if (msg.includes("rate limit") || msg.includes("429") || msg.includes("over_email_send_rate_limit")) {
         setRecoveryCooldownUntil(Date.now() + 60_000);
+        toast.error("Muitas tentativas. Aguarde 60 segundos e tente novamente.");
+      } else {
+        toast.error("Erro ao enviar email de recuperação.");
       }
-      toast.error(message);
       return;
     }
 
@@ -156,7 +151,7 @@ const Login = () => {
         </div>
 
         {mode === "signup" ? (
-          <form onSubmit={handleSignUpWithPassword} className="space-y-4">
+          <form onSubmit={handleSignUp} className="space-y-4">
             <div className="relative">
               <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -227,7 +222,7 @@ const Login = () => {
             </Button>
           </form>
         ) : (
-          <form onSubmit={handlePasswordLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
               <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
