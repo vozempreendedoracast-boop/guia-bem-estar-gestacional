@@ -149,16 +149,16 @@ const Sales = () => {
       {/* CTA mid */}
       <section className="gradient-hero py-16">
         <div className="max-w-3xl mx-auto px-6 text-center text-primary-foreground">
-          <h2 className="text-3xl font-bold font-display">Comece agora, é grátis</h2>
+          <h2 className="text-3xl font-bold font-display">Comece sua jornada agora</h2>
           <p className="mt-3 opacity-90 max-w-lg mx-auto">
-            Junte-se a milhares de gestantes que já usam o Minha Gestação para se sentirem mais seguras e informadas.
+            Junte-se a milhares de gestantes que já usam o MamyBoo para se sentirem mais seguras e informadas.
           </p>
           <Button
             size="lg"
             className="mt-8 rounded-xl text-base h-14 px-10 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-            onClick={() => navigate("/cadastro")}
+            onClick={() => navigate("/planos")}
           >
-            Começar grátis agora
+            Ver planos e preços
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
