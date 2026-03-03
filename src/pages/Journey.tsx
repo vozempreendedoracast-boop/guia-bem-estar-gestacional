@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getBabyImage } from "@/utils/babyImages";
 
 const Journey = () => {
   const { currentWeek } = usePregnancy();
@@ -62,13 +63,13 @@ const Journey = () => {
                         : "border-border/50 bg-muted/30 opacity-50"
                     }`}
                   >
-                    <span className="text-2xl">{week.baby_size_comparison.split(" ")[0]}</span>
+                    <img src={getBabyImage(week.week_number)} alt={`Bebê semana ${week.week_number}`} className="w-12 h-12 rounded-xl object-cover" />
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm">
                         Semana {week.week_number}
                         {isCurrent && <span className="ml-2 text-xs font-normal text-primary">← Você está aqui</span>}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate">{week.baby_size_comparison.split(" ").slice(1).join(" ")} · {week.baby_size}</p>
+                      <p className="text-xs text-muted-foreground truncate">{week.baby_size_comparison} · {week.baby_size}</p>
                     </div>
                     {isUnlocked ? (
                       <ChevronRight className="w-4 h-4 text-muted-foreground" />
