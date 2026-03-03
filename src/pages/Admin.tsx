@@ -545,10 +545,10 @@ const Admin = () => {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { label: "Total de Usuárias", value: mockStats.totalUsers.toLocaleString(), icon: Users, color: "text-primary" },
-                { label: "Ativas Hoje", value: mockStats.activeUsers.toLocaleString(), icon: UserCheck, color: "text-green-600" },
-                { label: "Novas Hoje", value: `+${mockStats.newToday}`, icon: TrendUp, color: "text-blue-600" },
-                { label: "Semana Média", value: `${mockStats.avgWeek}ª`, icon: CalendarBlank, color: "text-orange-600" },
+                { label: "Total de Usuárias", value: stats.totalUsers.toLocaleString(), icon: Users, color: "text-primary" },
+                { label: "Plano Ativo", value: stats.activeUsers.toLocaleString(), icon: UserCheck, color: "text-green-600" },
+                { label: "Novas Hoje", value: `+${stats.newToday}`, icon: TrendUp, color: "text-blue-600" },
+                { label: "Premium", value: stats.premiumCount.toString(), icon: CreditCard, color: "text-orange-600" },
               ].map(stat => (
                 <div key={stat.label} className="bg-card rounded-2xl p-4 md:p-5 border border-border shadow-card">
                   <stat.icon className={`w-5 h-5 ${stat.color} mb-2`} />
