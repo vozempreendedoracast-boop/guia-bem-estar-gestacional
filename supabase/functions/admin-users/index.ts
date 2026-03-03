@@ -36,6 +36,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Verify caller is admin
+    const { data: roleCheck } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", caller.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (!roleCheck) {
+      return new Response(JSON.stringify({ error: "Forbidden: admin role required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Service role client for admin operations
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
