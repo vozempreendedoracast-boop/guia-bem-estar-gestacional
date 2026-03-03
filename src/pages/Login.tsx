@@ -5,6 +5,7 @@ import { Baby, EnvelopeSimple, ArrowRight, SpinnerGap, CheckCircle, Lock, Eye, E
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 type AuthMode = "login" | "magic" | "magic-sent";
