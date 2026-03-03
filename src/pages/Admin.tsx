@@ -314,10 +314,6 @@ const Admin = () => {
     finally { setAiLoading(false); }
   };
 
-  const filteredUsers = mockUsers.filter(u =>
-    u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   // Card handlers
   const handleEditCard = (card: Category) => {
