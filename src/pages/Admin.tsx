@@ -139,7 +139,112 @@ const Admin = () => {
   const deleteTipMut = useDeleteWeeklyTip();
 
   // Editing states
-  const [editingCard, setEditingCard] = useState<Category | null>(null);
+  // Real user data
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, activeUsers: 0, newToday: 0, essentialCount: 0, premiumCount: 0 });
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState<Partial<UserProfile> | null>(null);
+  const [editUserOpen, setEditUserOpen] = useState(false);
+  const [newUserOpen, setNewUserOpen] = useState(false);
+  const [newUserData, setNewUserData] = useState({ email: "", plan: "none" as string, plan_status: "none" as string });
+  const [userActionLoading, setUserActionLoading] = useState(false);
+
+  const fetchUsers = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await supabase.functions.invoke("admin-users", {
+        body: null,
+        method: "GET",
+        headers: {},
+      });
+      // Use fetch directly since invoke doesn't support query params well
+      const baseUrl = (supabase as any).supabaseUrl || "https://hmtrjnosuwtmulerhgnr.supabase.co";
+      const [usersRes, statsRes] = await Promise.all([
+        fetch(`${baseUrl}/functions/v1/admin-users?action=list`, {
+          headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        }),
+        fetch(`${baseUrl}/functions/v1/admin-users?action=stats`, {
+          headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        }),
+      ]);
+      if (usersRes.ok) setUsers(await usersRes.json());
+      if (statsRes.ok) setStats(await statsRes.json());
+    } catch (e) {
+      console.error("Failed to fetch users:", e);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
+
+  const handleCreateUser = async () => {
+    setUserActionLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const baseUrl = "https://hmtrjnosuwtmulerhgnr.supabase.co";
+      const res = await fetch(`${baseUrl}/functions/v1/admin-users?action=create`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(newUserData),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      toast.success("Usuária criada com sucesso!");
+      setNewUserOpen(false);
+      setNewUserData({ email: "", plan: "none", plan_status: "none" });
+      fetchUsers();
+    } catch (e: any) { toast.error(e.message || "Erro ao criar usuária"); }
+    finally { setUserActionLoading(false); }
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser?.id) return;
+    setUserActionLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const baseUrl = "https://hmtrjnosuwtmulerhgnr.supabase.co";
+      const res = await fetch(`${baseUrl}/functions/v1/admin-users?action=update`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingUser.id, plan: editingUser.plan, plan_status: editingUser.plan_status }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      toast.success("Plano atualizado!");
+      setEditUserOpen(false);
+      setEditingUser(null);
+      fetchUsers();
+    } catch (e: any) { toast.error(e.message || "Erro ao atualizar"); }
+    finally { setUserActionLoading(false); }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm("Tem certeza que deseja excluir esta usuária? Esta ação é irreversível.")) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const baseUrl = "https://hmtrjnosuwtmulerhgnr.supabase.co";
+      const res = await fetch(`${baseUrl}/functions/v1/admin-users?action=delete`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      toast.success("Usuária excluída!");
+      fetchUsers();
+    } catch (e: any) { toast.error(e.message || "Erro ao excluir"); }
+  };
+
+  const filteredUsers = users.filter(u =>
+    u.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+
   const [editCardOpen, setEditCardOpen] = useState(false);
   const [newCardOpen, setNewCardOpen] = useState(false);
   const [newCard, setNewCard] = useState({ title: "", slug: "", description: "", icon: "BookOpen", path: "/", visible: true, display_order: 0 });
