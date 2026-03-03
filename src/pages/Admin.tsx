@@ -170,7 +170,7 @@ const Admin = () => {
 
   // AI Settings
   const [aiSettings, setAiSettings] = useState<AISettingsState>({
-    id: "", provider: "google", model: "gemini-2.0-flash", api_key_encrypted: "",
+    id: "", provider: "lovable", model: "google/gemini-3-flash-preview", api_key_encrypted: "",
     system_prompt: "Você é uma assistente carinhosa e acolhedora especializada em gestação.", 
     temperature: 0.7, max_tokens: 1024, enabled: false, base_url: "",
   });
@@ -1224,49 +1224,36 @@ const Admin = () => {
                 <div className="bg-muted/50 rounded-xl p-4 space-y-1">
                   <p className="text-xs font-semibold text-foreground">💡 Como funciona?</p>
                   <p className="text-xs text-muted-foreground">
-                    Selecione o provedor de IA, cole sua <strong>chave de API</strong> e escolha o modelo. 
-                    Se usar OpenRouter ou outro provedor compatível com OpenAI, selecione "Outro (compatível OpenAI)" e informe a URL base.
+                    <strong>Lovable IA</strong>: usa o gateway integrado, sem necessidade de chave externa. 
+                    <strong>OpenRouter</strong>: cole sua chave de API obtida em openrouter.ai/keys.
                   </p>
                 </div>
 
                 <div>
                   <Label className="text-sm font-medium">Provedor</Label>
                   <select value={aiSettings.provider} onChange={e => setAiSettings({ ...aiSettings, provider: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
-                    <option value="google">Google (Gemini)</option>
-                    <option value="openai">OpenAI (GPT)</option>
+                    <option value="lovable">Lovable IA (recomendado)</option>
                     <option value="openrouter">OpenRouter</option>
-                    <option value="custom">Outro (compatível OpenAI)</option>
                   </select>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-medium">API Key</Label>
-                  <Input type="password" value={aiSettings.api_key_encrypted} onChange={e => setAiSettings({ ...aiSettings, api_key_encrypted: e.target.value })} className="mt-1 rounded-xl" placeholder="Cole sua chave de API aqui" />
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {aiSettings.provider === "google" && "Obtenha em: aistudio.google.com"}
-                    {aiSettings.provider === "openai" && "Obtenha em: platform.openai.com/api-keys"}
-                    {aiSettings.provider === "openrouter" && "Obtenha em: openrouter.ai/keys"}
-                    {aiSettings.provider === "custom" && "Cole a chave fornecida pelo seu provedor"}
-                  </p>
-                </div>
+                {aiSettings.provider === "openrouter" && (
+                  <div>
+                    <Label className="text-sm font-medium">API Key (OpenRouter)</Label>
+                    <Input type="password" value={aiSettings.api_key_encrypted} onChange={e => setAiSettings({ ...aiSettings, api_key_encrypted: e.target.value })} className="mt-1 rounded-xl" placeholder="Cole sua chave OpenRouter aqui" />
+                    <p className="text-[10px] text-muted-foreground mt-1">Obtenha em: openrouter.ai/keys</p>
+                  </div>
+                )}
 
                 <div>
                   <Label className="text-sm font-medium">Modelo</Label>
                   <Input value={aiSettings.model} onChange={e => setAiSettings({ ...aiSettings, model: e.target.value })} className="mt-1 rounded-xl" placeholder={
-                    aiSettings.provider === "google" ? "gemini-2.0-flash" : 
-                    aiSettings.provider === "openai" ? "gpt-4o" : 
-                    aiSettings.provider === "openrouter" ? "google/gemini-2.0-flash-exp:free" : 
-                    "nome-do-modelo"
+                    aiSettings.provider === "lovable" ? "google/gemini-3-flash-preview" : "google/gemini-2.5-flash-lite"
                   } />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {aiSettings.provider === "lovable" ? "Modelos: google/gemini-3-flash-preview, google/gemini-2.5-flash, openai/gpt-5-mini" : "Use o formato provedor/modelo. Ex: google/gemini-2.5-flash-lite"}
+                  </p>
                 </div>
-
-                {aiSettings.provider === "custom" && (
-                  <div>
-                    <Label className="text-sm font-medium">URL base da API</Label>
-                    <Input value={(aiSettings as any).base_url || ""} onChange={e => setAiSettings({ ...aiSettings, base_url: e.target.value } as any)} className="mt-1 rounded-xl" placeholder="https://api.exemplo.com/v1" />
-                    <p className="text-[10px] text-muted-foreground mt-1">A URL base (sem /chat/completions). Ex: https://api.exemplo.com/v1</p>
-                  </div>
-                )}
 
                 <div>
                   <Label className="text-sm font-medium">Instruções do sistema (personalidade da IA)</Label>
