@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePregnancy } from "@/contexts/PregnancyContext";
+import { usePlan } from "@/hooks/usePlan";
+import UpgradePrompt from "@/components/UpgradePrompt";
 import { toast } from "sonner";
 
 interface Message {
@@ -16,6 +18,7 @@ interface Message {
 const Assistant = () => {
   const navigate = useNavigate();
   const { profile, currentWeek, trimester } = usePregnancy();
+  const { hasAIAccess, loading: planLoading } = usePlan();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +27,10 @@ const Assistant = () => {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  if (!planLoading && !hasAIAccess) {
+    return <UpgradePrompt feature="o Assistente de IA" />;
+  }
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;

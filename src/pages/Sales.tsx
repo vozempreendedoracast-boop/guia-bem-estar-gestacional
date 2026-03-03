@@ -219,9 +219,9 @@ const Sales = () => {
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Baby className="w-5 h-5 text-primary" />
-            <span className="font-display font-semibold text-foreground">Minha Gestação</span>
+            <span className="font-display font-semibold text-foreground">MamyBoo</span>
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 Minha Gestação. Todos os direitos reservados.</p>
+          <p className="text-xs text-muted-foreground">© 2026 MamyBoo. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

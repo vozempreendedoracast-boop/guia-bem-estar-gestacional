@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const MONTHLY_LIMIT = 300;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -16,6 +18,69 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // --- Check user auth and plan ---
+    const authHeader = req.headers.get("authorization") || "";
+    let userId: string | null = null;
+    let userPlan: string = "none";
+
+    if (authHeader) {
+      const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") || supabaseKey);
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user } } = await anonClient.auth.getUser(token);
+      if (user) {
+        userId = user.id;
+        const { data: profile } = await supabase
+          .from("user_profiles")
+          .select("plan, plan_status")
+          .eq("user_id", user.id)
+          .single();
+        if (profile) {
+          userPlan = profile.plan_status === "active" ? profile.plan : "none";
+        }
+      }
+    }
+
+    // Check premium access
+    if (userPlan !== "premium") {
+      return new Response(JSON.stringify({ error: "O assistente de IA está disponível apenas no Plano Premium." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- Check monthly usage limit (invisible to user) ---
+    if (userId) {
+      const now = new Date();
+      const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      
+      const { data: usage } = await supabase
+        .from("ai_usage")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("month_year", monthYear)
+        .single();
+
+      if (usage && usage.messages_count >= MONTHLY_LIMIT) {
+        return new Response(JSON.stringify({ error: "Limite de mensagens atingido. Tente novamente no próximo mês." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Increment or create usage
+      if (usage) {
+        await supabase
+          .from("ai_usage")
+          .update({ messages_count: usage.messages_count + 1 })
+          .eq("id", usage.id);
+      } else {
+        await supabase
+          .from("ai_usage")
+          .insert({ user_id: userId, month_year: monthYear, messages_count: 1 });
+      }
+    }
+
+    // --- AI settings ---
     const { data: settings } = await supabase
       .from("ai_settings")
       .select("*")
@@ -62,14 +127,12 @@ serve(async (req) => {
         const errorText = await orResponse.text();
         console.error(`OpenRouter failed (${orResponse.status}):`, errorText);
 
-        // If auth error, don't fallback — it's a config issue
         if (orResponse.status === 401 || orResponse.status === 403) {
           return new Response(JSON.stringify({ error: "Chave OpenRouter inválida. Verifique no painel admin." }), {
             status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
 
-        // Rate limit or credits exhausted → fallback to Lovable IA
         console.log("OpenRouter unavailable, falling back to Lovable IA...");
       } catch (e) {
         console.error("OpenRouter network error:", e);
@@ -97,12 +160,12 @@ serve(async (req) => {
       console.error(`Lovable IA fallback failed (${lovResponse.status}):`, errText);
 
       if (lovResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições excedido em ambos os provedores. Tente novamente em instantes." }), {
+        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em instantes." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (lovResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes em ambos os provedores." }), {
+        return new Response(JSON.stringify({ error: "Créditos insuficientes." }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
