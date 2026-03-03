@@ -152,11 +152,29 @@ const Login = () => {
                 <>Entrar <ArrowRight className="w-5 h-5 ml-2" /></>
               )}
             </Button>
-            <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("magic")}>
-              Entrar com link mágico
-            </Button>
-          </form>
-        )}
+            <div className="flex flex-col gap-2">
+              <Button variant="ghost" className="text-sm text-muted-foreground" onClick={async () => {
+                if (!email.trim()) {
+                  toast.error("Digite seu email primeiro para recuperar a senha.");
+                  return;
+                }
+                setLoading(true);
+                const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+                  redirectTo: `${window.location.origin}/reset-password`,
+                });
+                setLoading(false);
+                if (error) {
+                  toast.error("Erro ao enviar email de recuperação.");
+                } else {
+                  toast.success("Email de recuperação enviado! Verifique sua caixa de entrada.");
+                }
+              }}>
+                Esqueci minha senha
+              </Button>
+              <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setMode("magic")}>
+                Entrar com link mágico
+              </Button>
+            </div>
 
         <div className="space-y-2">
           <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => navigate("/planos")}>
