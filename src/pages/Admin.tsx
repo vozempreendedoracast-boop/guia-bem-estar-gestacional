@@ -880,34 +880,88 @@ const Admin = () => {
         {/* ===== USERS ===== */}
         {activeTab === "users" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            <h1 className="text-2xl font-bold font-display text-foreground">Usuárias</h1>
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold font-display text-foreground">Usuárias</h1>
+              <Button size="sm" className="rounded-xl" onClick={() => { setNewUserData({ email: "", plan: "none", plan_status: "none" }); setNewUserOpen(true); }}>
+                <Plus className="w-4 h-4 mr-1" /> Nova Usuária
+              </Button>
+            </div>
             <div className="relative">
               <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Buscar por nome ou email..." className="pl-10 rounded-xl" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+              <Input placeholder="Buscar por email..." className="pl-10 rounded-xl" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
             </div>
             <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
-              <div className="hidden md:grid grid-cols-[1fr_1fr_80px_100px_60px] gap-2 p-4 border-b border-border text-xs font-medium text-muted-foreground">
-                <span>Nome</span><span>Email</span><span>Semana</span><span>Cadastro</span><span>Status</span>
+              <div className="hidden md:grid grid-cols-[1fr_100px_100px_100px_120px] gap-2 p-4 border-b border-border text-xs font-medium text-muted-foreground">
+                <span>Email</span><span>Plano</span><span>Status</span><span>Cadastro</span><span>Ações</span>
               </div>
-              {filteredUsers.map(user => (
-                <div key={user.id} className="p-4 border-b border-border last:border-0">
-                  <div className="md:hidden flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-sm text-foreground">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Semana {user.week}ª · {user.joined}</p>
+              {usersLoading ? (
+                <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground text-sm">Nenhuma usuária encontrada.</div>
+              ) : (
+                <div className="max-h-[60vh] overflow-y-auto">
+                  {filteredUsers.map(user => (
+                    <div key={user.id} className="p-4 border-b border-border last:border-0">
+                      <div className="md:hidden flex items-center justify-between">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm text-foreground truncate">{user.email}</p>
+                          <div className="flex gap-1.5 mt-1">
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                              user.plan === "premium" ? "bg-primary/15 text-primary" :
+                              user.plan === "essential" ? "bg-blue-100 text-blue-700" :
+                              "bg-muted text-muted-foreground"
+                            }`}>
+                              {user.plan === "premium" ? "Premium" : user.plan === "essential" ? "Essencial" : "Sem plano"}
+                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                              user.plan_status === "active" ? "bg-green-100 text-green-700" :
+                              user.plan_status === "expired" ? "bg-red-100 text-red-700" :
+                              "bg-muted text-muted-foreground"
+                            }`}>
+                              {user.plan_status === "active" ? "Ativo" : user.plan_status === "expired" ? "Expirado" : "Inativo"}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-1">{new Date(user.created_at).toLocaleDateString("pt-BR")}</p>
+                        </div>
+                        <div className="flex gap-1 flex-shrink-0">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingUser({ ...user }); setEditUserOpen(true); }}>
+                            <PencilSimple className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteUser(user.user_id)}>
+                            <Trash className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="hidden md:grid grid-cols-[1fr_100px_100px_100px_120px] gap-2 items-center">
+                        <span className="font-medium text-sm text-foreground truncate">{user.email}</span>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          user.plan === "premium" ? "bg-primary/15 text-primary" :
+                          user.plan === "essential" ? "bg-blue-100 text-blue-700" :
+                          "bg-muted text-muted-foreground"
+                        }`}>
+                          {user.plan === "premium" ? "Premium" : user.plan === "essential" ? "Essencial" : "Nenhum"}
+                        </span>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${
+                          user.plan_status === "active" ? "bg-green-100 text-green-700" :
+                          user.plan_status === "expired" ? "bg-red-100 text-red-700" :
+                          "bg-muted text-muted-foreground"
+                        }`}>
+                          {user.plan_status === "active" ? "Ativo" : user.plan_status === "expired" ? "Expirado" : "—"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{new Date(user.created_at).toLocaleDateString("pt-BR")}</span>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingUser({ ...user }); setEditUserOpen(true); }}>
+                            <PencilSimple className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteUser(user.user_id)}>
+                            <Trash className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${user.active ? "bg-green-500" : "bg-muted-foreground/40"}`} />
-                  </div>
-                  <div className="hidden md:grid grid-cols-[1fr_1fr_80px_100px_60px] gap-2 items-center">
-                    <span className="font-medium text-sm text-foreground">{user.name}</span>
-                    <span className="text-sm text-muted-foreground truncate">{user.email}</span>
-                    <span className="text-sm text-foreground">{user.week}ª</span>
-                    <span className="text-xs text-muted-foreground">{user.joined}</span>
-                    <span className={`w-2.5 h-2.5 rounded-full ${user.active ? "bg-green-500" : "bg-muted-foreground/40"}`} />
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </motion.div>
         )}
