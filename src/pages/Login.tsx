@@ -175,8 +175,8 @@ const Login = () => {
                 Entrar com link mágico
               </Button>
             </div>
-
-        <div className="space-y-2">
+          </form>
+        )}
           <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => navigate("/planos")}>
             Ainda não tem conta? Veja os planos
           </Button>
