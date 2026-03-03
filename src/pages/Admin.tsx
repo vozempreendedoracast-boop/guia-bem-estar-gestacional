@@ -244,7 +244,7 @@ const Admin = () => {
     u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-
+  const [editingCard, setEditingCard] = useState<Category | null>(null);
   const [editCardOpen, setEditCardOpen] = useState(false);
   const [newCardOpen, setNewCardOpen] = useState(false);
   const [newCard, setNewCard] = useState({ title: "", slug: "", description: "", icon: "BookOpen", path: "/", visible: true, display_order: 0 });
