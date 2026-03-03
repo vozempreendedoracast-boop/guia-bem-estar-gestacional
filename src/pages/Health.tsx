@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useActiveHealthTips } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
-import { ArrowLeft, Apple, Moon, Brain, Heart, Baby, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, AppleLogo, Moon, Brain, Heart, Baby, SpinnerGap, Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 const iconMap: Record<string, React.ElementType> = {
-  Apple, Moon, Brain, Heart, Baby, Sparkles,
+  AppleLogo, Moon, Brain, Heart, Baby, Sparkle,
 };
 
 const gradientCycle = ["gradient-peach", "gradient-lilac", "gradient-sage"];
@@ -17,7 +17,7 @@ const Health = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <SpinnerGap className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }

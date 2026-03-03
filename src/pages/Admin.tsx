@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, FileText, Users, Settings, BookOpen, AlertCircle,
-  Activity, Heart, Bot, BarChart3, Plus, Edit, Trash2, Eye, ArrowLeft,
-  TrendingUp, UserCheck, Calendar, Search, Save, X, Layers, Menu,
-  Bell, CreditCard, Link2, Database, Monitor, Loader2
-} from "lucide-react";
+  SquaresFour, FileText, Users, Gear, BookOpen, WarningCircle,
+  Heartbeat, Heart, Robot, ChartBar, Plus, PencilSimple, Trash, Eye, ArrowLeft,
+  TrendUp, UserCheck, CalendarBlank, MagnifyingGlass, FloppyDisk, X, Stack, List,
+  Bell, CreditCard, Link, Database, Monitor, SpinnerGap
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -77,11 +77,11 @@ interface AISettingsState {
 }
 
 const sidebarItems = [
-  { id: "overview", label: "Visão Geral", icon: LayoutDashboard },
-  { id: "cards", label: "Cards", icon: Layers },
+  { id: "overview", label: "Visão Geral", icon: SquaresFour },
+  { id: "cards", label: "Cards", icon: Stack },
   { id: "content", label: "Conteúdos", icon: FileText },
   { id: "users", label: "Usuárias", icon: Users },
-  { id: "settings", label: "Configurações", icon: Settings },
+  { id: "settings", label: "Configurações", icon: Gear },
 ];
 
 const CategorySelect = ({ value, onChange, categories }: { value: string | null; onChange: (v: string | null) => void; categories: Category[] }) => (
@@ -358,7 +358,7 @@ const Admin = () => {
   const SidebarContent = () => (
     <>
       <div className="flex items-center gap-2 mb-8 px-2">
-        <LayoutDashboard className="w-6 h-6 text-primary" />
+        <SquaresFour className="w-6 h-6 text-primary" />
         <span className="font-display font-bold text-lg text-foreground">Admin</span>
       </div>
       <nav className="space-y-1">
@@ -400,7 +400,7 @@ const Admin = () => {
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Menu className="w-5 h-5" />
+                  <List className="w-5 h-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-4">
@@ -439,8 +439,8 @@ const Admin = () => {
               {[
                 { label: "Total de Usuárias", value: mockStats.totalUsers.toLocaleString(), icon: Users, color: "text-primary" },
                 { label: "Ativas Hoje", value: mockStats.activeUsers.toLocaleString(), icon: UserCheck, color: "text-green-600" },
-                { label: "Novas Hoje", value: `+${mockStats.newToday}`, icon: TrendingUp, color: "text-blue-600" },
-                { label: "Semana Média", value: `${mockStats.avgWeek}ª`, icon: Calendar, color: "text-orange-600" },
+                { label: "Novas Hoje", value: `+${mockStats.newToday}`, icon: TrendUp, color: "text-blue-600" },
+                { label: "Semana Média", value: `${mockStats.avgWeek}ª`, icon: CalendarBlank, color: "text-orange-600" },
               ].map(stat => (
                 <div key={stat.label} className="bg-card rounded-2xl p-4 md:p-5 border border-border shadow-card">
                   <stat.icon className={`w-5 h-5 ${stat.color} mb-2`} />
@@ -507,7 +507,7 @@ const Admin = () => {
             </div>
 
             {loadingCategories ? (
-              <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+              <div className="flex justify-center py-8"><SpinnerGap className="w-6 h-6 animate-spin text-primary" /></div>
             ) : (
               <div className="grid gap-4">
                 {categories.sort((a, b) => a.display_order - b.display_order).map(card => (
@@ -529,13 +529,13 @@ const Admin = () => {
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleEditCard(card)}>
-                            <Edit className="w-4 h-4" />
+                            <PencilSimple className="w-4 h-4" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleToggleVisibility(card)}>
                             <Eye className={`w-4 h-4 ${!card.visible ? "text-muted-foreground" : ""}`} />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => handleDeleteCard(card)}>
-                            <Trash2 className="w-4 h-4" />
+                            <Trash className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
@@ -570,7 +570,7 @@ const Admin = () => {
                     <span>Semana</span><span>Status</span><span>Atualizado</span><span>Revisado</span><span>Ativo</span><span>Ações</span>
                   </div>
                   {loadingWeeks ? (
-                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                    <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div>
                   ) : (
                     <div className="max-h-[60vh] overflow-y-auto">
                       {weekContents.map(w => (
@@ -590,8 +590,8 @@ const Admin = () => {
                             </div>
                             <div className="flex gap-1">
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setViewingWeek(w); setViewWeekOpen(true); }}><Eye className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingWeek({ ...w }); setEditWeekOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteWeekContent(w)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingWeek({ ...w }); setEditWeekOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteWeekContent(w)}><Trash className="w-3.5 h-3.5" /></Button>
                             </div>
                           </div>
                           <div className="hidden sm:grid grid-cols-[60px_1fr_100px_80px_80px_120px] gap-2 items-center">
@@ -610,8 +610,8 @@ const Admin = () => {
                             <span>{w.active ? <span className="text-xs text-green-600">Sim</span> : <span className="text-xs text-red-500">Não</span>}</span>
                             <div className="flex gap-1">
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setViewingWeek(w); setViewWeekOpen(true); }}><Eye className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingWeek({ ...w }); setEditWeekOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteWeekContent(w)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingWeek({ ...w }); setEditWeekOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteWeekContent(w)}><Trash className="w-3.5 h-3.5" /></Button>
                             </div>
                           </div>
                         </div>
@@ -631,7 +631,7 @@ const Admin = () => {
                     </Button>
                   </div>
                   {loadingSymptoms ? (
-                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                    <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div>
                   ) : (
                     <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
                       {symptomsData.map(s => (
@@ -648,8 +648,8 @@ const Admin = () => {
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingSymptom({ ...s }); setEditSymptomOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteSymptomMut.mutate(s.id); toast.success("Sintoma excluído"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingSymptom({ ...s }); setEditSymptomOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteSymptomMut.mutate(s.id); toast.success("Sintoma excluído"); }}><Trash className="w-3.5 h-3.5" /></Button>
                           </div>
                         </div>
                       ))}
@@ -668,7 +668,7 @@ const Admin = () => {
                     </Button>
                   </div>
                   {loadingExercises ? (
-                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                    <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div>
                   ) : (
                     <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
                       {exercisesData.map(ex => (
@@ -686,8 +686,8 @@ const Admin = () => {
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingExercise({ ...ex, stepsText: (ex.steps || []).join("\n") }); setEditExerciseOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteExerciseMut.mutate(ex.id); toast.success("Exercício excluído"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingExercise({ ...ex, stepsText: (ex.steps || []).join("\n") }); setEditExerciseOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteExerciseMut.mutate(ex.id); toast.success("Exercício excluído"); }}><Trash className="w-3.5 h-3.5" /></Button>
                           </div>
                         </div>
                       ))}
@@ -706,7 +706,7 @@ const Admin = () => {
                     </Button>
                   </div>
                   {loadingHealthTips ? (
-                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                    <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div>
                   ) : (
                     <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
                       {healthTipsData.map(ht => (
@@ -721,8 +721,8 @@ const Admin = () => {
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingHealthTip({ ...ht, tipsText: ht.tips.join("\n") }); setEditHealthTipOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteHealthTipMut.mutate(ht.id); toast.success("Seção excluída"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingHealthTip({ ...ht, tipsText: ht.tips.join("\n") }); setEditHealthTipOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteHealthTipMut.mutate(ht.id); toast.success("Seção excluída"); }}><Trash className="w-3.5 h-3.5" /></Button>
                           </div>
                         </div>
                       ))}
@@ -741,7 +741,7 @@ const Admin = () => {
                     </Button>
                   </div>
                   {loadingTips ? (
-                    <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+                    <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div>
                   ) : (
                     <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
                       {tipsData.map(tip => (
@@ -756,8 +756,8 @@ const Admin = () => {
                             </div>
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingTip({ ...tip }); setEditTipOpen(true); }}><Edit className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteTipMut.mutate(tip.id); toast.success("Dica excluída"); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingTip({ ...tip }); setEditTipOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteTipMut.mutate(tip.id); toast.success("Dica excluída"); }}><Trash className="w-3.5 h-3.5" /></Button>
                           </div>
                         </div>
                       ))}
@@ -774,7 +774,7 @@ const Admin = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <h1 className="text-2xl font-bold font-display text-foreground">Usuárias</h1>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Buscar por nome ou email..." className="pl-10 rounded-xl" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
             </div>
             <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
@@ -813,7 +813,7 @@ const Admin = () => {
                 { type: "app", icon: Monitor, title: "Informações do App", description: `Nome: ${settings.appName}` },
                 { type: "plans", icon: CreditCard, title: "Planos e Assinaturas", description: `Premium: R$ ${settings.planPremiumPrice}/mês` },
                 { type: "push", icon: Bell, title: "Notificações Push", description: settings.pushEnabled ? `Ativadas · ${settings.pushFrequency}` : "Desativadas" },
-                { type: "integrations", icon: Link2, title: "Integrações e IA", description: aiSettings.enabled ? `IA: ${aiSettings.provider}/${aiSettings.model}` : "IA desativada" },
+                { type: "integrations", icon: Link, title: "Integrações e IA", description: aiSettings.enabled ? `IA: ${aiSettings.provider}/${aiSettings.model}` : "IA desativada" },
                 { type: "backup", icon: Database, title: "Backup e Exportação", description: settings.backupEnabled ? "Backup automático ativado" : "Manual" },
               ].map(s => (
                 <div key={s.type} className="bg-card rounded-2xl border border-border shadow-card p-5">

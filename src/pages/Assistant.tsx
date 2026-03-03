@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Bot, Send, Loader2 } from "lucide-react";
+import { ArrowLeft, Robot, PaperPlaneRight, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
@@ -65,7 +65,7 @@ const Assistant = () => {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
-          <Bot className="w-5 h-5 text-primary-foreground" />
+          <Robot className="w-5 h-5 text-primary-foreground" />
         </div>
         <div>
           <h1 className="text-lg font-bold font-display">Assistente IA</h1>
@@ -78,7 +78,7 @@ const Assistant = () => {
         {messages.length === 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center h-full text-center gap-4 py-12">
             <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-soft">
-              <Bot className="w-8 h-8 text-primary-foreground" />
+              <Robot className="w-8 h-8 text-primary-foreground" />
             </div>
             <div>
               <h2 className="font-bold font-display text-lg">Olá, {profile?.name}! 💕</h2>
@@ -116,7 +116,7 @@ const Assistant = () => {
         {isLoading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
             <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
-              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <SpinnerGap className="w-4 h-4 animate-spin text-primary" />
             </div>
           </motion.div>
         )}
@@ -133,7 +133,7 @@ const Assistant = () => {
             disabled={isLoading}
           />
           <Button type="submit" size="icon" className="rounded-xl h-10 w-10" disabled={isLoading || !input.trim()}>
-            <Send className="w-4 h-4" />
+            <PaperPlaneRight className="w-4 h-4" />
           </Button>
         </form>
         <p className="text-[10px] text-center text-muted-foreground/60 mt-2">

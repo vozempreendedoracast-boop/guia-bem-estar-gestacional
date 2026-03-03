@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
-import { Heart, Baby, Calendar, Sparkles, ArrowRight, ArrowLeft } from "lucide-react";
+import { Heart, Baby, CalendarBlank, Sparkle, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
 import { addDays, format } from "date-fns";
 
 const TOTAL_STEPS = 4;
@@ -55,7 +55,7 @@ const Onboarding = () => {
   };
 
   const emojis = ["😢", "😟", "😐", "🙂", "😊"];
-  const stepIcons = [Sparkles, Calendar, Heart, Baby];
+  const stepIcons = [Sparkle, CalendarBlank, Heart, Baby];
   const StepIcon = stepIcons[step];
 
   return (

@@ -1,15 +1,15 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Baby, Heart, BookOpen, Activity, Bot, Shield, Star, CheckCircle, ArrowRight } from "lucide-react";
+import { Baby, Heart, BookOpen, Heartbeat, Robot, ShieldCheck, Star, CheckCircle, ArrowRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import heroLanding from "@/assets/hero-landing.png";
 
 const features = [
   { icon: BookOpen, title: "Jornada Semana a Semana", description: "Acompanhe as 40 semanas de gestação com conteúdo liberado automaticamente conforme sua idade gestacional." },
   { icon: Heart, title: "Saúde Integral", description: "Alimentação, sono, saúde emocional e preparação para o parto reunidos em um só lugar." },
-  { icon: Activity, title: "Exercícios Personalizados", description: "Atividades seguras organizadas por trimestre, com instruções claras e detalhadas." },
-  { icon: Bot, title: "Assistente IA 24h", description: "Tire suas dúvidas a qualquer momento com nossa inteligência artificial empática e acolhedora." },
-  { icon: Shield, title: "Diário e Progresso", description: "Registre humor, sintomas e peso. Acompanhe sua evolução com gráficos fáceis de entender." },
+  { icon: Heartbeat, title: "Exercícios Personalizados", description: "Atividades seguras organizadas por trimestre, com instruções claras e detalhadas." },
+  { icon: Robot, title: "Assistente IA 24h", description: "Tire suas dúvidas a qualquer momento com nossa inteligência artificial empática e acolhedora." },
+  { icon: ShieldCheck, title: "Diário e Progresso", description: "Registre humor, sintomas e peso. Acompanhe sua evolução com gráficos fáceis de entender." },
   { icon: Star, title: "Conteúdo Profissional", description: "Todo o conteúdo é revisado por profissionais de saúde para garantir sua segurança." },
 ];
 
@@ -181,7 +181,7 @@ const Sales = () => {
               >
                 <div className="flex gap-1 mb-3">
                   {[...Array(5)].map((_, s) => (
-                    <Star key={s} className="w-4 h-4 fill-primary text-primary" />
+                    <Star key={s} className="w-4 h-4 text-primary" weight="fill" />
                   ))}
                 </div>
                 <p className="text-sm text-foreground leading-relaxed italic">"{t.text}"</p>
