@@ -4,7 +4,7 @@ import { usePregnancy } from "@/contexts/PregnancyContext";
 import { motion } from "framer-motion";
 import { ArrowLeft, Baby, Heart, Warning, Lightbulb, Stethoscope, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { getWeekEmoji } from "@/data/weeks";
+import WeekIcon from "@/components/WeekIcon";
 
 const WeekDetail = () => {
   const { week } = useParams();
@@ -44,8 +44,8 @@ const WeekDetail = () => {
           <h1 className="text-xl font-bold font-display">Semana {data.week_number}</h1>
         </div>
         <div className="text-center">
-          <div className="w-28 h-28 rounded-2xl bg-primary-foreground/20 flex items-center justify-center text-6xl mx-auto mb-3 shadow-lg backdrop-blur-sm">
-            {getWeekEmoji(data.week_number)}
+          <div className="w-28 h-28 rounded-2xl bg-primary-foreground/20 flex items-center justify-center mx-auto mb-3 shadow-lg backdrop-blur-sm text-primary-foreground">
+            <WeekIcon week={data.week_number} size={72} />
           </div>
           <p className="text-lg font-semibold">{data.baby_size_comparison}</p>
           <p className="text-sm opacity-80 mt-1">Tamanho: ~{data.baby_size}</p>
