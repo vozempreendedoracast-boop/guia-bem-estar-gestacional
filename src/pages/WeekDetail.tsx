@@ -4,6 +4,7 @@ import { usePregnancy } from "@/contexts/PregnancyContext";
 import { motion } from "framer-motion";
 import { ArrowLeft, Baby, Heart, AlertTriangle, Lightbulb, Stethoscope, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getBabyImage } from "@/utils/babyImages";
 
 const WeekDetail = () => {
   const { week } = useParams();
@@ -43,7 +44,7 @@ const WeekDetail = () => {
           <h1 className="text-xl font-bold font-display">Semana {data.week_number}</h1>
         </div>
         <div className="text-center">
-          <span className="text-6xl block mb-3">{data.baby_size_comparison.split(" ")[0]}</span>
+          <img src={getBabyImage(data.week_number)} alt={`Bebê semana ${data.week_number}`} className="w-28 h-28 rounded-2xl object-cover mx-auto mb-3 shadow-lg" />
           <p className="text-lg font-semibold">{data.baby_size_comparison}</p>
           <p className="text-sm opacity-80 mt-1">Tamanho: ~{data.baby_size}</p>
         </div>

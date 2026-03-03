@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Baby, BookOpen, Activity, Heart, BarChart3, Bot, Smile, AlertCircle, Sparkles, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getBabyImage } from "@/utils/babyImages";
 import { useState } from "react";
 
 import cardJourney from "@/assets/card-journey.png";
@@ -107,7 +108,7 @@ const Dashboard = () => {
             className="mt-5 bg-primary-foreground/10 rounded-2xl p-4 backdrop-blur-sm"
           >
             <div className="flex items-center gap-3">
-              <span className="text-3xl">{weekData.baby_size_comparison.split(" ")[0]}</span>
+              <img src={getBabyImage(currentWeek)} alt={`Bebê semana ${currentWeek}`} className="w-14 h-14 rounded-xl object-cover" />
               <div>
                 <p className="font-semibold text-sm">Seu bebê tem ~{weekData.baby_size}</p>
                 <p className="text-xs opacity-80">{weekData.baby_size_comparison}</p>
