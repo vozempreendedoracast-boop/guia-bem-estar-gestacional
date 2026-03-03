@@ -202,10 +202,10 @@ const Sales = () => {
           <Baby className="w-12 h-12 text-primary mx-auto mb-4" />
           <h2 className="text-3xl font-bold font-display text-foreground">Pronta para começar?</h2>
           <p className="text-muted-foreground mt-3 max-w-md mx-auto">
-            Crie sua conta gratuita em menos de 2 minutos e comece a acompanhar sua gestação com carinho e segurança.
+            Escolha seu plano e comece a acompanhar sua gestação com carinho e segurança.
           </p>
-          <Button size="lg" className="mt-8 rounded-xl text-base h-14 px-10" onClick={() => navigate("/cadastro")}>
-            Criar conta grátis
+          <Button size="lg" className="mt-8 rounded-xl text-base h-14 px-10" onClick={() => navigate("/planos")}>
+            Ver planos
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
           <p className="text-xs text-muted-foreground/60 mt-4">
