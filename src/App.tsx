@@ -19,6 +19,7 @@ import Assistant from "./pages/Assistant";
 import Sales from "./pages/Sales";
 import Plans from "./pages/Plans";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/vendas" element={<Sales />} />
               <Route path="/planos" element={<Plans />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Protected routes */}
               <Route path="/cadastro" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
