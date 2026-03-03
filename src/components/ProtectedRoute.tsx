@@ -22,8 +22,12 @@ const ProtectedRoute = ({ children, requirePlan = false }: ProtectedRouteProps) 
     return <Navigate to="/login" replace />;
   }
 
-  if (requirePlan && userProfile && userProfile.plan === "none") {
-    return <Navigate to="/planos" replace />;
+  // Check if user has an active plan when required
+  if (requirePlan && userProfile) {
+    const hasActivePlan = userProfile.plan !== "none" && userProfile.plan_status === "active";
+    if (!hasActivePlan) {
+      return <Navigate to="/planos" replace />;
+    }
   }
 
   return <>{children}</>;

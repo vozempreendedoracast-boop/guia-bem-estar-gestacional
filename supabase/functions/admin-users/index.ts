@@ -102,15 +102,19 @@ Deno.serve(async (req) => {
           });
         }
 
-        // Create auth user
-        const { data: newUser, error: createError } = await admin.auth.admin.createUser({
-          email,
-          email_confirm: true,
+        // Use inviteUserByEmail to create user AND send invitation email
+        const redirectUrl = url.origin.replace("functions/v1/admin-users", "");
+        const siteUrl = body.redirectTo || "https://mamyboo.lovable.app/cadastro";
+        const { data: newUser, error: createError } = await admin.auth.admin.inviteUserByEmail(email, {
+          redirectTo: siteUrl,
         });
         if (createError) throw createError;
 
         // Update profile with plan info
         if (newUser.user) {
+          // Small delay to ensure the trigger has created the profile
+          await new Promise(r => setTimeout(r, 500));
+
           const { error: updateError } = await admin
             .from("user_profiles")
             .update({
