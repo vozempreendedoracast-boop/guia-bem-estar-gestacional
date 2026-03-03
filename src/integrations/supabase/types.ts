@@ -56,6 +56,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage: {
+        Row: {
+          created_at: string
+          id: string
+          messages_count: number
+          month_year: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          messages_count?: number
+          month_year?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          messages_count?: number
+          month_year?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -251,6 +275,45 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string | null
+          id: string
+          kiwify_order_id: string | null
+          plan: Database["public"]["Enums"]["user_plan"]
+          plan_status: Database["public"]["Enums"]["plan_status"]
+          purchased_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          id?: string
+          kiwify_order_id?: string | null
+          plan?: Database["public"]["Enums"]["user_plan"]
+          plan_status?: Database["public"]["Enums"]["plan_status"]
+          purchased_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          id?: string
+          kiwify_order_id?: string | null
+          plan?: Database["public"]["Enums"]["user_plan"]
+          plan_status?: Database["public"]["Enums"]["plan_status"]
+          purchased_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       week_contents: {
         Row: {
           active: boolean
@@ -365,7 +428,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      plan_status: "none" | "active" | "expired"
+      user_plan: "none" | "essential" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -492,6 +556,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      plan_status: ["none", "active", "expired"],
+      user_plan: ["none", "essential", "premium"],
+    },
   },
 } as const
