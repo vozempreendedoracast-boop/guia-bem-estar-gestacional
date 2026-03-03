@@ -65,7 +65,7 @@ const Sales = () => {
             className="flex-1 text-center md:text-left"
           >
             <span className="inline-block bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full mb-4">
-              ✨ 100% Gratuito para começar
+              ✨ A partir de R$ 47 · Pagamento único
             </span>
             <h1 className="text-4xl md:text-5xl font-bold font-display text-foreground leading-tight">
               Sua companheira durante toda a
@@ -75,8 +75,8 @@ const Sales = () => {
               Informação personalizada, apoio emocional e acompanhamento semana a semana. Tudo que você precisa em um único app.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
-              <Button size="lg" className="rounded-xl text-base h-14 px-8" onClick={() => navigate("/cadastro")}>
-                Começar agora — É grátis
+              <Button size="lg" className="rounded-xl text-base h-14 px-8" onClick={() => navigate("/planos")}>
+                Ver planos e preços
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               <Button size="lg" variant="outline" className="rounded-xl text-base h-14 px-8" onClick={() => scrollToSection("features")}>
