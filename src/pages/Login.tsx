@@ -133,33 +133,33 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center max-w-sm w-full space-y-8"
+        className="text-center max-w-sm w-full space-y-6"
       >
         <motion.div
           animate={{ y: [0, -6, 0] }}
           transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-          className="w-24 h-24 mx-auto"
+          className="w-20 h-20 mx-auto"
         >
           <img src={logoMamyboo} alt="MamyBoo" className="w-full h-full object-contain" />
         </motion.div>
 
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold font-display text-foreground">
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold font-display text-foreground">
             {mode === "signup" ? "Criar conta" : "Entrar no MamyBoo"}
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs">
             {mode === "signup"
-              ? "Cadastre-se com email e senha para acessar o app."
+              ? "Cadastre-se com email e senha."
               : "Entre com seu email e senha."}
           </p>
         </div>
 
         {mode === "signup" ? (
-          <form onSubmit={handleSignUp} className="space-y-4">
+          <form onSubmit={handleSignUp} className="space-y-3">
             <div className="relative">
               <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -167,7 +167,7 @@ const Login = () => {
                 placeholder="seu@email.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="h-14 rounded-xl pl-10 text-base border-2 border-muted focus:border-primary"
+                className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary"
                 required
               />
             </div>
@@ -179,7 +179,7 @@ const Login = () => {
                 placeholder="Crie uma senha"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="h-14 rounded-xl pl-10 pr-12 text-base border-2 border-muted focus:border-primary"
+                className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary"
                 required
               />
               <button
@@ -198,7 +198,7 @@ const Login = () => {
                 placeholder="Confirme a senha"
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
-                className="h-14 rounded-xl pl-10 pr-12 text-base border-2 border-muted focus:border-primary"
+                className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary"
                 required
               />
               <button
@@ -213,24 +213,23 @@ const Login = () => {
             <Button
               type="submit"
               disabled={loading || !email.trim() || !password.trim() || !confirmPassword.trim()}
-              className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
+              className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft"
             >
               {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (
                 <>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>
               )}
             </Button>
 
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              className="text-sm text-muted-foreground"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setMode("login")}
             >
-              Já tenho conta
-            </Button>
+              Já tenho conta? <span className="underline">Entrar</span>
+            </button>
           </form>
         ) : (
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-3">
             <div className="relative">
               <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -238,7 +237,7 @@ const Login = () => {
                 placeholder="seu@email.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="h-14 rounded-xl pl-10 text-base border-2 border-muted focus:border-primary"
+                className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary"
                 required
               />
             </div>
@@ -250,7 +249,7 @@ const Login = () => {
                 placeholder="Sua senha"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="h-14 rounded-xl pl-10 pr-12 text-base border-2 border-muted focus:border-primary"
+                className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary"
                 required
               />
               <button
@@ -262,46 +261,53 @@ const Login = () => {
               </button>
             </div>
 
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                onClick={handleForgotPassword}
+                disabled={loading}
+              >
+                Esqueci minha senha
+              </button>
+            </div>
+
             <Button
               type="submit"
               disabled={loading || !email.trim() || !password.trim()}
-              className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
+              className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft"
             >
               {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (
                 <>Entrar <ArrowRight className="w-5 h-5 ml-2" /></>
               )}
             </Button>
 
-            <div className="flex flex-col gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-sm text-muted-foreground"
-                onClick={handleForgotPassword}
-                disabled={loading}
-              >
-                Esqueci minha senha
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-sm text-muted-foreground"
-                onClick={() => setMode("signup")}
-              >
-                Criar conta com email e senha
-              </Button>
-            </div>
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setMode("signup")}
+            >
+              Não tem conta? <span className="underline">Criar agora</span>
+            </button>
           </form>
         )}
 
-        <div className="space-y-2">
-          <Button type="button" variant="ghost" className="text-sm text-muted-foreground" onClick={() => navigate("/planos")}>
-            Ainda não tem conta? Veja os planos
-          </Button>
-          <Button type="button" variant="ghost" className="text-sm text-muted-foreground" onClick={() => navigate("/vendas")}>
+        <div className="flex items-center justify-center gap-4 pt-2">
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+            onClick={() => navigate("/planos")}
+          >
+            Ver planos
+          </button>
+          <span className="text-muted-foreground/40 text-xs">•</span>
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+            onClick={() => navigate("/vendas")}
+          >
             Conhecer o app
-          </Button>
+          </button>
         </div>
       </motion.div>
     </div>
