@@ -23,7 +23,9 @@ interface WebhookLog {
   data_evento: string;
 }
 
-const WEBHOOK_URL = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/kiwify-webhook`;
+const WEBHOOK_BASE_URL = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/kiwify-webhook`;
+const WEBHOOK_TOKEN = "1rh3a0u3mah";
+const WEBHOOK_URL_WITH_TOKEN = `${WEBHOOK_BASE_URL}?token=${WEBHOOK_TOKEN}`;
 
 const WebhookAdmin = () => {
   const [simEmail, setSimEmail] = useState("");
@@ -50,14 +52,14 @@ const WebhookAdmin = () => {
     if (!simEmail.trim()) { toast.error("Informe o email"); return; }
     setSimLoading(true);
     try {
-      const res = await fetch(WEBHOOK_URL, {
+      const res = await fetch(WEBHOOK_BASE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: simEmail,
           evento: simEvento,
           produto: simProduto,
-          token: "1rh3a0u3mah",
+          token: WEBHOOK_TOKEN,
         }),
       });
       const result = await res.json();
@@ -75,7 +77,7 @@ const WebhookAdmin = () => {
   };
 
   const copyUrl = () => {
-    navigator.clipboard.writeText(WEBHOOK_URL);
+    navigator.clipboard.writeText(WEBHOOK_URL_WITH_TOKEN);
     toast.success("URL copiada!");
   };
 
@@ -97,11 +99,11 @@ const WebhookAdmin = () => {
           URL do Webhook
         </h3>
         <p className="text-xs text-muted-foreground mb-3">
-          Cadastre esta URL na Kiwify em Configurações → Webhooks:
+          Cadastre esta URL na Kiwify em Configurações → Webhooks (inclui o token de autenticação):
         </p>
         <div className="flex gap-2 items-center">
           <code className="flex-1 bg-muted/50 px-3 py-2 rounded-xl text-xs text-foreground font-mono break-all select-all">
-            {WEBHOOK_URL}
+            {WEBHOOK_URL_WITH_TOKEN}
           </code>
           <Button variant="outline" size="icon" className="rounded-xl shrink-0" onClick={copyUrl}>
             <Copy className="w-4 h-4" />

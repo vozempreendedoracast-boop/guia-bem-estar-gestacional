@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -26,13 +26,37 @@ serve(async (req) => {
     const payload = await req.json();
     console.log("Kiwify webhook received:", JSON.stringify(payload, null, 2));
 
-    const { email, evento, produto, token } = payload;
+    // --- Detect payload format ---
+    // Real Kiwify: has webhook_event_type, Customer.email, Product.product_name
+    // Simulator (internal): has evento, email, produto, token
+    const isRealKiwify = !!payload.webhook_event_type;
+
+    let email: string;
+    let evento: string;
+    let produto: string;
+    let token: string | undefined;
+
+    if (isRealKiwify) {
+      // Real Kiwify payload
+      email = payload.Customer?.email || "";
+      evento = payload.webhook_event_type || "";
+      produto = payload.Product?.product_name || "";
+      // Kiwify doesn't send token in body; check URL query params
+      const url = new URL(req.url);
+      token = url.searchParams.get("token") || undefined;
+    } else {
+      // Internal simulator payload
+      email = payload.email || "";
+      evento = payload.evento || "";
+      produto = payload.produto || "";
+      token = payload.token;
+    }
 
     // Validate token
     const expectedToken = Deno.env.get("KIWIFY_WEBHOOK_TOKEN") || "";
-    if (!token || token !== expectedToken) {
+    if (expectedToken && (!token || token !== expectedToken)) {
       console.error("Invalid or missing token");
-      await logWebhook(supabase, email || "", evento || "", produto || "", "", "erro: token inválido");
+      await logWebhook(supabase, email, evento, produto, "", "erro: token inválido");
       return new Response(JSON.stringify({ error: "Não autorizado" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -40,7 +64,7 @@ serve(async (req) => {
     }
 
     if (!email) {
-      await logWebhook(supabase, "", evento || "", produto || "", "", "erro: email ausente");
+      await logWebhook(supabase, "", evento, produto, "", "erro: email ausente");
       return new Response(JSON.stringify({ error: "Email obrigatório" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -48,8 +72,20 @@ serve(async (req) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const normalizedEvento = (evento || "").toLowerCase().trim();
-    const normalizedProduto = (produto || "").toLowerCase().trim();
+    const normalizedEvento = evento.toLowerCase().trim();
+    const normalizedProduto = produto.toLowerCase().trim();
+
+    // Map real Kiwify event types to internal events
+    const eventMap: Record<string, string> = {
+      "order_approved": "compra aprovada",
+      "order_refunded": "reembolso",
+      "subscription_canceled": "compra cancelada",
+      "pix_created": "pix gerado",
+      "order_chargedback": "chargeback",
+    };
+    const mappedEvento = eventMap[normalizedEvento] || normalizedEvento;
+
+    console.log(`Processed: email=${normalizedEmail}, evento=${mappedEvento}, produto=${normalizedProduto}, isRealKiwify=${isRealKiwify}`);
 
     // Find user by email in user_profiles
     const { data: profile, error: profileError } = await supabase
@@ -60,7 +96,7 @@ serve(async (req) => {
 
     if (profileError) {
       console.error("Error finding user:", profileError);
-      await logWebhook(supabase, normalizedEmail, evento, produto, "", "erro: falha ao buscar usuário");
+      await logWebhook(supabase, normalizedEmail, mappedEvento, produto, "", "erro: falha ao buscar usuário");
       return new Response(JSON.stringify({ error: "Erro interno" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -68,7 +104,7 @@ serve(async (req) => {
     }
 
     if (!profile) {
-      await logWebhook(supabase, normalizedEmail, evento, produto, "", "erro: usuário não encontrado");
+      await logWebhook(supabase, normalizedEmail, mappedEvento, produto, "", "erro: usuário não encontrado");
       return new Response(JSON.stringify({ error: "Usuário não encontrado" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -76,8 +112,7 @@ serve(async (req) => {
     }
 
     // Determine action based on event
-    if (normalizedEvento === "compra aprovada") {
-      // Determine plan from product name
+    if (mappedEvento === "compra aprovada") {
       let plan: "essential" | "premium" = "essential";
       if (normalizedProduto.includes("premium")) {
         plan = "premium";
@@ -85,7 +120,7 @@ serve(async (req) => {
 
       const now = new Date();
       const expiresAt = new Date(now);
-      expiresAt.setFullYear(expiresAt.getFullYear() + 1); // 12 months
+      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
       const { error: updateError } = await supabase
         .from("user_profiles")
@@ -99,14 +134,14 @@ serve(async (req) => {
 
       if (updateError) {
         console.error("Error updating plan:", updateError);
-        await logWebhook(supabase, normalizedEmail, evento, produto, plan, "erro: falha ao atualizar plano");
+        await logWebhook(supabase, normalizedEmail, mappedEvento, produto, plan, "erro: falha ao atualizar plano");
         return new Response(JSON.stringify({ error: "Erro ao atualizar plano" }), {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      await logWebhook(supabase, normalizedEmail, evento, produto, plan, "sucesso");
+      await logWebhook(supabase, normalizedEmail, mappedEvento, produto, plan, "sucesso");
       console.log(`Plan activated: ${normalizedEmail} -> ${plan}`);
 
       return new Response(JSON.stringify({ ok: true, plan, status: "active" }), {
@@ -114,9 +149,9 @@ serve(async (req) => {
       });
 
     } else if (
-      normalizedEvento === "reembolso" ||
-      normalizedEvento === "chargeback" ||
-      normalizedEvento === "compra cancelada"
+      mappedEvento === "reembolso" ||
+      mappedEvento === "chargeback" ||
+      mappedEvento === "compra cancelada"
     ) {
       const { error: updateError } = await supabase
         .from("user_profiles")
@@ -129,29 +164,29 @@ serve(async (req) => {
 
       if (updateError) {
         console.error("Error revoking plan:", updateError);
-        await logWebhook(supabase, normalizedEmail, evento, produto, "none", "erro: falha ao revogar");
+        await logWebhook(supabase, normalizedEmail, mappedEvento, produto, "none", "erro: falha ao revogar");
         return new Response(JSON.stringify({ error: "Erro ao revogar plano" }), {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      await logWebhook(supabase, normalizedEmail, evento, produto, "none", "sucesso");
+      await logWebhook(supabase, normalizedEmail, mappedEvento, produto, "none", "sucesso");
       console.log(`Plan revoked: ${normalizedEmail}`);
 
       return new Response(JSON.stringify({ ok: true, plan: "none", status: "revoked" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
 
-    } else if (normalizedEvento === "pix gerado") {
-      await logWebhook(supabase, normalizedEmail, evento, produto, "", "sucesso: pix gerado (apenas log)");
+    } else if (mappedEvento === "pix gerado") {
+      await logWebhook(supabase, normalizedEmail, mappedEvento, produto, "", "sucesso: pix gerado (apenas log)");
       console.log(`Pix gerado registrado: ${normalizedEmail}`);
       return new Response(JSON.stringify({ ok: true, message: "Pix gerado registrado" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
 
     } else {
-      await logWebhook(supabase, normalizedEmail, evento, produto, "", `ignorado: evento "${evento}"`);
+      await logWebhook(supabase, normalizedEmail, mappedEvento, produto, "", `ignorado: evento "${evento}"`);
       return new Response(JSON.stringify({ ok: true, message: "Evento não processado" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
