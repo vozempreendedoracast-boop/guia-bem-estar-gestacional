@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
-import { Heart, Baby, CalendarBlank, Sparkle, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
+import { Heart, CalendarBlank, Sparkle, ArrowRight, ArrowLeft } from "@phosphor-icons/react";
 import { addDays, format } from "date-fns";
+import mamybooPink from "@/assets/mamyboo-pink.png";
 
 const TOTAL_STEPS = 4;
 
@@ -55,7 +56,7 @@ const Onboarding = () => {
   };
 
   const emojis = ["😢", "😟", "😐", "🙂", "😊"];
-  const stepIcons = [Sparkle, CalendarBlank, Heart, Baby];
+  const stepIcons = [Sparkle, CalendarBlank, Heart, null];
   const StepIcon = stepIcons[step];
 
   return (
@@ -87,8 +88,8 @@ const Onboarding = () => {
             className="space-y-6"
           >
             <div className="text-center space-y-3">
-              <div className="w-16 h-16 rounded-2xl gradient-primary mx-auto flex items-center justify-center shadow-soft">
-                <StepIcon className="w-8 h-8 text-primary-foreground" />
+              <div className="w-16 h-16 rounded-2xl gradient-primary mx-auto flex items-center justify-center shadow-soft p-2">
+                {StepIcon ? <StepIcon className="w-8 h-8 text-primary-foreground" /> : <img src={mamybooPink} alt="MamyBoo" className="w-10 h-10 object-contain" />}
               </div>
 
               {step === 0 && (

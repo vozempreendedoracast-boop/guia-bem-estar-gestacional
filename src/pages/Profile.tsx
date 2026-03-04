@@ -1,13 +1,15 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Baby, CalendarBlank, Heart, Briefcase, Stethoscope, User, EnvelopeSimple, Phone } from "@phosphor-icons/react";
+import { ArrowLeft, CalendarBlank, Heart, Briefcase, Stethoscope, User, EnvelopeSimple, Phone } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
+import mamybooWhite from "@/assets/mamyboo-white.png";
+import mamybooPink from "@/assets/mamyboo-pink.png";
 
 const Profile = () => {
   const { profile, setProfile, currentWeek, trimester, progressPercent } = usePregnancy();
@@ -30,7 +32,15 @@ const Profile = () => {
     toast.success("Perfil atualizado!");
   };
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 gap-4">
+        <img src={mamybooPink} alt="MamyBoo" className="w-16 h-16 object-contain" />
+        <p className="text-muted-foreground text-center">Você ainda não completou o cadastro.</p>
+        <Button onClick={() => navigate("/cadastro")} className="rounded-xl">Completar cadastro</Button>
+      </div>
+    );
+  }
 
   const dueDate = new Date(profile.dueDate);
 
@@ -50,8 +60,8 @@ const Profile = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center gap-3"
         >
-          <div className="w-20 h-20 rounded-full gradient-primary flex items-center justify-center shadow-soft">
-            <Baby className="w-10 h-10 text-primary-foreground" />
+          <div className="w-20 h-20 rounded-full gradient-primary flex items-center justify-center shadow-soft p-3">
+            <img src={mamybooWhite} alt="MamyBoo" className="w-12 h-12 object-contain" />
           </div>
           <div className="text-center">
             <h2 className="text-xl font-bold font-display">{profile.name}</h2>
@@ -166,7 +176,7 @@ const Profile = () => {
           <div className="grid grid-cols-2 gap-3">
             {[
               { icon: CalendarBlank, label: "Data prevista", value: dueDate.toLocaleDateString("pt-BR"), bg: "bg-peach", color: "text-peach-foreground" },
-              { icon: Baby, label: "Idade", value: `${profile.age} anos`, bg: "bg-lilac", color: "text-lilac-foreground" },
+              { icon: User, label: "Idade", value: `${profile.age} anos`, bg: "bg-lilac", color: "text-lilac-foreground" },
               { icon: Heart, label: "Primeira gestação", value: profile.firstPregnancy ? "Sim" : "Não", bg: "bg-sage", color: "text-sage-foreground" },
               { icon: Briefcase, label: "Trabalhando", value: profile.working ? "Sim" : "Não", bg: "bg-peach", color: "text-peach-foreground" },
               { icon: Stethoscope, label: "Acompanhamento", value: profile.hasMedicalCare ? "Sim" : "Não", bg: "bg-lilac", color: "text-lilac-foreground" },
