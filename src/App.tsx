@@ -45,7 +45,7 @@ const App = () => (
               {/* Public routes */}
               <Route path="/" element={<Index />} />
               <Route path="/vendas" element={<Sales />} />
-              <Route path="/planos" element={<Plans />} />
+              <Route path="/planos" element={<Plans />} /> {/* redirects to /vendas */}
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
 
