@@ -332,6 +332,36 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_logs: {
+        Row: {
+          data_evento: string
+          email: string
+          evento: string
+          id: string
+          plano_aplicado: string
+          produto: string
+          status_processamento: string
+        }
+        Insert: {
+          data_evento?: string
+          email?: string
+          evento?: string
+          id?: string
+          plano_aplicado?: string
+          produto?: string
+          status_processamento?: string
+        }
+        Update: {
+          data_evento?: string
+          email?: string
+          evento?: string
+          id?: string
+          plano_aplicado?: string
+          produto?: string
+          status_processamento?: string
+        }
+        Relationships: []
+      }
       week_contents: {
         Row: {
           active: boolean
