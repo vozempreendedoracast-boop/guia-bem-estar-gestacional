@@ -3,7 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWeekContents, useCategories } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Baby, BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut } from "@phosphor-icons/react";
+import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut } from "@phosphor-icons/react";
+import mamybooWhite from "@/assets/mamyboo-white.png";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
 import { useState } from "react";
@@ -76,8 +77,8 @@ const Dashboard = () => {
             <h1 className="text-2xl font-bold font-display">Semana {currentWeek}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/perfil")} className="w-12 h-12 rounded-full bg-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/30 transition-colors">
-              <Baby className="w-6 h-6" />
+            <button onClick={() => navigate("/perfil")} className="w-12 h-12 rounded-full bg-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/30 transition-colors p-2">
+              <img src={mamybooWhite} alt="MamyBoo" className="w-7 h-7 object-contain" />
             </button>
             <Button variant="ghost" size="icon" className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={() => { logout(); signOut(); }}>
               <SignOut className="w-4 h-4" />

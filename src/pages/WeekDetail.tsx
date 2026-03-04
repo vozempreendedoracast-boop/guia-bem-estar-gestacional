@@ -2,9 +2,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useWeekContent } from "@/hooks/useSupabaseData";
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Baby, Heart, Warning, Lightbulb, Stethoscope, SpinnerGap } from "@phosphor-icons/react";
+import { ArrowLeft, Heart, Warning, Lightbulb, Stethoscope, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
+import mamybooPink from "@/assets/mamyboo-pink.png";
 import { useEffect } from "react";
 
 const WeekDetail = () => {
@@ -33,7 +34,7 @@ const WeekDetail = () => {
   }
 
   const sections = [
-    { icon: Baby, title: "Desenvolvimento do bebê", content: data.baby_development, color: "bg-peach" },
+    { icon: () => <img src={mamybooPink} alt="MamyBoo" className="w-5 h-5 object-contain" />, title: "Desenvolvimento do bebê", content: data.baby_development, color: "bg-peach" },
     { icon: Heart, title: "Mudanças no seu corpo", content: data.mother_changes, color: "bg-lilac" },
     { icon: Stethoscope, title: "Sintomas comuns", content: data.common_symptoms.join(", "), color: "bg-sage" },
     { icon: Lightbulb, title: "Dica prática", content: data.tip, color: "bg-peach" },

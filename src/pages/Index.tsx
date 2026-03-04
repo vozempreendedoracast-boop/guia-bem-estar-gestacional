@@ -3,8 +3,9 @@ import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart, Baby, Sparkle } from "@phosphor-icons/react";
+import { Heart, Sparkle, CalendarBlank } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import mamybooWhite from "@/assets/mamyboo-white.png";
 
 const Index = () => {
   const { user, loading, isAdmin } = useAuth();
@@ -39,9 +40,9 @@ const Index = () => {
         <motion.div
           animate={{ y: [0, -8, 0] }}
           transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-          className="w-24 h-24 rounded-3xl gradient-hero mx-auto flex items-center justify-center shadow-elevated"
+          className="w-24 h-24 rounded-3xl gradient-hero mx-auto flex items-center justify-center shadow-elevated p-4"
         >
-          <Baby className="w-12 h-12 text-primary-foreground" />
+          <img src={mamybooWhite} alt="MamyBoo" className="w-14 h-14 object-contain" />
         </motion.div>
 
         <div className="space-y-3">
@@ -63,7 +64,7 @@ const Index = () => {
             <span className="text-xs">Personalizado</span>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <Baby className="w-5 h-5 text-primary" />
+            <CalendarBlank className="w-5 h-5 text-primary" />
             <span className="text-xs">Semana a semana</span>
           </div>
         </div>
