@@ -745,7 +745,7 @@ const Admin = () => {
                             </div>
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingSymptom({ ...s }); setEditSymptomOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={async () => { try { await deleteSymptomMut.mutateAsync(s.id); toast.success("Sintoma excluído"); } catch { toast.error("Erro ao excluir sintoma"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteSymptomMut.isPending} onClick={async () => { try { await deleteSymptomMut.mutateAsync(s.id); toast.success("Sintoma excluído"); } catch (error: any) { console.error("Erro ao excluir sintoma:", error); toast.error(error?.message || "Erro ao excluir sintoma"); } }}><Trash className="w-3.5 h-3.5" /></Button>
                             </div>
                           </div>
                         ))}
@@ -777,7 +777,7 @@ const Admin = () => {
                             </div>
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingExercise({ ...ex, stepsText: (ex.steps || []).join("\n") }); setEditExerciseOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={async () => { try { await deleteExerciseMut.mutateAsync(ex.id); toast.success("Exercício excluído"); } catch { toast.error("Erro ao excluir exercício"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteExerciseMut.isPending} onClick={async () => { try { await deleteExerciseMut.mutateAsync(ex.id); toast.success("Exercício excluído"); } catch (error: any) { console.error("Erro ao excluir exercício:", error); toast.error(error?.message || "Erro ao excluir exercício"); } }}><Trash className="w-3.5 h-3.5" /></Button>
                             </div>
                           </div>
                         ))}
@@ -805,7 +805,7 @@ const Admin = () => {
                             </div>
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingHealthTip({ ...ht, tipsText: ht.tips.join("\n") }); setEditHealthTipOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={async () => { try { await deleteHealthTipMut.mutateAsync(ht.id); toast.success("Seção excluída"); } catch { toast.error("Erro ao excluir seção"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteHealthTipMut.isPending} onClick={async () => { try { await deleteHealthTipMut.mutateAsync(ht.id); toast.success("Seção excluída"); } catch (error: any) { console.error("Erro ao excluir seção de saúde:", error); toast.error(error?.message || "Erro ao excluir seção"); } }}><Trash className="w-3.5 h-3.5" /></Button>
                             </div>
                           </div>
                         ))}
@@ -834,7 +834,7 @@ const Admin = () => {
                             </div>
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingTip({ ...tip }); setEditTipOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={async () => { try { await deleteTipMut.mutateAsync(tip.id); toast.success("Dica excluída"); } catch { toast.error("Erro ao excluir dica"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteTipMut.isPending} onClick={async () => { try { await deleteTipMut.mutateAsync(tip.id); toast.success("Dica excluída"); } catch (error: any) { console.error("Erro ao excluir dica semanal:", error); toast.error(error?.message || "Erro ao excluir dica"); } }}><Trash className="w-3.5 h-3.5" /></Button>
                             </div>
                           </div>
                         ))}
