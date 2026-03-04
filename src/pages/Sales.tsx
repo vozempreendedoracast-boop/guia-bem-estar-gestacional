@@ -1,25 +1,40 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Baby, Heart, BookOpen, Heartbeat, Robot, ShieldCheck, Star, CheckCircle, ArrowRight } from "@phosphor-icons/react";
+import {
+  Baby, Heart, BookOpen, Heartbeat, Robot, ShieldCheck, Star,
+  CheckCircle, ArrowRight, Crown, Sparkle,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import heroLanding from "@/assets/hero-landing.png";
 
 const features = [
-  { icon: BookOpen, title: "Jornada Semana a Semana", description: "Acompanhe as 40 semanas de gestação com conteúdo liberado automaticamente conforme sua idade gestacional." },
-  { icon: Heart, title: "Saúde Integral", description: "Alimentação, sono, saúde emocional e preparação para o parto reunidos em um só lugar." },
-  { icon: Heartbeat, title: "Exercícios Personalizados", description: "Atividades seguras organizadas por trimestre, com instruções claras e detalhadas." },
-  { icon: Robot, title: "Assistente IA 24h", description: "Tire suas dúvidas a qualquer momento com nossa inteligência artificial empática e acolhedora." },
-  { icon: ShieldCheck, title: "Diário e Progresso", description: "Registre humor, sintomas e peso. Acompanhe sua evolução com gráficos fáceis de entender." },
-  { icon: Star, title: "Conteúdo Profissional", description: "Todo o conteúdo é revisado por profissionais de saúde para garantir sua segurança." },
+  { icon: BookOpen, title: "Jornada Semana a Semana", description: "Acompanhe as 40 semanas com conteúdo liberado automaticamente." },
+  { icon: Heart, title: "Saúde Integral", description: "Alimentação, sono, emocional e preparação para o parto." },
+  { icon: Heartbeat, title: "Exercícios por Trimestre", description: "Atividades seguras com instruções claras e detalhadas." },
+  { icon: Robot, title: "Assistente IA 24h", description: "Tire dúvidas a qualquer momento com IA empática." },
+  { icon: ShieldCheck, title: "Diário e Progresso", description: "Registre humor, sintomas e peso com gráficos fáceis." },
+  { icon: Star, title: "Conteúdo Profissional", description: "Revisado por profissionais de saúde." },
 ];
 
-const benefits = [
-  "Informação certa na hora certa",
-  "Reduz ansiedade e insegurança",
-  "Organiza toda a sua jornada",
-  "Apoio emocional contínuo",
-  "A partir de R$ 47 (pagamento único)",
-  "Funciona no celular e offline",
+const essentialFeatures = [
+  "Acesso completo semana 1 a 42",
+  "Conteúdo de Saúde, Exercícios e Alimentação",
+  "Desenvolvimento do bebê semana a semana",
+  "Comparações de tamanho do bebê",
+  "Diário de humor e sintomas",
+  "Atualizações futuras incluídas",
+  "Acesso por 12 meses",
+];
+
+const premiumFeatures = [
+  "Tudo do plano Essencial",
+  "Assistente de IA 24h",
+  "Respostas personalizadas",
+  "Uso ilimitado do chat IA",
+  "Recursos premium futuros",
+  "Suporte prioritário",
+  "Acesso por 12 meses",
 ];
 
 const testimonials = [
@@ -28,15 +43,52 @@ const testimonials = [
   { name: "Ana Paula R.", week: "Semana 34", text: "Os exercícios por trimestre são perfeitos. Me sinto mais preparada para o parto." },
 ];
 
+const faqs = [
+  { q: "Preciso de assinatura?", a: "Não! É pagamento único com acesso por 12 meses completos." },
+  { q: "Como funciona o acesso?", a: "Após o pagamento, você recebe um link no email para acessar imediatamente." },
+  { q: "Posso fazer upgrade depois?", a: "Sim! Você pode migrar do Essencial para o Premium a qualquer momento." },
+  { q: "O app substitui o médico?", a: "Não. O MamyBoo é informativo e complementar ao acompanhamento médico." },
+];
+
+/* Floating decorative blobs */
+const FloatingBlob = ({ className, delay = 0 }: { className: string; delay?: number }) => (
+  <motion.div
+    className={`absolute rounded-full pointer-events-none opacity-30 blur-3xl ${className}`}
+    animate={{ y: [0, -20, 0], x: [0, 10, 0], scale: [1, 1.05, 1] }}
+    transition={{ duration: 6, repeat: Infinity, delay, ease: "easeInOut" }}
+  />
+);
+
+const FloatingSparkle = ({ className, delay = 0 }: { className: string; delay?: number }) => (
+  <motion.div
+    className={`absolute pointer-events-none ${className}`}
+    animate={{ y: [0, -12, 0], rotate: [0, 15, -15, 0], opacity: [0.4, 0.8, 0.4] }}
+    transition={{ duration: 4, repeat: Infinity, delay, ease: "easeInOut" }}
+  >
+    <Sparkle className="w-5 h-5 text-primary/40" weight="fill" />
+  </motion.div>
+);
+
 const Sales = () => {
   const navigate = useNavigate();
+
+  const essentialCheckoutUrl = "#";
+  const premiumCheckoutUrl = "#";
+
+  const handleSelectPlan = (url: string) => {
+    if (url === "#") {
+      navigate("/login");
+      return;
+    }
+    window.open(url, "_blank");
+  };
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-hidden">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -46,9 +98,9 @@ const Sales = () => {
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
             <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("features")}>Recursos</Button>
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("testimonials")}>Depoimentos</Button>
+            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("plans")}>Planos</Button>
             <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/login")}>Entrar</Button>
-            <Button size="sm" className="rounded-xl text-xs sm:text-sm" onClick={() => navigate("/planos")}>
+            <Button size="sm" className="rounded-xl text-xs sm:text-sm" onClick={() => scrollToSection("plans")}>
               Ver planos
             </Button>
           </div>
@@ -56,8 +108,14 @@ const Sales = () => {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-6 py-16 md:py-24 flex flex-col md:flex-row items-center gap-10">
+      <section className="relative">
+        <FloatingBlob className="w-72 h-72 bg-primary/20 -top-20 -left-20" delay={0} />
+        <FloatingBlob className="w-56 h-56 bg-secondary -top-10 right-10" delay={2} />
+        <FloatingSparkle className="top-24 left-[15%]" delay={0.5} />
+        <FloatingSparkle className="top-40 right-[20%]" delay={1.5} />
+        <FloatingSparkle className="bottom-12 left-[60%]" delay={3} />
+
+        <div className="max-w-5xl mx-auto px-6 py-16 md:py-24 flex flex-col md:flex-row items-center gap-10 relative z-10">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -75,7 +133,7 @@ const Sales = () => {
               Informação personalizada, apoio emocional e acompanhamento semana a semana. Tudo que você precisa em um único app.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
-              <Button size="lg" className="rounded-xl text-base h-14 px-8" onClick={() => navigate("/planos")}>
+              <Button size="lg" className="rounded-xl text-base h-14 px-8" onClick={() => scrollToSection("plans")}>
                 Ver planos e preços
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
@@ -95,11 +153,19 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* Benefits strip */}
-      <section className="bg-primary/5 py-10">
+      {/* Benefits strip — gradient peach bg */}
+      <section className="gradient-peach py-10 relative">
+        <FloatingSparkle className="top-4 right-[10%]" delay={1} />
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {benefits.map((b, i) => (
+            {[
+              "Informação certa na hora certa",
+              "Reduz ansiedade e insegurança",
+              "Organiza toda a sua jornada",
+              "Apoio emocional contínuo",
+              "A partir de R$ 47 (pagamento único)",
+              "Funciona no celular e offline",
+            ].map((b, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 10 }}
@@ -108,19 +174,29 @@ const Sales = () => {
                 transition={{ delay: i * 0.08 }}
                 className="flex items-center gap-2"
               >
-                <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                <span className="text-sm text-foreground">{b}</span>
+                <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" weight="fill" />
+                <span className="text-sm text-foreground font-medium">{b}</span>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-16">
-        <div className="max-w-5xl mx-auto px-6">
+      {/* Features — white bg */}
+      <section id="features" className="py-16 relative">
+        <FloatingBlob className="w-64 h-64 bg-lilac/40 -bottom-20 -right-20" delay={1} />
+        <FloatingSparkle className="top-10 left-[8%]" delay={2} />
+
+        <div className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold font-display text-foreground">Tudo que você precisa</h2>
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl font-bold font-display text-foreground"
+            >
+              Tudo que você precisa 💜
+            </motion.h2>
             <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
               Desenvolvido com carinho para acompanhar cada momento da sua gestação.
             </p>
@@ -133,7 +209,7 @@ const Sales = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-card rounded-2xl p-6 border border-border shadow-card hover:shadow-elevated transition-shadow"
+                className="bg-card rounded-2xl p-6 border border-border shadow-card hover:shadow-elevated transition-all hover:-translate-y-1"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                   <f.icon className="w-6 h-6 text-primary" />
@@ -146,29 +222,21 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* CTA mid */}
-      <section className="gradient-hero py-16">
-        <div className="max-w-3xl mx-auto px-6 text-center text-primary-foreground">
-          <h2 className="text-3xl font-bold font-display">Comece sua jornada agora</h2>
-          <p className="mt-3 opacity-90 max-w-lg mx-auto">
-            Junte-se a milhares de gestantes que já usam o MamyBoo para se sentirem mais seguras e informadas.
-          </p>
-          <Button
-            size="lg"
-            className="mt-8 rounded-xl text-base h-14 px-10 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-            onClick={() => navigate("/planos")}
-          >
-            Ver planos e preços
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-        </div>
-      </section>
+      {/* Testimonials — lilac bg */}
+      <section id="testimonials" className="py-16 gradient-lilac relative">
+        <FloatingSparkle className="top-6 left-[25%]" delay={0} />
+        <FloatingSparkle className="bottom-10 right-[15%]" delay={2.5} />
 
-      {/* Testimonials */}
-      <section id="testimonials" className="py-16">
-        <div className="max-w-5xl mx-auto px-6">
+        <div className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold font-display text-foreground">O que dizem as mamães</h2>
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl font-bold font-display text-foreground"
+            >
+              O que dizem as mamães 🥰
+            </motion.h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {testimonials.map((t, i) => (
@@ -178,7 +246,7 @@ const Sales = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-card rounded-2xl p-6 border border-border shadow-card"
+                className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border shadow-card"
               >
                 <div className="flex gap-1 mb-3">
                   {[...Array(5)].map((_, s) => (
@@ -196,26 +264,190 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <Baby className="w-12 h-12 text-primary mx-auto mb-4" />
-          <h2 className="text-3xl font-bold font-display text-foreground">Pronta para começar?</h2>
-          <p className="text-muted-foreground mt-3 max-w-md mx-auto">
+      {/* Plans — white bg */}
+      <section id="plans" className="py-16 relative">
+        <FloatingBlob className="w-80 h-80 bg-peach/30 -top-20 -left-32" delay={0.5} />
+        <FloatingBlob className="w-60 h-60 bg-sage/30 bottom-0 right-0" delay={3} />
+        <FloatingSparkle className="top-20 right-[12%]" delay={1} />
+
+        <div className="max-w-4xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-10">
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl font-bold font-display text-foreground"
+            >
+              Escolha seu plano ✨
+            </motion.h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
+              Pagamento único, sem assinaturas. Acesso completo por 12 meses.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Essential */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="bg-card rounded-2xl border border-border shadow-card p-6 flex flex-col"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-peach flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-peach-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold font-display">Essencial</h3>
+                  <p className="text-xs text-muted-foreground">Tudo para acompanhar sua gestação</p>
+                </div>
+              </div>
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold font-display text-foreground">R$ 47</span>
+                  <span className="text-sm text-muted-foreground">pagamento único</span>
+                </div>
+              </div>
+              <ul className="space-y-3 flex-1 mb-6">
+                {essentialFeatures.map(f => (
+                  <li key={f} className="flex items-start gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">{f}</span>
+                  </li>
+                ))}
+                <li className="flex items-start gap-2 text-sm opacity-40">
+                  <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-center">✕</span>
+                  <span>Assistente de IA</span>
+                </li>
+              </ul>
+              <Button
+                onClick={() => handleSelectPlan(essentialCheckoutUrl)}
+                variant="outline"
+                className="w-full h-14 rounded-xl font-semibold text-base"
+              >
+                Quero começar
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </motion.div>
+
+            {/* Premium */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="bg-card rounded-2xl border-2 border-primary shadow-elevated p-6 flex flex-col relative"
+            >
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-primary text-primary-foreground px-4 py-1 text-xs font-semibold border-0">
+                ⭐ Mais escolhido
+              </Badge>
+              <div className="flex items-center gap-3 mb-4 mt-2">
+                <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center shadow-soft">
+                  <Crown className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold font-display">Premium</h3>
+                  <p className="text-xs text-muted-foreground">A experiência completa</p>
+                </div>
+              </div>
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold font-display text-foreground">R$ 97</span>
+                  <span className="text-sm text-muted-foreground">pagamento único</span>
+                </div>
+                <p className="text-xs text-primary font-medium mt-1">Economize com IA ilimitada inclusa</p>
+              </div>
+              <ul className="space-y-3 flex-1 mb-6">
+                {premiumFeatures.map(f => (
+                  <li key={f} className="flex items-start gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" weight="fill" />
+                    <span className="text-foreground">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                onClick={() => handleSelectPlan(premiumCheckoutUrl)}
+                className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
+              >
+                Quero o Premium
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="flex items-center justify-center gap-2 mt-8 text-sm text-muted-foreground"
+          >
+            <ShieldCheck className="w-4 h-4 text-primary" />
+            <span>Pagamento 100% seguro via Kiwify</span>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* FAQ — sage bg */}
+      <section className="gradient-sage py-16 relative">
+        <FloatingSparkle className="top-8 right-[20%]" delay={0.5} />
+        <FloatingSparkle className="bottom-6 left-[10%]" delay={2} />
+
+        <div className="max-w-3xl mx-auto px-6 relative z-10">
+          <motion.h2
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-2xl font-bold font-display text-center text-foreground mb-8"
+          >
+            Perguntas frequentes 🤔
+          </motion.h2>
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-card/90 backdrop-blur-sm rounded-2xl p-5 border border-border shadow-card"
+              >
+                <h3 className="font-semibold text-sm text-foreground">{faq.q}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{faq.a}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA — gradient hero */}
+      <section className="gradient-hero py-16 relative">
+        <FloatingSparkle className="top-4 left-[30%]" delay={1} />
+        <FloatingSparkle className="bottom-4 right-[25%]" delay={3} />
+
+        <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
+          <Baby className="w-12 h-12 text-primary-foreground mx-auto mb-4" />
+          <h2 className="text-3xl font-bold font-display text-primary-foreground">Pronta para começar?</h2>
+          <p className="text-primary-foreground/80 mt-3 max-w-md mx-auto">
             Escolha seu plano e comece a acompanhar sua gestação com carinho e segurança.
           </p>
-          <Button size="lg" className="mt-8 rounded-xl text-base h-14 px-10" onClick={() => navigate("/planos")}>
-            Ver planos
+          <Button
+            size="lg"
+            className="mt-8 rounded-xl text-base h-14 px-10 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+            onClick={() => scrollToSection("plans")}
+          >
+            Escolher meu plano
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
-          <p className="text-xs text-muted-foreground/60 mt-4">
+          <p className="text-xs text-primary-foreground/50 mt-4">
             Este app não substitui acompanhamento médico profissional.
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8">
+      <footer className="border-t border-border py-8 bg-background">
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Baby className="w-5 h-5 text-primary" />
