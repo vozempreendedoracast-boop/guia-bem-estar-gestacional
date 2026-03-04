@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star } from "@phosphor-icons/react";
 
@@ -17,57 +17,58 @@ const testimonials = [
 
 const TestimonialsCarousel = () => {
   const [current, setCurrent] = useState(0);
-  const itemsPerView = 3;
-  const totalSlides = Math.ceil(testimonials.length / itemsPerView);
+  const [isPaused, setIsPaused] = useState(false);
+  const total = testimonials.length;
 
   const next = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % totalSlides);
-  }, [totalSlides]);
+    setCurrent((prev) => (prev + 1) % total);
+  }, [total]);
 
   useEffect(() => {
-    const timer = setInterval(next, 4000);
+    if (isPaused) return;
+    const timer = setInterval(next, 8000);
     return () => clearInterval(timer);
-  }, [next]);
-
-  const visibleTestimonials = testimonials.slice(
-    current * itemsPerView,
-    current * itemsPerView + itemsPerView
-  );
+  }, [next, isPaused]);
 
   return (
-    <div className="relative">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={current}
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -40 }}
-          transition={{ duration: 0.4 }}
-          className="grid md:grid-cols-3 gap-6"
-        >
-          {visibleTestimonials.map((t) => (
-            <div
-              key={t.name}
-              className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border shadow-card"
-            >
+    <div className="relative overflow-hidden">
+      <div
+        className="relative h-[220px] md:h-[200px]"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -60 }}
+            transition={{ duration: 0.45 }}
+            className="absolute inset-0 flex items-center justify-center px-4"
+          >
+            <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border shadow-card max-w-md w-full">
               <div className="flex gap-1 mb-3">
                 {[...Array(5)].map((_, s) => (
                   <Star key={s} className="w-4 h-4 text-primary" weight="fill" />
                 ))}
               </div>
-              <p className="text-sm text-foreground leading-relaxed italic">"{t.text}"</p>
+              <p className="text-sm text-foreground leading-relaxed italic">
+                "{testimonials[current].text}"
+              </p>
               <div className="mt-4 pt-3 border-t border-border">
-                <p className="font-semibold text-sm text-foreground">{t.name}</p>
-                <p className="text-xs text-muted-foreground">{t.week}</p>
+                <p className="font-semibold text-sm text-foreground">{testimonials[current].name}</p>
+                <p className="text-xs text-muted-foreground">{testimonials[current].week}</p>
               </div>
             </div>
-          ))}
-        </motion.div>
-      </AnimatePresence>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* Dots */}
-      <div className="flex justify-center gap-2 mt-6">
-        {Array.from({ length: totalSlides }).map((_, i) => (
+      <div className="flex justify-center gap-2 mt-4">
+        {Array.from({ length: total }).map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrent(i)}

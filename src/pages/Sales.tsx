@@ -71,18 +71,18 @@ const FloatingSparkle = ({ className, delay = 0 }: { className: string; delay?: 
 
 /* Cute floating elements */
 const cuteElements = [
-  { Icon: Heart, className: "top-[15%] left-[3%]", delay: 0, size: "w-6 h-6", color: "text-primary/20" },
-  { Icon: Heart, className: "top-[35%] right-[4%]", delay: 1.5, size: "w-4 h-4", color: "text-primary/15" },
-  { Icon: Butterfly, className: "top-[50%] left-[5%]", delay: 2, size: "w-7 h-7", color: "text-lilac-foreground/15" },
-  { Icon: FlowerLotus, className: "top-[25%] right-[6%]", delay: 3, size: "w-6 h-6", color: "text-primary/15" },
-  { Icon: StarFour, className: "top-[65%] left-[4%]", delay: 0.5, size: "w-5 h-5", color: "text-primary/20" },
-  { Icon: Heart, className: "top-[75%] right-[3%]", delay: 2.5, size: "w-5 h-5", color: "text-primary/15" },
-  { Icon: BabyCarriage, className: "top-[45%] right-[5%]", delay: 4, size: "w-6 h-6", color: "text-primary/12" },
-  { Icon: Butterfly, className: "top-[85%] left-[6%]", delay: 1, size: "w-5 h-5", color: "text-lilac-foreground/12" },
-  { Icon: FlowerLotus, className: "top-[55%] left-[2%]", delay: 3.5, size: "w-4 h-4", color: "text-primary/18" },
-  { Icon: Heart, className: "top-[10%] right-[8%]", delay: 4.5, size: "w-4 h-4", color: "text-primary/20" },
-  { Icon: StarFour, className: "top-[90%] right-[6%]", delay: 2, size: "w-4 h-4", color: "text-primary/15" },
-  { Icon: Butterfly, className: "top-[70%] left-[7%]", delay: 5, size: "w-5 h-5", color: "text-primary/12" },
+  { Icon: Heart, className: "top-[15%] left-[3%]", delay: 0, size: "w-32 h-32", color: "text-primary/20" },
+  { Icon: Heart, className: "top-[35%] right-[4%]", delay: 1.5, size: "w-24 h-24", color: "text-primary/15" },
+  { Icon: Butterfly, className: "top-[50%] left-[5%]", delay: 2, size: "w-36 h-36", color: "text-lilac-foreground/15" },
+  { Icon: FlowerLotus, className: "top-[25%] right-[6%]", delay: 3, size: "w-32 h-32", color: "text-primary/15" },
+  { Icon: StarFour, className: "top-[65%] left-[4%]", delay: 0.5, size: "w-28 h-28", color: "text-primary/20" },
+  { Icon: Heart, className: "top-[75%] right-[3%]", delay: 2.5, size: "w-28 h-28", color: "text-primary/15" },
+  { Icon: BabyCarriage, className: "top-[45%] right-[5%]", delay: 4, size: "w-32 h-32", color: "text-primary/12" },
+  { Icon: Butterfly, className: "top-[85%] left-[6%]", delay: 1, size: "w-28 h-28", color: "text-lilac-foreground/12" },
+  { Icon: FlowerLotus, className: "top-[55%] left-[2%]", delay: 3.5, size: "w-24 h-24", color: "text-primary/18" },
+  { Icon: Heart, className: "top-[10%] right-[8%]", delay: 4.5, size: "w-24 h-24", color: "text-primary/20" },
+  { Icon: StarFour, className: "top-[90%] right-[6%]", delay: 2, size: "w-24 h-24", color: "text-primary/15" },
+  { Icon: Butterfly, className: "top-[70%] left-[7%]", delay: 5, size: "w-28 h-28", color: "text-primary/12" },
 ];
 
 const FloatingCuteElement = ({ Icon, className, delay, size, color }: typeof cuteElements[0]) => (
