@@ -1,4 +1,5 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Baby, CalendarBlank, Heart, Briefcase, Stethoscope, User, EnvelopeSimple, Phone } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,12 @@ import { toast } from "sonner";
 
 const Profile = () => {
   const { profile, setProfile, currentWeek, trimester, progressPercent } = usePregnancy();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     name: profile?.name || "",
-    email: localStorage.getItem("pregnancy_email") || "",
+    email: user?.email || localStorage.getItem("pregnancy_email") || "",
     phone: localStorage.getItem("pregnancy_phone") || "",
   });
 

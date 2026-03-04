@@ -24,6 +24,9 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Service role client for admin operations — declared BEFORE usage
+    const admin = createClient(supabaseUrl, serviceRoleKey);
+
     // Verify user with anon client
     const anonClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -50,9 +53,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Service role client for admin operations
-    const admin = createClient(supabaseUrl, serviceRoleKey);
 
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
@@ -117,17 +117,13 @@ Deno.serve(async (req) => {
           });
         }
 
-        // Use inviteUserByEmail to create user AND send invitation email
-        const redirectUrl = url.origin.replace("functions/v1/admin-users", "");
-        const siteUrl = body.redirectTo || "https://mamyboo.lovable.app/cadastro";
+        const siteUrl = body.redirectTo || "https://mamyboo.vercel.app/cadastro";
         const { data: newUser, error: createError } = await admin.auth.admin.inviteUserByEmail(email, {
           redirectTo: siteUrl,
         });
         if (createError) throw createError;
 
-        // Update profile with plan info
         if (newUser.user) {
-          // Small delay to ensure the trigger has created the profile
           await new Promise(r => setTimeout(r, 500));
 
           const { error: updateError } = await admin
@@ -164,7 +160,6 @@ Deno.serve(async (req) => {
         if (plan_status !== undefined) updates.plan_status = plan_status;
         if (email !== undefined) updates.email = email;
 
-        // If activating, set dates
         if (plan_status === "active" && plan !== "none") {
           updates.purchased_at = new Date().toISOString();
           updates.expires_at = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
@@ -194,7 +189,6 @@ Deno.serve(async (req) => {
           });
         }
 
-        // Delete auth user (cascade will remove profile)
         const { error } = await admin.auth.admin.deleteUser(user_id);
         if (error) throw error;
 

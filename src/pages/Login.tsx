@@ -12,7 +12,7 @@ type AuthMode = "login" | "signup";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signInWithPassword, signUp } = useAuth();
+  const { signInWithPassword, signUp, isAdmin } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,9 +26,12 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
+    let data: { user: any } = { user: null };
 
     setLoading(true);
-    const { error } = await signInWithPassword(email.trim(), password.trim());
+    const result = await signInWithPassword(email.trim(), password.trim());
+    const error = result.error;
+    data = { user: result.user };
     setLoading(false);
 
     if (error) {
@@ -36,13 +39,17 @@ const Login = () => {
       return;
     }
 
-    // After successful login, onAuthStateChange will update context.
-    // We just need to navigate. The AuthContext will have the profile loaded
-    // by the time ProtectedRoute checks.
     // Small delay to let onAuthStateChange fire and fetch profile.
-    setTimeout(() => {
-      navigate("/painel", { replace: true });
-    }, 100);
+    // We check admin status after profile is loaded to redirect correctly.
+    setTimeout(async () => {
+      // Re-check admin from the RPC since isAdmin may not be updated yet
+      const { data: adminCheck } = await supabase.rpc("has_role", { _user_id: data.user?.id ?? "", _role: "admin" });
+      if (adminCheck) {
+        navigate("/administracao", { replace: true });
+      } else {
+        navigate("/painel", { replace: true });
+      }
+    }, 300);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {

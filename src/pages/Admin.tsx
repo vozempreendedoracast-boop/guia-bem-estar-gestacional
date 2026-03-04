@@ -153,13 +153,7 @@ const Admin = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const res = await supabase.functions.invoke("admin-users", {
-        body: null,
-        method: "GET",
-        headers: {},
-      });
-      // Use fetch directly since invoke doesn't support query params well
-      const baseUrl = (supabase as any).supabaseUrl || "https://hmtrjnosuwtmulerhgnr.supabase.co";
+      const baseUrl = "https://hmtrjnosuwtmulerhgnr.supabase.co";
       const [usersRes, statsRes] = await Promise.all([
         fetch(`${baseUrl}/functions/v1/admin-users?action=list`, {
           headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
