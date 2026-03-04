@@ -15,10 +15,21 @@ const testimonials = [
   { name: "Renata D.", week: "Semana 36", text: "Indiquei para todas as minhas amigas grávidas. É como ter uma doula no bolso!" },
 ];
 
+const VISIBLE_DESKTOP = 4;
+const VISIBLE_MOBILE = 1;
+
 const TestimonialsCarousel = () => {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const isMobileRef = useRef(false);
   const total = testimonials.length;
+
+  useEffect(() => {
+    const check = () => { isMobileRef.current = window.innerWidth < 768; };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const next = useCallback(() => {
     setCurrent((prev) => (prev + 1) % total);
@@ -30,15 +41,20 @@ const TestimonialsCarousel = () => {
     return () => clearInterval(timer);
   }, [next, isPaused]);
 
+  const getVisibleIndices = (start: number, count: number) => {
+    return Array.from({ length: count }, (_, i) => (start + i) % total);
+  };
+
   return (
-    <div className="relative overflow-hidden">
-      <div
-        className="relative h-[220px] md:h-[200px]"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onTouchStart={() => setIsPaused(true)}
-        onTouchEnd={() => setIsPaused(false)}
-      >
+    <div
+      className="relative overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
+    >
+      {/* Mobile: 1 card */}
+      <div className="md:hidden relative h-[220px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
@@ -48,26 +64,31 @@ const TestimonialsCarousel = () => {
             transition={{ duration: 0.45 }}
             className="absolute inset-0 flex items-center justify-center px-4"
           >
-            <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border shadow-card max-w-md w-full">
-              <div className="flex gap-1 mb-3">
-                {[...Array(5)].map((_, s) => (
-                  <Star key={s} className="w-4 h-4 text-primary" weight="fill" />
-                ))}
-              </div>
-              <p className="text-sm text-foreground leading-relaxed italic">
-                "{testimonials[current].text}"
-              </p>
-              <div className="mt-4 pt-3 border-t border-border">
-                <p className="font-semibold text-sm text-foreground">{testimonials[current].name}</p>
-                <p className="text-xs text-muted-foreground">{testimonials[current].week}</p>
-              </div>
-            </div>
+            <TestimonialCard testimonial={testimonials[current]} />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Desktop: 4 cards, slide 1 at a time */}
+      <div className="hidden md:block">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, x: 80 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -80 }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-4 gap-4 px-4"
+          >
+            {getVisibleIndices(current, VISIBLE_DESKTOP).map((idx) => (
+              <TestimonialCard key={idx} testimonial={testimonials[idx]} />
+            ))}
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* Dots */}
-      <div className="flex justify-center gap-2 mt-4">
+      <div className="flex justify-center gap-2 mt-6">
         {Array.from({ length: total }).map((_, i) => (
           <button
             key={i}
@@ -83,5 +104,22 @@ const TestimonialsCarousel = () => {
     </div>
   );
 };
+
+const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] }) => (
+  <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-5 border border-border shadow-card w-full h-full">
+    <div className="flex gap-1 mb-3">
+      {[...Array(5)].map((_, s) => (
+        <Star key={s} className="w-4 h-4 text-primary" weight="fill" />
+      ))}
+    </div>
+    <p className="text-sm text-foreground leading-relaxed italic">
+      "{testimonial.text}"
+    </p>
+    <div className="mt-4 pt-3 border-t border-border">
+      <p className="font-semibold text-sm text-foreground">{testimonial.name}</p>
+      <p className="text-xs text-muted-foreground">{testimonial.week}</p>
+    </div>
+  </div>
+);
 
 export default TestimonialsCarousel;
