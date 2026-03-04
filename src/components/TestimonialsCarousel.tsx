@@ -16,20 +16,11 @@ const testimonials = [
 ];
 
 const VISIBLE_DESKTOP = 4;
-const VISIBLE_MOBILE = 1;
 
 const TestimonialsCarousel = () => {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const isMobileRef = useRef(false);
   const total = testimonials.length;
-
-  useEffect(() => {
-    const check = () => { isMobileRef.current = window.innerWidth < 768; };
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
 
   const next = useCallback(() => {
     setCurrent((prev) => (prev + 1) % total);
@@ -41,9 +32,12 @@ const TestimonialsCarousel = () => {
     return () => clearInterval(timer);
   }, [next, isPaused]);
 
-  const getVisibleIndices = (start: number, count: number) => {
-    return Array.from({ length: count }, (_, i) => (start + i) % total);
-  };
+  // Build an extended array so we always have enough cards to show
+  const getVisible = (start: number, count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      index: (start + i) % total,
+      testimonial: testimonials[(start + i) % total],
+    }));
 
   return (
     <div
@@ -53,38 +47,46 @@ const TestimonialsCarousel = () => {
       onTouchStart={() => setIsPaused(true)}
       onTouchEnd={() => setIsPaused(false)}
     >
-      {/* Mobile: 1 card */}
+      {/* Mobile: 1 card sliding */}
       <div className="md:hidden relative h-[220px]">
-        <AnimatePresence mode="wait">
+        <div className="absolute inset-0 flex px-4">
           <motion.div
-            key={current}
-            initial={{ opacity: 0, x: 60 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -60 }}
-            transition={{ duration: 0.45 }}
-            className="absolute inset-0 flex items-center justify-center px-4"
+            key="mobile-track"
+            animate={{ x: `${-current * 100}%` }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="flex"
+            style={{ width: `${total * 100}%` }}
           >
-            <TestimonialCard testimonial={testimonials[current]} />
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Desktop: 4 cards, slide 1 at a time */}
-      <div className="hidden md:block">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current}
-            initial={{ opacity: 0, x: 80 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -80 }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-4 gap-4 px-4"
-          >
-            {getVisibleIndices(current, VISIBLE_DESKTOP).map((idx) => (
-              <TestimonialCard key={idx} testimonial={testimonials[idx]} />
+            {testimonials.map((t, i) => (
+              <div key={i} className="flex items-center justify-center px-2" style={{ width: `${100 / total}%` }}>
+                <TestimonialCard testimonial={t} />
+              </div>
             ))}
           </motion.div>
-        </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Desktop: 4 visible, slides 1 at a time like a conveyor belt */}
+      <div className="hidden md:block">
+        <div className="overflow-hidden">
+          <motion.div
+            animate={{ x: `${-current * (100 / (total + VISIBLE_DESKTOP - 1))}%` }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="flex gap-4"
+            style={{ width: `${((total + VISIBLE_DESKTOP - 1) / VISIBLE_DESKTOP) * 100}%` }}
+          >
+            {/* Render all cards + wrap-around extras */}
+            {Array.from({ length: total + VISIBLE_DESKTOP - 1 }, (_, i) => (
+              <div
+                key={i}
+                className="px-1"
+                style={{ width: `${100 / (total + VISIBLE_DESKTOP - 1)}%` }}
+              >
+                <TestimonialCard testimonial={testimonials[i % total]} />
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
 
       {/* Dots */}
@@ -106,7 +108,7 @@ const TestimonialsCarousel = () => {
 };
 
 const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] }) => (
-  <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-5 border border-border shadow-card w-full h-full">
+  <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-5 border border-border shadow-card w-full">
     <div className="flex gap-1 mb-3">
       {[...Array(5)].map((_, s) => (
         <Star key={s} className="w-4 h-4 text-primary" weight="fill" />
