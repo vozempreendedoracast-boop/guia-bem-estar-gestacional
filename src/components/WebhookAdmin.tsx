@@ -57,7 +57,7 @@ const WebhookAdmin = () => {
           email: simEmail,
           evento: simEvento,
           produto: simProduto,
-          token: "dp4lparuq6h",
+          token: "1rh3a0u3mah",
         }),
       });
       const result = await res.json();
