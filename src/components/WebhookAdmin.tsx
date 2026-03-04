@@ -140,6 +140,7 @@ const WebhookAdmin = () => {
               <option>reembolso</option>
               <option>chargeback</option>
               <option>compra cancelada</option>
+              <option>pix gerado</option>
             </select>
           </div>
           <div>

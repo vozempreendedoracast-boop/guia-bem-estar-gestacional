@@ -143,6 +143,13 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
 
+    } else if (normalizedEvento === "pix gerado") {
+      await logWebhook(supabase, normalizedEmail, evento, produto, "", "sucesso: pix gerado (apenas log)");
+      console.log(`Pix gerado registrado: ${normalizedEmail}`);
+      return new Response(JSON.stringify({ ok: true, message: "Pix gerado registrado" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+
     } else {
       await logWebhook(supabase, normalizedEmail, evento, produto, "", `ignorado: evento "${evento}"`);
       return new Response(JSON.stringify({ ok: true, message: "Evento não processado" }), {
