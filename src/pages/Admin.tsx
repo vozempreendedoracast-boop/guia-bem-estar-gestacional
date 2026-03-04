@@ -25,6 +25,7 @@ import cardExercises from "@/assets/card-exercises.png";
 import cardHealth from "@/assets/card-health.png";
 import cardDiary from "@/assets/card-diary.png";
 import cardAssistant from "@/assets/card-assistant.png";
+import WebhookAdmin from "@/components/WebhookAdmin";
 
 import {
   useCategories, useUpdateCategory, useCreateCategory, useDeleteCategory,
@@ -90,6 +91,7 @@ const sidebarItems = [
   { id: "cards", label: "Cards", icon: Stack },
   { id: "content", label: "Conteúdos", icon: FileText },
   { id: "users", label: "Usuárias", icon: Users },
+  { id: "webhooks", label: "Webhooks", icon: Link },
   { id: "settings", label: "Configurações", icon: Gear },
 ];
 
@@ -910,6 +912,17 @@ const Admin = () => {
                   </div>
                 )}
               </div>
+            </motion.div>
+          )}
+
+          {/* ===== WEBHOOKS ===== */}
+          {activeTab === "webhooks" && (
+            <motion.div key="webhooks" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="max-w-5xl">
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold font-display text-foreground">Webhooks Kiwify</h1>
+                <p className="text-sm text-muted-foreground mt-1">Simule webhooks e monitore os eventos recebidos.</p>
+              </div>
+              <WebhookAdmin />
             </motion.div>
           )}
 
