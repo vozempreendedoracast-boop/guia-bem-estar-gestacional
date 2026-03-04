@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
+import { useActivePlans } from "@/hooks/useSupabaseData";
 import heroLanding from "@/assets/hero-landing.png";
 import mamybooPink from "@/assets/mamyboo-pink.png";
 import mamybooWhite from "@/assets/mamyboo-white.png";
@@ -23,25 +24,7 @@ const features = [
   { icon: Star, title: "Conteúdo Profissional", description: "Revisado por profissionais de saúde." },
 ];
 
-const essentialFeatures = [
-  "Acesso completo semana 1 a 42",
-  "Conteúdo de Saúde, Exercícios e Alimentação",
-  "Desenvolvimento do bebê semana a semana",
-  "Comparações de tamanho do bebê",
-  "Diário de humor e sintomas",
-  "Atualizações futuras incluídas",
-  "Acesso por 12 meses",
-];
-
-const premiumFeatures = [
-  "Tudo do plano Essencial",
-  "Assistente de IA 24h",
-  "Respostas personalizadas",
-  "Uso ilimitado do chat IA",
-  "Recursos premium futuros",
-  "Suporte prioritário",
-  "Acesso por 12 meses",
-];
+const iconMap: Record<string, any> = { BookOpen, Crown, Star, Heart, Sparkle };
 
 const faqs = [
   { q: "Preciso de assinatura?", a: "Não! É pagamento único com acesso por 12 meses completos." },
@@ -102,9 +85,7 @@ const FloatingCuteElement = ({ Icon, className, delay, size, color }: typeof cut
 
 const Sales = () => {
   const navigate = useNavigate();
-
-  const essentialCheckoutUrl = "#";
-  const premiumCheckoutUrl = "#";
+  const { data: plans = [] } = useActivePlans();
 
   const handleSelectPlan = (url: string) => {
     if (url === "#") {
@@ -299,95 +280,76 @@ const Sales = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Essential */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="bg-card rounded-2xl border border-border shadow-card p-6 flex flex-col"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-peach flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-peach-foreground" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold font-display">Essencial</h3>
-                  <p className="text-xs text-muted-foreground">Tudo para acompanhar sua gestação</p>
-                </div>
-              </div>
-              <div className="mb-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold font-display text-foreground">R$ 47</span>
-                  <span className="text-sm text-muted-foreground">pagamento único</span>
-                </div>
-              </div>
-              <ul className="space-y-3 flex-1 mb-6">
-                {essentialFeatures.map(f => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
-                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-foreground">{f}</span>
-                  </li>
-                ))}
-                <li className="flex items-start gap-2 text-sm opacity-40">
-                  <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-center">✕</span>
-                  <span>Assistente de IA</span>
-                </li>
-              </ul>
-              <Button
-                onClick={() => handleSelectPlan(essentialCheckoutUrl)}
-                variant="outline"
-                className="w-full h-14 rounded-xl font-semibold text-base"
-              >
-                Quero começar
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </motion.div>
-
-            {/* Premium */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="bg-card rounded-2xl border-2 border-primary shadow-elevated p-6 flex flex-col relative"
-            >
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-primary text-primary-foreground px-4 py-1 text-xs font-semibold border-0">
-                ⭐ Mais escolhido
-              </Badge>
-              <div className="flex items-center gap-3 mb-4 mt-2">
-                <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center shadow-soft">
-                  <Crown className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold font-display">Premium</h3>
-                  <p className="text-xs text-muted-foreground">A experiência completa</p>
-                </div>
-              </div>
-              <div className="mb-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold font-display text-foreground">R$ 97</span>
-                  <span className="text-sm text-muted-foreground">pagamento único</span>
-                </div>
-                <p className="text-xs text-primary font-medium mt-1">Economize com IA ilimitada inclusa</p>
-              </div>
-              <ul className="space-y-3 flex-1 mb-6">
-                {premiumFeatures.map(f => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
-                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" weight="fill" />
-                    <span className="text-foreground">{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={() => handleSelectPlan(premiumCheckoutUrl)}
-                className="w-full h-14 rounded-xl gradient-primary text-primary-foreground font-semibold text-base shadow-soft"
-              >
-                Quero o Premium
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </motion.div>
+          <div className={`grid gap-6 ${plans.length === 1 ? 'max-w-md mx-auto' : plans.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+            {plans.map((plan, i) => {
+              const IconComp = iconMap[plan.icon] || BookOpen;
+              return (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 * (i + 1) }}
+                  className={`bg-card rounded-2xl p-6 flex flex-col relative ${
+                    plan.highlighted
+                      ? "border-2 border-primary shadow-elevated"
+                      : "border border-border shadow-card"
+                  }`}
+                >
+                  {plan.badge && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-primary text-primary-foreground px-4 py-1 text-xs font-semibold border-0">
+                      {plan.badge}
+                    </Badge>
+                  )}
+                  <div className={`flex items-center gap-3 mb-4 ${plan.badge ? "mt-2" : ""}`}>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      plan.highlighted
+                        ? "gradient-primary shadow-soft"
+                        : "bg-peach"
+                    }`}>
+                      <IconComp className={`w-6 h-6 ${plan.highlighted ? "text-primary-foreground" : "text-peach-foreground"}`} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold font-display">{plan.name}</h3>
+                      <p className="text-xs text-muted-foreground">{plan.description}</p>
+                    </div>
+                  </div>
+                  <div className="mb-6">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold font-display text-foreground">{plan.price}</span>
+                      <span className="text-sm text-muted-foreground">{plan.price_label}</span>
+                    </div>
+                    {plan.highlight_text && (
+                      <p className="text-xs text-primary font-medium mt-1">{plan.highlight_text}</p>
+                    )}
+                  </div>
+                  <ul className="space-y-3 flex-1 mb-6">
+                    {(plan.features || []).map(f => (
+                      <li key={f} className="flex items-start gap-2 text-sm">
+                        <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" weight={plan.highlighted ? "fill" : "regular"} />
+                        <span className="text-foreground">{f}</span>
+                      </li>
+                    ))}
+                    {(plan.excluded_features || []).map(f => (
+                      <li key={f} className="flex items-start gap-2 text-sm opacity-40">
+                        <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-center">✕</span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    onClick={() => handleSelectPlan(plan.checkout_url || "#")}
+                    variant={plan.highlighted ? "default" : "outline"}
+                    className={`w-full h-14 rounded-xl font-semibold text-base ${
+                      plan.highlighted ? "gradient-primary text-primary-foreground shadow-soft" : ""
+                    }`}
+                  >
+                    {plan.button_text || "Quero começar"}
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Trust badges */}
