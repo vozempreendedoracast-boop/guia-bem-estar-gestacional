@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string, email?: string) => {
     try {
       const [profileResult, adminResult] = await Promise.all([
         supabase
@@ -52,7 +52,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error("Erro ao validar role admin:", adminResult.error);
       }
 
-      setUserProfile((profileResult.data as UserProfile) ?? null);
+      let resolvedProfile = (profileResult.data as UserProfile) ?? null;
+
+      // Self-heal: if authenticated user has no profile row, create it once via RPC
+      if (!resolvedProfile && !profileResult.error) {
+        const { data: ensured, error: ensureError } = await supabase.rpc("ensure_user_profile", {
+          _email: email ?? "",
+        });
+
+        if (ensureError) {
+          console.error("Erro ao garantir profile:", ensureError);
+        } else {
+          resolvedProfile = (ensured as UserProfile) ?? null;
+        }
+      }
+
+      setUserProfile(resolvedProfile);
       setIsAdmin(Boolean(adminResult.data));
     } catch (error) {
       console.error("Falha inesperada ao buscar dados:", error);
@@ -83,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Use setTimeout to avoid potential deadlocks with Supabase auth
           setTimeout(async () => {
             if (!mounted) return;
-            await fetchProfile(currentSession.user.id);
+            await fetchProfile(currentSession.user.id, currentSession.user.email ?? "");
             if (mounted) setLoading(false);
           }, 0);
         } else {
@@ -101,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(currentSession?.user ?? null);
 
       if (currentSession?.user) {
-        fetchProfile(currentSession.user.id).then(() => {
+        fetchProfile(currentSession.user.id, currentSession.user.email ?? "").then(() => {
           if (mounted) setLoading(false);
         });
       } else {
@@ -137,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (user) await fetchProfile(user.id, user.email ?? "");
   };
 
   return (
