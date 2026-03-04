@@ -219,6 +219,69 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          active: boolean
+          badge: string
+          button_text: string
+          checkout_url: string
+          created_at: string
+          description: string
+          display_order: number
+          excluded_features: string[]
+          features: string[]
+          highlight_text: string
+          highlighted: boolean
+          icon: string
+          id: string
+          name: string
+          price: string
+          price_label: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          badge?: string
+          button_text?: string
+          checkout_url?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          excluded_features?: string[]
+          features?: string[]
+          highlight_text?: string
+          highlighted?: boolean
+          icon?: string
+          id?: string
+          name: string
+          price?: string
+          price_label?: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          badge?: string
+          button_text?: string
+          checkout_url?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          excluded_features?: string[]
+          features?: string[]
+          highlight_text?: string
+          highlighted?: boolean
+          icon?: string
+          id?: string
+          name?: string
+          price?: string
+          price_label?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       symptoms: {
         Row: {
           active: boolean

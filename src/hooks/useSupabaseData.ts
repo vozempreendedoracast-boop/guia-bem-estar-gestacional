@@ -365,3 +365,70 @@ export function useDeleteWeeklyTip() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["weekly_tips"] }),
   });
 }
+
+// ─── Plans ───
+export type PlanRow = Tables<"plans">;
+
+export function usePlans() {
+  return useQuery({
+    queryKey: ["plans"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("plans")
+        .select("*")
+        .order("display_order");
+      if (error) throw error;
+      return data as PlanRow[];
+    },
+  });
+}
+
+export function useActivePlans() {
+  return useQuery({
+    queryKey: ["plans", "active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("plans")
+        .select("*")
+        .eq("active", true)
+        .order("display_order");
+      if (error) throw error;
+      return data as PlanRow[];
+    },
+  });
+}
+
+export function useUpdatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: TablesUpdate<"plans"> & { id: string }) => {
+      const { data, error } = await supabase.from("plans").update(updates).eq("id", id).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["plans"] }),
+  });
+}
+
+export function useCreatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (plan: TablesInsert<"plans">) => {
+      const { data, error } = await supabase.from("plans").insert(plan).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["plans"] }),
+  });
+}
+
+export function useDeletePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("plans").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["plans"] }),
+  });
+}

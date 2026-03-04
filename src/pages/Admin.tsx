@@ -34,7 +34,8 @@ import {
   useExercises, useUpdateExercise, useCreateExercise, useDeleteExercise,
   useHealthTips, useUpdateHealthTip, useCreateHealthTip, useDeleteHealthTip,
   useWeeklyTips, useUpdateWeeklyTip, useCreateWeeklyTip, useDeleteWeeklyTip,
-  type Category, type WeekContent, type SymptomRow, type ExerciseRow, type HealthTipRow, type WeeklyTipRow,
+  usePlans, useUpdatePlan, useCreatePlan, useDeletePlan,
+  type Category, type WeekContent, type SymptomRow, type ExerciseRow, type HealthTipRow, type WeeklyTipRow, type PlanRow,
 } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -143,6 +144,10 @@ const Admin = () => {
   const updateTip = useUpdateWeeklyTip();
   const createTip = useCreateWeeklyTip();
   const deleteTipMut = useDeleteWeeklyTip();
+  const { data: plansData = [], isLoading: loadingPlans } = usePlans();
+  const updatePlanMut = useUpdatePlan();
+  const createPlanMut = useCreatePlan();
+  const deletePlanMut = useDeletePlan();
 
   // User management
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -286,6 +291,10 @@ const Admin = () => {
   const [editingTip, setEditingTip] = useState<Partial<WeeklyTipRow> | null>(null);
   const [editTipOpen, setEditTipOpen] = useState(false);
 
+  // Plans state
+  const [editingPlan, setEditingPlan] = useState<Partial<PlanRow> & { featuresText?: string; excludedText?: string } | null>(null);
+  const [editPlanOpen, setEditPlanOpen] = useState(false);
+
   // Settings state
   const [settings, setSettings] = useState<SettingsState>({
     appName: "Minha Gestação",
@@ -414,6 +423,38 @@ const Admin = () => {
       else { await createTip.mutateAsync({ title: editingTip.title || "", content: editingTip.content, week_number: editingTip.week_number || 1, category_id: editingTip.category_id }); }
       toast.success("Dica salva!"); setEditTipOpen(false); setEditingTip(null);
     } catch { toast.error("Erro ao salvar dica"); }
+  };
+
+  // Plan handlers
+  const handleSavePlan = async () => {
+    if (!editingPlan) return;
+    try {
+      const features = (editingPlan.featuresText || "").split("\n").filter(s => s.trim());
+      const excluded = (editingPlan.excludedText || "").split("\n").filter(s => s.trim());
+      const payload = {
+        name: editingPlan.name || "",
+        slug: editingPlan.slug || "",
+        description: editingPlan.description || "",
+        price: editingPlan.price || "",
+        price_label: editingPlan.price_label || "pagamento único",
+        badge: editingPlan.badge || "",
+        icon: editingPlan.icon || "BookOpen",
+        features,
+        excluded_features: excluded,
+        checkout_url: editingPlan.checkout_url || "#",
+        button_text: editingPlan.button_text || "Quero começar",
+        highlighted: editingPlan.highlighted ?? false,
+        active: editingPlan.active ?? true,
+        display_order: editingPlan.display_order ?? 0,
+        highlight_text: editingPlan.highlight_text || "",
+      };
+      if (editingPlan.id) {
+        await updatePlanMut.mutateAsync({ id: editingPlan.id, ...payload });
+      } else {
+        await createPlanMut.mutateAsync(payload);
+      }
+      toast.success("Plano salvo!"); setEditPlanOpen(false); setEditingPlan(null);
+    } catch (e: any) { toast.error(e.message || "Erro ao salvar plano"); }
   };
 
   const openSetting = (type: string) => { setEditSettingType(type); setEditSettingOpen(true); };
@@ -936,7 +977,7 @@ const Admin = () => {
               <div className="space-y-3">
                 {[
                   { type: "app", icon: Monitor, title: "Informações do App", description: `Nome: ${settings.appName}`, color: "text-blue-500" },
-                  { type: "plans", icon: CreditCard, title: "Planos e Assinaturas", description: `Premium: R$ ${settings.planPremiumPrice}/mês`, color: "text-amber-500" },
+                  { type: "plans", icon: CreditCard, title: "Planos e Assinaturas", description: `${plansData.length} plano(s) cadastrado(s)`, color: "text-amber-500" },
                   { type: "push", icon: Bell, title: "Notificações Push", description: settings.pushEnabled ? `Ativadas · ${settings.pushFrequency}` : "Desativadas", color: "text-emerald-500" },
                   { type: "integrations", icon: Robot, title: "Integrações e IA", description: aiSettings.enabled ? `IA: ${aiSettings.model}` : "IA desativada", color: "text-purple-500" },
                   { type: "backup", icon: Database, title: "Backup e Exportação", description: settings.backupEnabled ? "Backup automático" : "Manual", color: "text-slate-500" },
@@ -1206,6 +1247,59 @@ const Admin = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Plan Dialog */}
+      <Dialog open={editPlanOpen} onOpenChange={setEditPlanOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{!editingPlan?.id ? "Novo Plano" : `Editar: ${editingPlan?.name}`}</DialogTitle>
+            <DialogDescription>Preencha as informações do plano.</DialogDescription>
+          </DialogHeader>
+          {editingPlan && (
+            <div className="space-y-4 mt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-sm font-medium">Nome</Label><Input value={editingPlan.name || ""} onChange={e => setEditingPlan({ ...editingPlan, name: e.target.value })} className="mt-1 rounded-xl" placeholder="Ex: Essencial" /></div>
+                <div><Label className="text-sm font-medium">Slug</Label><Input value={editingPlan.slug || ""} onChange={e => setEditingPlan({ ...editingPlan, slug: e.target.value })} className="mt-1 rounded-xl" placeholder="Ex: essential" /></div>
+              </div>
+              <div><Label className="text-sm font-medium">Descrição</Label><Input value={editingPlan.description || ""} onChange={e => setEditingPlan({ ...editingPlan, description: e.target.value })} className="mt-1 rounded-xl" placeholder="Ex: Tudo para acompanhar sua gestação" /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-sm font-medium">Preço</Label><Input value={editingPlan.price || ""} onChange={e => setEditingPlan({ ...editingPlan, price: e.target.value })} className="mt-1 rounded-xl" placeholder="R$ 47" /></div>
+                <div><Label className="text-sm font-medium">Label do preço</Label><Input value={editingPlan.price_label || ""} onChange={e => setEditingPlan({ ...editingPlan, price_label: e.target.value })} className="mt-1 rounded-xl" placeholder="pagamento único" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-sm font-medium">Ícone</Label>
+                  <select value={editingPlan.icon || "BookOpen"} onChange={e => setEditingPlan({ ...editingPlan, icon: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
+                    <option value="BookOpen">BookOpen</option>
+                    <option value="Crown">Crown</option>
+                    <option value="Star">Star</option>
+                    <option value="Heart">Heart</option>
+                    <option value="Sparkle">Sparkle</option>
+                  </select>
+                </div>
+                <div><Label className="text-sm font-medium">Ordem</Label><Input type="number" value={editingPlan.display_order ?? 0} onChange={e => setEditingPlan({ ...editingPlan, display_order: parseInt(e.target.value) || 0 })} className="mt-1 rounded-xl" /></div>
+              </div>
+              <div><Label className="text-sm font-medium">Badge (texto destaque)</Label><Input value={editingPlan.badge || ""} onChange={e => setEditingPlan({ ...editingPlan, badge: e.target.value })} className="mt-1 rounded-xl" placeholder="Ex: ⭐ Mais escolhido" /></div>
+              <div><Label className="text-sm font-medium">Texto destaque abaixo do preço</Label><Input value={editingPlan.highlight_text || ""} onChange={e => setEditingPlan({ ...editingPlan, highlight_text: e.target.value })} className="mt-1 rounded-xl" placeholder="Ex: Economize com IA ilimitada inclusa" /></div>
+              <div><Label className="text-sm font-medium">Recursos incluídos (um por linha)</Label><Textarea value={editingPlan.featuresText || ""} onChange={e => setEditingPlan({ ...editingPlan, featuresText: e.target.value })} className="mt-1 rounded-xl" rows={5} placeholder="Cada linha será um recurso" /></div>
+              <div><Label className="text-sm font-medium">Recursos excluídos (um por linha)</Label><Textarea value={editingPlan.excludedText || ""} onChange={e => setEditingPlan({ ...editingPlan, excludedText: e.target.value })} className="mt-1 rounded-xl" rows={2} placeholder="Ex: Assistente de IA" /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-sm font-medium">URL do checkout</Label><Input value={editingPlan.checkout_url || ""} onChange={e => setEditingPlan({ ...editingPlan, checkout_url: e.target.value })} className="mt-1 rounded-xl" placeholder="https://..." /></div>
+                <div><Label className="text-sm font-medium">Texto do botão</Label><Input value={editingPlan.button_text || ""} onChange={e => setEditingPlan({ ...editingPlan, button_text: e.target.value })} className="mt-1 rounded-xl" placeholder="Quero começar" /></div>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2"><Switch checked={editingPlan.highlighted ?? false} onCheckedChange={v => setEditingPlan({ ...editingPlan, highlighted: v })} /><Label className="text-sm">Destaque</Label></div>
+                <div className="flex items-center gap-2"><Switch checked={editingPlan.active ?? true} onCheckedChange={v => setEditingPlan({ ...editingPlan, active: v })} /><Label className="text-sm">Ativo</Label></div>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button className="flex-1 rounded-xl" onClick={handleSavePlan} disabled={updatePlanMut.isPending || createPlanMut.isPending}>
+                  {(updatePlanMut.isPending || createPlanMut.isPending) ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => setEditPlanOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Settings Dialog */}
       <Dialog open={editSettingOpen} onOpenChange={setEditSettingOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
@@ -1227,10 +1321,51 @@ const Admin = () => {
               </>
             )}
             {editSettingType === "plans" && (
-              <>
-                <div className="flex items-center justify-between"><Label className="text-sm font-medium">Plano gratuito</Label><Switch checked={settings.planFreeEnabled} onCheckedChange={v => setSettings({ ...settings, planFreeEnabled: v })} /></div>
-                <div><Label className="text-sm font-medium">Preço Premium (R$/mês)</Label><Input value={settings.planPremiumPrice} onChange={e => setSettings({ ...settings, planPremiumPrice: e.target.value })} className="mt-1 rounded-xl" /></div>
-              </>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-foreground">Planos cadastrados</p>
+                  <Button size="sm" className="rounded-xl" onClick={() => {
+                    setEditingPlan({ name: "", slug: "", description: "", price: "", price_label: "pagamento único", badge: "", icon: "BookOpen", features: [], excluded_features: [], checkout_url: "#", button_text: "Quero começar", highlighted: false, active: true, display_order: plansData.length, highlight_text: "", featuresText: "", excludedText: "" });
+                    setEditPlanOpen(true);
+                    setEditSettingOpen(false);
+                  }}>
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Novo plano
+                  </Button>
+                </div>
+                {loadingPlans ? (
+                  <div className="flex justify-center py-4"><SpinnerGap className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+                ) : plansData.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">Nenhum plano cadastrado.</p>
+                ) : (
+                  plansData.map(plan => (
+                    <div key={plan.id} className="bg-muted/40 rounded-xl p-3 flex items-center justify-between group">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm text-foreground">{plan.name}</p>
+                          {plan.highlighted && <Badge className="text-[10px] bg-primary/10 text-primary border-0">Destaque</Badge>}
+                          {!plan.active && <Badge variant="outline" className="text-[10px]">Inativo</Badge>}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{plan.price} · {plan.features.length} recursos</p>
+                      </div>
+                      <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => {
+                          setEditingPlan({ ...plan, featuresText: (plan.features || []).join("\n"), excludedText: (plan.excluded_features || []).join("\n") });
+                          setEditPlanOpen(true);
+                          setEditSettingOpen(false);
+                        }}>
+                          <PencilSimple className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:text-destructive" onClick={async () => {
+                          if (!confirm(`Excluir plano "${plan.name}"?`)) return;
+                          try { await deletePlanMut.mutateAsync(plan.id); toast.success("Plano excluído!"); } catch { toast.error("Erro ao excluir plano"); }
+                        }}>
+                          <Trash className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             )}
             {editSettingType === "push" && (
               <>
