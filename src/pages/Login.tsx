@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Baby, EnvelopeSimple, ArrowRight, SpinnerGap, Lock, Eye, EyeSlash } from "@phosphor-icons/react";
+import { EnvelopeSimple, ArrowRight, SpinnerGap, Lock, Eye, EyeSlash } from "@phosphor-icons/react";
+import logoMamyboo from "@/assets/logo-mamyboo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -132,7 +133,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -141,9 +142,9 @@ const Login = () => {
         <motion.div
           animate={{ y: [0, -6, 0] }}
           transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-          className="w-20 h-20 rounded-3xl gradient-hero mx-auto flex items-center justify-center shadow-elevated"
+          className="w-24 h-24 mx-auto"
         >
-          <Baby className="w-10 h-10 text-primary-foreground" />
+          <img src={logoMamyboo} alt="MamyBoo" className="w-full h-full object-contain" />
         </motion.div>
 
         <div className="space-y-2">
