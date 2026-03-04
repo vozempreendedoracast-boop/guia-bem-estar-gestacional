@@ -29,10 +29,10 @@ const ProtectedRoute = ({ children, requirePlan = false, requireAdmin = false }:
     return <Navigate to="/painel" replace />;
   }
 
-  // Requires plan but no active plan → plans page
+  // Requires plan but no active plan (or missing profile) → plans page
   // Admins bypass plan requirement
-  if (requirePlan && !isAdmin && userProfile) {
-    const hasActivePlan = userProfile.plan !== "none" && userProfile.plan_status === "active";
+  if (requirePlan && !isAdmin) {
+    const hasActivePlan = userProfile?.plan !== "none" && userProfile?.plan_status === "active";
     if (!hasActivePlan) {
       return <Navigate to="/planos" replace />;
     }

@@ -443,6 +443,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ensure_user_profile: {
+        Args: { _email?: string }
+        Returns: {
+          created_at: string
+          email: string
+          expires_at: string | null
+          id: string
+          kiwify_order_id: string | null
+          plan: Database["public"]["Enums"]["user_plan"]
+          plan_status: Database["public"]["Enums"]["plan_status"]
+          purchased_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
