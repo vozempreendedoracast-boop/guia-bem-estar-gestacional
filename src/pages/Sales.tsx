@@ -2,13 +2,17 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Heart, BookOpen, Heartbeat, Robot, ShieldCheck, Star,
-  CheckCircle, ArrowRight, Crown, Sparkle,
+  CheckCircle, ArrowRight, Crown, Sparkle, BabyCarriage,
+  Butterfly, FlowerLotus, StarFour,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import heroLanding from "@/assets/hero-landing.png";
 import mamybooPink from "@/assets/mamyboo-pink.png";
 import mamybooWhite from "@/assets/mamyboo-white.png";
+import trustKiwify from "@/assets/trust-kiwify.png";
+import trustSeguro from "@/assets/trust-seguro.webp";
 
 const features = [
   { icon: BookOpen, title: "Jornada Semana a Semana", description: "Acompanhe as 40 semanas com conteúdo liberado automaticamente." },
@@ -39,12 +43,6 @@ const premiumFeatures = [
   "Acesso por 12 meses",
 ];
 
-const testimonials = [
-  { name: "Camila S.", week: "Semana 28", text: "Me sinto acompanhada todos os dias. As dicas são certeiras e o diário me ajuda muito!" },
-  { name: "Juliana M.", week: "Semana 16", text: "A assistente IA me tranquilizou em vários momentos de dúvida. Recomendo muito!" },
-  { name: "Ana Paula R.", week: "Semana 34", text: "Os exercícios por trimestre são perfeitos. Me sinto mais preparada para o parto." },
-];
-
 const faqs = [
   { q: "Preciso de assinatura?", a: "Não! É pagamento único com acesso por 12 meses completos." },
   { q: "Como funciona o acesso?", a: "Após o pagamento, você recebe um link no email para acessar imediatamente." },
@@ -71,6 +69,37 @@ const FloatingSparkle = ({ className, delay = 0 }: { className: string; delay?: 
   </motion.div>
 );
 
+/* Cute floating elements */
+const cuteElements = [
+  { Icon: Heart, className: "top-[15%] left-[3%]", delay: 0, size: "w-6 h-6", color: "text-primary/20" },
+  { Icon: Heart, className: "top-[35%] right-[4%]", delay: 1.5, size: "w-4 h-4", color: "text-primary/15" },
+  { Icon: Butterfly, className: "top-[50%] left-[5%]", delay: 2, size: "w-7 h-7", color: "text-lilac-foreground/15" },
+  { Icon: FlowerLotus, className: "top-[25%] right-[6%]", delay: 3, size: "w-6 h-6", color: "text-primary/15" },
+  { Icon: StarFour, className: "top-[65%] left-[4%]", delay: 0.5, size: "w-5 h-5", color: "text-primary/20" },
+  { Icon: Heart, className: "top-[75%] right-[3%]", delay: 2.5, size: "w-5 h-5", color: "text-primary/15" },
+  { Icon: BabyCarriage, className: "top-[45%] right-[5%]", delay: 4, size: "w-6 h-6", color: "text-primary/12" },
+  { Icon: Butterfly, className: "top-[85%] left-[6%]", delay: 1, size: "w-5 h-5", color: "text-lilac-foreground/12" },
+  { Icon: FlowerLotus, className: "top-[55%] left-[2%]", delay: 3.5, size: "w-4 h-4", color: "text-primary/18" },
+  { Icon: Heart, className: "top-[10%] right-[8%]", delay: 4.5, size: "w-4 h-4", color: "text-primary/20" },
+  { Icon: StarFour, className: "top-[90%] right-[6%]", delay: 2, size: "w-4 h-4", color: "text-primary/15" },
+  { Icon: Butterfly, className: "top-[70%] left-[7%]", delay: 5, size: "w-5 h-5", color: "text-primary/12" },
+];
+
+const FloatingCuteElement = ({ Icon, className, delay, size, color }: typeof cuteElements[0]) => (
+  <motion.div
+    className={`absolute pointer-events-none z-0 hidden md:block ${className}`}
+    animate={{
+      y: [0, -18, 0],
+      x: [0, 8, -4, 0],
+      rotate: [0, 10, -8, 0],
+      opacity: [0.3, 0.7, 0.3],
+    }}
+    transition={{ duration: 7 + delay, repeat: Infinity, delay, ease: "easeInOut" }}
+  >
+    <Icon className={`${size} ${color}`} weight="fill" />
+  </motion.div>
+);
+
 const Sales = () => {
   const navigate = useNavigate();
 
@@ -90,7 +119,12 @@ const Sales = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
+    <div className="min-h-screen bg-background overflow-hidden relative">
+      {/* Cute floating background elements */}
+      {cuteElements.map((el, i) => (
+        <FloatingCuteElement key={i} {...el} />
+      ))}
+
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -155,8 +189,8 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* Benefits strip — gradient peach bg */}
-      <section className="gradient-peach py-10 relative">
+      {/* Benefits strip */}
+      <section className="gradient-peach py-10 relative z-10">
         <FloatingSparkle className="top-4 right-[10%]" delay={1} />
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -184,8 +218,8 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* Features — white bg */}
-      <section id="features" className="py-16 relative">
+      {/* Features */}
+      <section id="features" className="py-16 relative z-10">
         <FloatingBlob className="w-64 h-64 bg-lilac/40 -bottom-20 -right-20" delay={1} />
         <FloatingSparkle className="top-10 left-[8%]" delay={2} />
 
@@ -224,8 +258,8 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* Testimonials — lilac bg */}
-      <section id="testimonials" className="py-16 gradient-lilac relative">
+      {/* Testimonials — carousel */}
+      <section id="testimonials" className="py-16 gradient-lilac relative z-10">
         <FloatingSparkle className="top-6 left-[25%]" delay={0} />
         <FloatingSparkle className="bottom-10 right-[15%]" delay={2.5} />
 
@@ -240,34 +274,12 @@ const Sales = () => {
               O que dizem as mamães 🥰
             </motion.h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border shadow-card"
-              >
-                <div className="flex gap-1 mb-3">
-                  {[...Array(5)].map((_, s) => (
-                    <Star key={s} className="w-4 h-4 text-primary" weight="fill" />
-                  ))}
-                </div>
-                <p className="text-sm text-foreground leading-relaxed italic">"{t.text}"</p>
-                <div className="mt-4 pt-3 border-t border-border">
-                  <p className="font-semibold text-sm text-foreground">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.week}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <TestimonialsCarousel />
         </div>
       </section>
 
-      {/* Plans — white bg */}
-      <section id="plans" className="py-16 relative">
+      {/* Plans */}
+      <section id="plans" className="py-16 relative z-10">
         <FloatingBlob className="w-80 h-80 bg-peach/30 -top-20 -left-32" delay={0.5} />
         <FloatingBlob className="w-60 h-60 bg-sage/30 bottom-0 right-0" delay={3} />
         <FloatingSparkle className="top-20 right-[12%]" delay={1} />
@@ -378,21 +390,28 @@ const Sales = () => {
             </motion.div>
           </div>
 
+          {/* Trust badges */}
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.4 }}
-            className="flex items-center justify-center gap-2 mt-8 text-sm text-muted-foreground"
+            transition={{ delay: 0.3 }}
+            className="mt-10 flex flex-col items-center gap-6"
           >
-            <ShieldCheck className="w-4 h-4 text-primary" />
-            <span>Pagamento 100% seguro via Kiwify</span>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <span>Pagamento 100% seguro via Kiwify</span>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <img src={trustKiwify} alt="Formas de pagamento Kiwify - Compra 100% segura" className="h-14 object-contain" />
+              <img src={trustSeguro} alt="Site seguro - SSL - Satisfação garantida" className="h-16 object-contain" />
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* FAQ — sage bg */}
-      <section className="gradient-sage py-16 relative">
+      {/* FAQ */}
+      <section className="gradient-sage py-16 relative z-10">
         <FloatingSparkle className="top-8 right-[20%]" delay={0.5} />
         <FloatingSparkle className="bottom-6 left-[10%]" delay={2} />
 
@@ -423,8 +442,8 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* Final CTA — gradient hero */}
-      <section className="gradient-hero py-16 relative">
+      {/* Final CTA */}
+      <section className="gradient-hero py-16 relative z-10">
         <FloatingSparkle className="top-4 left-[30%]" delay={1} />
         <FloatingSparkle className="bottom-4 right-[25%]" delay={3} />
 
@@ -449,7 +468,7 @@ const Sales = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8 bg-background">
+      <footer className="border-t border-border py-8 bg-background relative z-10">
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <img src={mamybooPink} alt="MamyBoo" className="w-7 h-7 object-contain" />
