@@ -7,8 +7,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import heroLanding from "@/assets/hero-landing.png";
-import mamybooPink from "@/assets/mamyboo-pink.svg";
-import mamybooWhite from "@/assets/mamyboo-white.svg";
+import mamybooPink from "@/assets/mamyboo-pink.png";
+import mamybooWhite from "@/assets/mamyboo-white.png";
 
 const features = [
   { icon: BookOpen, title: "Jornada Semana a Semana", description: "Acompanhe as 40 semanas com conteúdo liberado automaticamente." },
@@ -95,7 +95,7 @@ const Sales = () => {
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={mamybooPink} alt="MamyBoo" className="w-6 h-6 object-contain" />
+            <img src={mamybooPink} alt="MamyBoo" className="w-8 h-8 object-contain" />
             <span className="font-display font-bold text-base sm:text-lg text-foreground">MamyBoo</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
@@ -429,7 +429,7 @@ const Sales = () => {
         <FloatingSparkle className="bottom-4 right-[25%]" delay={3} />
 
         <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
-          <img src={mamybooWhite} alt="MamyBoo" className="w-12 h-12 object-contain mx-auto mb-4" />
+          <img src={mamybooWhite} alt="MamyBoo" className="w-16 h-16 object-contain mx-auto mb-4" />
           <h2 className="text-3xl font-bold font-display text-primary-foreground">Pronta para começar?</h2>
           <p className="text-primary-foreground/80 mt-3 max-w-md mx-auto">
             Escolha seu plano e comece a acompanhar sua gestação com carinho e segurança.
@@ -452,7 +452,7 @@ const Sales = () => {
       <footer className="border-t border-border py-8 bg-background">
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src={mamybooPink} alt="MamyBoo" className="w-5 h-5 object-contain" />
+            <img src={mamybooPink} alt="MamyBoo" className="w-7 h-7 object-contain" />
             <span className="font-display font-semibold text-foreground">MamyBoo</span>
           </div>
           <p className="text-xs text-muted-foreground">© 2026 MamyBoo. Todos os direitos reservados.</p>
