@@ -219,6 +219,50 @@ export type Database = {
           },
         ]
       }
+      page_blocks: {
+        Row: {
+          active: boolean
+          block_type: string
+          category_id: string | null
+          content: Json
+          created_at: string
+          display_order: number
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          block_type?: string
+          category_id?: string | null
+          content?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          block_type?: string
+          category_id?: string | null
+          content?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_blocks_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           active: boolean
