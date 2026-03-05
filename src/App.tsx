@@ -25,6 +25,7 @@ import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
+import DynamicPage from "./pages/DynamicPage";
 import ScrollToTop from "./components/ScrollToTop";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
 
@@ -69,7 +70,8 @@ const App = () => (
               <Route path="/suporte" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/administracao" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
+              {/* Dynamic pages created by admin */}
+              <Route path="*" element={<ProtectedRoute requirePlan><DynamicPage /></ProtectedRoute>} />
             </Routes>
           </PregnancyProvider>
         </AuthProvider>
