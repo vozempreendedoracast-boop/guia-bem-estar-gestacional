@@ -3,15 +3,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWeekContents, useCategories, useActivePromotions } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, Bell } from "@phosphor-icons/react";
+import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, Bell, PencilSimple } from "@phosphor-icons/react";
 import mamybooWhite from "@/assets/mamyboo-white.png";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { getWeekEmoji } from "@/data/weeks";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-
-
+import { usePlan } from "@/hooks/usePlan";
+import PlanSelectionPopup from "@/components/PlanSelectionPopup";
 
 import cardJourney from "@/assets/card-journey.png";
 import cardSymptoms from "@/assets/card-symptoms.png";
@@ -21,6 +22,7 @@ import cardDiary from "@/assets/card-diary.png";
 import cardAssistant from "@/assets/card-assistant.png";
 
 const moodEmojis = ["😢", "😟", "😐", "🙂", "😊"];
+const moodLabels = ["Muito triste", "Preocupada", "Neutra", "Bem", "Ótima"];
 
 const localImages: Record<string, string> = {
   journey: cardJourney,
@@ -38,14 +40,13 @@ const iconMap: Record<string, React.ElementType> = {
 const Dashboard = () => {
   const { profile, currentWeek, trimester, progressPercent, addMood, moods, logout } = usePregnancy();
   const { user, signOut } = useAuth();
+  const { hasAccess } = usePlan();
   const navigate = useNavigate();
 
   const { data: weeks = [] } = useWeekContents();
   const { data: categories = [] } = useCategories();
   const { data: promotions = [] } = useActivePromotions();
   
-  // Fetch next upcoming reminder
-  // Fetch upcoming reminders count
   const { data: upcomingReminders = [] } = useQuery({
     queryKey: ["upcoming-reminders", user?.id],
     queryFn: async () => {
@@ -65,11 +66,15 @@ const Dashboard = () => {
 
   const notificationCount = upcomingReminders.length;
 
-  const [showMoodPicker, setShowMoodPicker] = useState(false);
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const [selectedMoodIndex, setSelectedMoodIndex] = useState<number | null>(null);
+  const [moodNote, setMoodNote] = useState("");
+  const [showNoteInput, setShowNoteInput] = useState(false);
   const promoRef = useRef<HTMLDivElement>(null);
   const [promoIndex, setPromoIndex] = useState(0);
   const promoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Show plan popup if no active plan
+  const showPlanPopup = !hasAccess;
 
   // Auto-play carousel
   const autoPlayInterval = parseInt(localStorage.getItem("promo_carousel_interval") || "5", 10) * 1000;
@@ -88,17 +93,17 @@ const Dashboard = () => {
     }
   }, [autoPlayEnabled, autoPlayInterval, nextPromo, promotions.length]);
 
-  // Find the closest week data from DB
   const weekData = weeks.find(w => w.week_number === currentWeek)
     || [...weeks].sort((a, b) => Math.abs(a.week_number - currentWeek) - Math.abs(b.week_number - currentWeek))[0];
 
   const todayMood = moods.find(m => new Date(m.date).toDateString() === new Date().toDateString());
+  const lastMood = moods.length > 0 ? moods[moods.length - 1] : null;
 
-  const handleMoodSelect = (mood: number) => {
-    setSelectedMood(mood);
-    addMood(mood);
-    setShowMoodPicker(false);
-    setTimeout(() => setSelectedMood(null), 2000);
+  const handleMoodWithNote = (mood: number) => {
+    addMood(mood, moodNote || undefined);
+    setMoodNote("");
+    setShowNoteInput(false);
+    setSelectedMoodIndex(null);
   };
 
   const visibleCards = categories
@@ -117,6 +122,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background pb-8 lg:px-16 xl:px-32">
+      {/* Plan selection popup for users without plan */}
+      <PlanSelectionPopup open={showPlanPopup} />
+
       {/* Header */}
       <div className="gradient-hero text-primary-foreground px-6 pt-8 pb-10 rounded-b-[2rem]">
         <div className="flex items-center justify-between mb-6">
@@ -200,9 +208,6 @@ const Dashboard = () => {
           </motion.div>
         )}
 
-
-
-
         {/* Promotions Carousel */}
         {promotions.length > 0 && (
           <motion.div
@@ -226,7 +231,7 @@ const Dashboard = () => {
                 >
                   {promo.image_url ? (
                     <div className="relative rounded-2xl overflow-hidden shadow-card border border-border">
-                      <img src={promo.image_url} alt={promo.title} className="w-full h-32 md:h-48 lg:h-56 object-cover" />
+                      <img src={promo.image_url} alt={promo.title} className="w-full h-64 md:h-80 lg:h-96 object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-3">
                         <p className="text-white font-semibold text-sm">{promo.title}</p>
@@ -262,36 +267,72 @@ const Dashboard = () => {
           </motion.div>
         )}
 
-        {/* Mood check */}
+        {/* Mood check - same as diary */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="bg-card rounded-2xl p-4 shadow-card border border-border"
+          className="bg-card rounded-2xl p-5 shadow-card border border-border"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-lilac flex items-center justify-center">
-                <Smiley className="w-5 h-5 text-lilac-foreground" />
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
+            <Smiley className="w-5 h-5 text-primary" /> Como você está se sentindo?
+          </h2>
+
+          {/* Show last mood */}
+          {lastMood && !selectedMoodIndex && (
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl mb-4">
+              <span className="text-2xl">{moodEmojis[lastMood.mood - 1]}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{moodLabels[lastMood.mood - 1]}</p>
+                {lastMood.note && <p className="text-xs text-muted-foreground truncate italic">"{lastMood.note}"</p>}
               </div>
-              <div>
-                <p className="font-semibold text-sm">Como está se sentindo?</p>
-                {todayMood && <p className="text-xs text-muted-foreground">Hoje: {moodEmojis[todayMood.mood - 1]}</p>}
-              </div>
+              <span className="text-[10px] text-muted-foreground flex-shrink-0">Último registro</span>
             </div>
-            {!showMoodPicker && (
-              <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setShowMoodPicker(true)}>
-                Registrar
-              </Button>
-            )}
+          )}
+
+          <div className="flex justify-around mb-4">
+            {moodEmojis.map((emoji, i) => (
+              <button
+                key={i}
+                onClick={() => setSelectedMoodIndex(i + 1)}
+                className={`flex flex-col items-center gap-1 transition-transform ${selectedMoodIndex === i + 1 ? "scale-125 ring-2 ring-primary rounded-xl p-1" : "hover:scale-110"}`}
+              >
+                <span className="text-3xl">{emoji}</span>
+                <span className="text-[10px] text-muted-foreground">{moodLabels[i]}</span>
+              </button>
+            ))}
           </div>
-          {showMoodPicker && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 flex justify-around">
-              {moodEmojis.map((emoji, i) => (
-                <button key={i} onClick={() => handleMoodSelect(i + 1)} className={`text-3xl transition-all hover:scale-125 ${selectedMood === i + 1 ? "scale-125" : ""}`}>
-                  {emoji}
+
+          {selectedMoodIndex && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-3">
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-xl">
+                <span className="text-2xl">{moodEmojis[selectedMoodIndex - 1]}</span>
+                <span className="text-sm font-medium">{moodLabels[selectedMoodIndex - 1]}</span>
+              </div>
+
+              {!showNoteInput ? (
+                <button
+                  onClick={() => setShowNoteInput(true)}
+                  className="w-full flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-xl"
+                >
+                  <PencilSimple className="w-4 h-4" /> Escrever como me sinto (opcional)
                 </button>
-              ))}
+              ) : (
+                <div>
+                  <Textarea
+                    placeholder="Escreva aqui como você está se sentindo hoje..."
+                    value={moodNote}
+                    onChange={e => setMoodNote(e.target.value)}
+                    className="rounded-xl resize-none min-h-[80px]"
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1 text-right">{moodNote.length}/500</p>
+                </div>
+              )}
+
+              <Button className="w-full rounded-xl" onClick={() => handleMoodWithNote(selectedMoodIndex)}>
+                Registrar emoção {moodEmojis[selectedMoodIndex - 1]}
+              </Button>
             </motion.div>
           )}
         </motion.div>

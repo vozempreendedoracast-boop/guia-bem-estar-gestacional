@@ -7,7 +7,7 @@ import {
   TrendUp, UserCheck, MagnifyingGlass, FloppyDisk, X, Stack, List,
   Bell, CreditCard, Link, Database, Monitor, SpinnerGap, Lock, Crown,
   ShieldCheck, Calendar, CaretRight, Password, UserCircle, Export,
-  Megaphone, Image, DownloadSimple, Clipboard, Globe
+  Megaphone, Image, DownloadSimple, Clipboard, Globe, ChatCircleDots
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ import cardHealth from "@/assets/card-health.png";
 import cardDiary from "@/assets/card-diary.png";
 import cardAssistant from "@/assets/card-assistant.png";
 import WebhookAdmin from "@/components/WebhookAdmin";
+import AdminSupportTab from "@/components/AdminSupportTab";
 
 import {
   useCategories, useUpdateCategory, useCreateCategory, useDeleteCategory,
@@ -95,6 +96,7 @@ const sidebarItems = [
   { id: "content", label: "Conteúdos", icon: FileText },
   { id: "promotions", label: "Promoções", icon: Megaphone },
   { id: "users", label: "Usuárias", icon: Users },
+  { id: "support", label: "Suporte", icon: ChatCircleDots },
   { id: "webhooks", label: "Webhooks", icon: Link },
   { id: "settings", label: "Configurações", icon: Gear },
 ];
@@ -172,6 +174,9 @@ const Admin = () => {
   const [userActionLoading, setUserActionLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [viewProfileOpen, setViewProfileOpen] = useState(false);
+  const [viewingProfile, setViewingProfile] = useState<any>(null);
+  const [viewProfileLoading, setViewProfileLoading] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -277,6 +282,21 @@ const Admin = () => {
     } catch (e: any) { toast.error(e.message || "Erro ao excluir"); }
   };
 
+  const handleViewProfile = async (userId: string) => {
+    setViewProfileLoading(true);
+    setViewProfileOpen(true);
+    try {
+      const { data, error } = await supabase
+        .from("pregnancy_profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (error) throw error;
+      setViewingProfile(data);
+    } catch { setViewingProfile(null); }
+    finally { setViewProfileLoading(false); }
+  };
+
   const filteredUsers = users.filter(u =>
     u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -371,7 +391,7 @@ const Admin = () => {
     catch { toast.error("Erro ao alterar visibilidade"); }
   };
   const handleCreateCard = async () => {
-    try { await createCategory.mutateAsync(newCard); toast.success("Card criado!"); setNewCardOpen(false); setNewCard({ title: "", slug: "", description: "", icon: "BookOpen", path: "/", visible: true, display_order: categories.length }); }
+    try { await createCategory.mutateAsync({ ...newCard, image_url: (newCard as any).image_url || "" }); toast.success("Card criado!"); setNewCardOpen(false); setNewCard({ title: "", slug: "", description: "", icon: "BookOpen", path: "/", visible: true, display_order: categories.length }); }
     catch { toast.error("Erro ao criar card"); }
   };
   const handleDeleteCard = async (card: Category) => {
@@ -979,6 +999,9 @@ const Admin = () => {
                             </div>
                           </div>
                           <div className="flex gap-0.5 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Ver perfil" onClick={() => handleViewProfile(user.user_id)}>
+                              <Eye className="w-3.5 h-3.5" />
+                            </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingUser({ ...user }); setNewPassword(""); setEditUserOpen(true); }}>
                               <PencilSimple className="w-3.5 h-3.5" />
                             </Button>
@@ -1088,7 +1111,10 @@ const Admin = () => {
                 </div>
               )}
             </motion.div>
-          )}
+           )}
+
+          {/* ===== SUPPORT ===== */}
+          {activeTab === "support" && <AdminSupportTab />}
 
           {/* ===== WEBHOOKS ===== */}
           {activeTab === "webhooks" && (
@@ -1185,6 +1211,7 @@ const Admin = () => {
             <div><Label className="text-sm font-medium">Descrição</Label><Textarea value={newCard.description} onChange={e => setNewCard({ ...newCard, description: e.target.value })} className="mt-1 rounded-xl" rows={2} /></div>
             <div><Label className="text-sm font-medium">Ícone</Label><Input value={newCard.icon} onChange={e => setNewCard({ ...newCard, icon: e.target.value })} className="mt-1 rounded-xl" placeholder="BookOpen" /></div>
             <div><Label className="text-sm font-medium">Rota</Label><Input value={newCard.path} onChange={e => setNewCard({ ...newCard, path: e.target.value })} className="mt-1 rounded-xl" placeholder="/nutricao" /></div>
+            <div><Label className="text-sm font-medium">URL da imagem</Label><Input value={(newCard as any).image_url || ""} onChange={e => setNewCard({ ...newCard, image_url: e.target.value } as any)} className="mt-1 rounded-xl" placeholder="https://... (opcional)" /></div>
             <div className="flex gap-2 pt-2">
               <Button className="flex-1 rounded-xl" onClick={handleCreateCard} disabled={createCategory.isPending || !newCard.title || !newCard.slug}>{createCategory.isPending ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />} Criar</Button>
               <Button variant="outline" className="rounded-xl" onClick={() => setNewCardOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
@@ -1810,6 +1837,59 @@ const Admin = () => {
               <Button variant="outline" className="rounded-xl" onClick={() => setNewUserOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Profile Dialog */}
+      <Dialog open={viewProfileOpen} onOpenChange={setViewProfileOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCircle className="w-5 h-5 text-primary" weight="duotone" />
+              Perfil da Gestante
+            </DialogTitle>
+            <DialogDescription>Informações do perfil de gestação.</DialogDescription>
+          </DialogHeader>
+          {viewProfileLoading ? (
+            <div className="flex justify-center py-8"><SpinnerGap className="w-6 h-6 animate-spin text-primary" /></div>
+          ) : !viewingProfile ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <UserCircle className="w-10 h-10 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">Esta usuária ainda não completou o cadastro.</p>
+            </div>
+          ) : (
+            <div className="space-y-3 mt-2">
+              <div className="bg-muted/40 rounded-xl p-3 text-center">
+                <p className="text-lg font-bold text-foreground">{viewingProfile.name || "Sem nome"}</p>
+                <p className="text-xs text-muted-foreground">{viewingProfile.age} anos</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: "Data prevista", value: viewingProfile.due_date ? new Date(viewingProfile.due_date).toLocaleDateString("pt-BR") : "—" },
+                  { label: "Primeira gestação", value: viewingProfile.first_pregnancy ? "Sim" : "Não" },
+                  { label: "Trabalhando", value: viewingProfile.working ? "Sim" : "Não" },
+                  { label: "Acompanhamento médico", value: viewingProfile.has_medical_care ? "Sim" : "Não" },
+                  { label: "Foco", value: viewingProfile.focus === "physical" ? "Físico" : viewingProfile.focus === "emotional" ? "Emocional" : "Ambos" },
+                  { label: "Nível emocional", value: `${viewingProfile.emotional_level}/5` },
+                ].map(item => (
+                  <div key={item.label} className="bg-muted/30 rounded-lg p-2.5">
+                    <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                    <p className="text-sm font-medium text-foreground">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+              {viewingProfile.current_symptoms?.length > 0 && (
+                <div className="bg-muted/30 rounded-lg p-2.5">
+                  <p className="text-[10px] text-muted-foreground mb-1">Sintomas</p>
+                  <div className="flex flex-wrap gap-1">
+                    {viewingProfile.current_symptoms.map((s: string) => (
+                      <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

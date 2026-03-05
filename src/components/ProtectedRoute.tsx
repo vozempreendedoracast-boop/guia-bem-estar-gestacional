@@ -29,12 +29,16 @@ const ProtectedRoute = ({ children, requirePlan = false, requireAdmin = false }:
     return <Navigate to="/painel" replace />;
   }
 
-  // Requires plan but no active plan (or missing profile) → plans page
-  // Admins bypass plan requirement
+  // Users without plan can now access the dashboard (popup will show)
+  // Only redirect for non-dashboard routes that require plan
   if (requirePlan && !isAdmin) {
     const hasActivePlan = userProfile?.plan !== "none" && userProfile?.plan_status === "active";
     if (!hasActivePlan) {
-      return <Navigate to="/planos" replace />;
+      // Allow dashboard access (popup will show), block other protected routes
+      const isDashboard = window.location.pathname === "/painel";
+      if (!isDashboard) {
+        return <Navigate to="/painel" replace />;
+      }
     }
   }
 
