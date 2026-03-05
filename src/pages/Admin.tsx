@@ -6,7 +6,8 @@ import {
   Heartbeat, Heart, Robot, ChartBar, Plus, PencilSimple, Trash, Eye, ArrowLeft,
   TrendUp, UserCheck, MagnifyingGlass, FloppyDisk, X, Stack, List,
   Bell, CreditCard, Link, Database, Monitor, SpinnerGap, Lock, Crown,
-  ShieldCheck, Calendar, CaretRight, Password, UserCircle, Export
+  ShieldCheck, Calendar, CaretRight, Password, UserCircle, Export,
+  Megaphone, Image, DownloadSimple, Clipboard, Globe
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,8 @@ import {
   useHealthTips, useUpdateHealthTip, useCreateHealthTip, useDeleteHealthTip,
   useWeeklyTips, useUpdateWeeklyTip, useCreateWeeklyTip, useDeleteWeeklyTip,
   usePlans, useUpdatePlan, useCreatePlan, useDeletePlan,
-  type Category, type WeekContent, type SymptomRow, type ExerciseRow, type HealthTipRow, type WeeklyTipRow, type PlanRow,
+  usePromotions, useCreatePromotion, useUpdatePromotion, useDeletePromotion,
+  type Category, type WeekContent, type SymptomRow, type ExerciseRow, type HealthTipRow, type WeeklyTipRow, type PlanRow, type PromotionRow,
 } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -91,6 +93,7 @@ const sidebarItems = [
   { id: "overview", label: "Visão Geral", icon: SquaresFour },
   { id: "cards", label: "Cards", icon: Stack },
   { id: "content", label: "Conteúdos", icon: FileText },
+  { id: "promotions", label: "Promoções", icon: Megaphone },
   { id: "users", label: "Usuárias", icon: Users },
   { id: "webhooks", label: "Webhooks", icon: Link },
   { id: "settings", label: "Configurações", icon: Gear },
@@ -116,7 +119,13 @@ const ADMIN_BASE_URL = "https://hmtrjnosuwtmulerhgnr.supabase.co";
 
 const Admin = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("admin_active_tab") || "overview";
+  });
+  
+  useEffect(() => {
+    localStorage.setItem("admin_active_tab", activeTab);
+  }, [activeTab]);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -148,7 +157,10 @@ const Admin = () => {
   const updatePlanMut = useUpdatePlan();
   const createPlanMut = useCreatePlan();
   const deletePlanMut = useDeletePlan();
-
+  const { data: promotionsData = [], isLoading: loadingPromotions } = usePromotions();
+  const createPromotionMut = useCreatePromotion();
+  const updatePromotionMut = useUpdatePromotion();
+  const deletePromotionMut = useDeletePromotion();
   // User management
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, activeUsers: 0, newToday: 0, essentialCount: 0, premiumCount: 0 });
@@ -294,6 +306,10 @@ const Admin = () => {
   // Plans state
   const [editingPlan, setEditingPlan] = useState<Partial<PlanRow> & { featuresText?: string; excludedText?: string } | null>(null);
   const [editPlanOpen, setEditPlanOpen] = useState(false);
+
+  // Promotions state
+  const [editingPromotion, setEditingPromotion] = useState<Partial<PromotionRow> | null>(null);
+  const [editPromotionOpen, setEditPromotionOpen] = useState(false);
 
   // Settings state
   const [settings, setSettings] = useState<SettingsState>({
@@ -459,6 +475,29 @@ const Admin = () => {
 
   const openSetting = (type: string) => { setEditSettingType(type); setEditSettingOpen(true); };
 
+  // Promotion handlers
+  const handleSavePromotion = async () => {
+    if (!editingPromotion) return;
+    try {
+      const payload = {
+        title: editingPromotion.title || "",
+        description: editingPromotion.description || "",
+        image_url: editingPromotion.image_url || "",
+        link_url: editingPromotion.link_url || "#",
+        button_text: editingPromotion.button_text || "Ver oferta",
+        active: editingPromotion.active ?? true,
+        display_order: editingPromotion.display_order ?? 0,
+        starts_at: editingPromotion.starts_at || null,
+        ends_at: editingPromotion.ends_at || null,
+      };
+      if (editingPromotion.id) {
+        await updatePromotionMut.mutateAsync({ id: editingPromotion.id, ...payload });
+      } else {
+        await createPromotionMut.mutateAsync(payload);
+      }
+      toast.success("Promoção salva!"); setEditPromotionOpen(false); setEditingPromotion(null);
+    } catch (e: any) { toast.error(e.message || "Erro ao salvar promoção"); }
+  };
   /* ─────────── Helpers ─────────── */
   const planBadge = (plan: string) => {
     if (plan === "premium") return <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-sm"><Crown className="w-3 h-3 mr-1" /> Premium</Badge>;
@@ -956,6 +995,75 @@ const Admin = () => {
             </motion.div>
           )}
 
+          {/* ===== PROMOTIONS ===== */}
+          {activeTab === "promotions" && (
+            <motion.div key="promotions" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-6 max-w-5xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold font-display text-foreground">Promoções</h1>
+                  <p className="text-sm text-muted-foreground mt-1">Gerencie banners e ofertas exibidos no painel das usuárias.</p>
+                </div>
+                <Button className="rounded-xl gradient-primary text-primary-foreground shadow-soft" onClick={() => { setEditingPromotion({ title: "", description: "", image_url: "", link_url: "#", button_text: "Ver oferta", active: true, display_order: promotionsData.length }); setEditPromotionOpen(true); }}>
+                  <Plus className="w-4 h-4 mr-1" /> Nova
+                </Button>
+              </div>
+
+              {loadingPromotions ? (
+                <div className="flex justify-center py-12"><SpinnerGap className="w-6 h-6 animate-spin text-primary" /></div>
+              ) : promotionsData.length === 0 ? (
+                <div className="bg-card rounded-2xl border border-border shadow-card p-12 text-center">
+                  <Megaphone className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" weight="duotone" />
+                  <p className="text-muted-foreground text-sm">Nenhuma promoção cadastrada.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Crie promoções para exibir no carrossel do painel.</p>
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {promotionsData.sort((a, b) => a.display_order - b.display_order).map((promo, i) => (
+                    <motion.div
+                      key={promo.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className={`bg-card rounded-2xl border border-border shadow-card overflow-hidden transition-all hover:shadow-elevated group ${!promo.active ? "opacity-50" : ""}`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-stretch">
+                        {promo.image_url && (
+                          <div className="w-full sm:w-32 h-24 sm:h-auto flex-shrink-0 overflow-hidden bg-muted">
+                            <img src={promo.image_url} alt={promo.title} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="flex-1 p-4 flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-foreground">{promo.title || "Sem título"}</h3>
+                            <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{promo.description}</p>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                              <Badge variant="outline" className="text-[10px] font-normal">{promo.button_text}</Badge>
+                              {promo.active
+                                ? <Badge className="bg-emerald-100 text-emerald-700 border-0 text-[10px]">Ativa</Badge>
+                                : <Badge className="bg-red-100 text-red-700 border-0 text-[10px]">Inativa</Badge>}
+                              {promo.ends_at && <Badge variant="outline" className="text-[10px]">Até {new Date(promo.ends_at).toLocaleDateString("pt-BR")}</Badge>}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-0.5 flex-shrink-0">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingPromotion({ ...promo }); setEditPromotionOpen(true); }}>
+                              <PencilSimple className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:text-destructive" onClick={async () => {
+                              if (!confirm(`Excluir promoção "${promo.title}"?`)) return;
+                              try { await deletePromotionMut.mutateAsync(promo.id); toast.success("Promoção excluída!"); } catch { toast.error("Erro ao excluir"); }
+                            }}>
+                              <Trash className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {/* ===== WEBHOOKS ===== */}
           {activeTab === "webhooks" && (
             <motion.div key="webhooks" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="max-w-5xl">
@@ -1300,7 +1408,39 @@ const Admin = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Settings Dialog */}
+      {/* Edit Promotion Dialog */}
+      <Dialog open={editPromotionOpen} onOpenChange={setEditPromotionOpen}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{!editingPromotion?.id ? "Nova Promoção" : `Editar: ${editingPromotion?.title}`}</DialogTitle>
+            <DialogDescription>Configure os detalhes da promoção/banner.</DialogDescription>
+          </DialogHeader>
+          {editingPromotion && (
+            <div className="space-y-4 mt-2">
+              <div><Label className="text-sm font-medium">Título</Label><Input value={editingPromotion.title || ""} onChange={e => setEditingPromotion({ ...editingPromotion, title: e.target.value })} className="mt-1 rounded-xl" placeholder="Ex: Oferta Especial" /></div>
+              <div><Label className="text-sm font-medium">Descrição</Label><Textarea value={editingPromotion.description || ""} onChange={e => setEditingPromotion({ ...editingPromotion, description: e.target.value })} className="mt-1 rounded-xl" rows={2} placeholder="Texto da promoção" /></div>
+              <div><Label className="text-sm font-medium">URL da imagem</Label><Input value={editingPromotion.image_url || ""} onChange={e => setEditingPromotion({ ...editingPromotion, image_url: e.target.value })} className="mt-1 rounded-xl" placeholder="https://..." /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-sm font-medium">Link de destino</Label><Input value={editingPromotion.link_url || ""} onChange={e => setEditingPromotion({ ...editingPromotion, link_url: e.target.value })} className="mt-1 rounded-xl" placeholder="https://..." /></div>
+                <div><Label className="text-sm font-medium">Texto do botão</Label><Input value={editingPromotion.button_text || ""} onChange={e => setEditingPromotion({ ...editingPromotion, button_text: e.target.value })} className="mt-1 rounded-xl" placeholder="Ver oferta" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-sm font-medium">Início (opcional)</Label><Input type="datetime-local" value={editingPromotion.starts_at ? new Date(editingPromotion.starts_at).toISOString().slice(0, 16) : ""} onChange={e => setEditingPromotion({ ...editingPromotion, starts_at: e.target.value ? new Date(e.target.value).toISOString() : null })} className="mt-1 rounded-xl" /></div>
+                <div><Label className="text-sm font-medium">Fim (opcional)</Label><Input type="datetime-local" value={editingPromotion.ends_at ? new Date(editingPromotion.ends_at).toISOString().slice(0, 16) : ""} onChange={e => setEditingPromotion({ ...editingPromotion, ends_at: e.target.value ? new Date(e.target.value).toISOString() : null })} className="mt-1 rounded-xl" /></div>
+              </div>
+              <div><Label className="text-sm font-medium">Ordem</Label><Input type="number" value={editingPromotion.display_order ?? 0} onChange={e => setEditingPromotion({ ...editingPromotion, display_order: parseInt(e.target.value) || 0 })} className="mt-1 rounded-xl" /></div>
+              <div className="flex items-center gap-3"><Switch checked={editingPromotion.active ?? true} onCheckedChange={v => setEditingPromotion({ ...editingPromotion, active: v })} /><Label className="text-sm">Ativa</Label></div>
+              <div className="flex gap-2 pt-2">
+                <Button className="flex-1 rounded-xl" onClick={handleSavePromotion} disabled={createPromotionMut.isPending || updatePromotionMut.isPending}>
+                  {(createPromotionMut.isPending || updatePromotionMut.isPending) ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => setEditPromotionOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={editSettingOpen} onOpenChange={setEditSettingOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -1318,6 +1458,47 @@ const Admin = () => {
               <>
                 <div><Label className="text-sm font-medium">Nome do app</Label><Input value={settings.appName} onChange={e => setSettings({ ...settings, appName: e.target.value })} className="mt-1 rounded-xl" /></div>
                 <div><Label className="text-sm font-medium">Descrição</Label><Textarea value={settings.appDescription} onChange={e => setSettings({ ...settings, appDescription: e.target.value })} className="mt-1 rounded-xl" rows={3} /></div>
+                <div className="border-t border-border pt-4 space-y-3">
+                  <p className="text-xs font-semibold text-foreground">Informações técnicas</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[10px] text-muted-foreground">Versão</p>
+                      <p className="text-sm font-medium text-foreground">1.0.0</p>
+                    </div>
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[10px] text-muted-foreground">Plataforma</p>
+                      <p className="text-sm font-medium text-foreground">Web (PWA)</p>
+                    </div>
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[10px] text-muted-foreground">Hospedagem</p>
+                      <p className="text-sm font-medium text-foreground">Vercel</p>
+                    </div>
+                    <div className="bg-muted/40 rounded-xl p-3">
+                      <p className="text-[10px] text-muted-foreground">Backend</p>
+                      <p className="text-sm font-medium text-foreground">Supabase</p>
+                    </div>
+                  </div>
+                  <div className="bg-muted/40 rounded-xl p-3">
+                    <p className="text-[10px] text-muted-foreground">URL de produção</p>
+                    <p className="text-sm font-medium text-foreground truncate">https://mamyboo.vercel.app</p>
+                  </div>
+                  <div className="bg-muted/40 rounded-xl p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Usuárias cadastradas</p>
+                        <p className="text-sm font-medium text-foreground">{stats.totalUsers}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Planos ativos</p>
+                        <p className="text-sm font-medium text-foreground">{stats.activeUsers}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Conteúdos</p>
+                        <p className="text-sm font-medium text-foreground">{weekContents.length + symptomsData.length + exercisesData.length}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </>
             )}
             {editSettingType === "plans" && (
@@ -1375,6 +1556,35 @@ const Admin = () => {
                     <option value="diária">Diária</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option>
                   </select>
                 </div>
+                <div className="border-t border-border pt-4 space-y-3">
+                  <p className="text-xs font-semibold text-foreground">Horários de envio</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label className="text-[11px]">Manhã</Label><Input type="time" defaultValue="08:00" className="mt-1 rounded-xl" /></div>
+                    <div><Label className="text-[11px]">Noite</Label><Input type="time" defaultValue="20:00" className="mt-1 rounded-xl" /></div>
+                  </div>
+                </div>
+                <div className="border-t border-border pt-4 space-y-3">
+                  <p className="text-xs font-semibold text-foreground">Tipos de notificação</p>
+                  <div className="space-y-2">
+                    {[
+                      { label: "Dica semanal", desc: "Envia dica ao início de cada semana" },
+                      { label: "Lembrete de humor", desc: "Lembra de registrar como está se sentindo" },
+                      { label: "Atualização do bebê", desc: "Informa desenvolvimento do bebê" },
+                      { label: "Promoções", desc: "Ofertas e novidades do app" },
+                    ].map((n) => (
+                      <div key={n.label} className="flex items-center justify-between bg-muted/40 rounded-xl p-3">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{n.label}</p>
+                          <p className="text-[10px] text-muted-foreground">{n.desc}</p>
+                        </div>
+                        <Switch defaultChecked />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-muted/50 rounded-xl p-3">
+                  <p className="text-[10px] text-muted-foreground">⚠️ Push notifications requerem configuração de Service Worker (PWA). As configurações acima serão aplicadas quando o recurso estiver habilitado.</p>
+                </div>
               </>
             )}
             {editSettingType === "integrations" && (
@@ -1403,7 +1613,36 @@ const Admin = () => {
             {editSettingType === "backup" && (
               <>
                 <div className="flex items-center justify-between"><Label className="text-sm font-medium">Backup automático</Label><Switch checked={settings.backupEnabled} onCheckedChange={v => setSettings({ ...settings, backupEnabled: v })} /></div>
-                <div className="bg-muted/50 rounded-xl p-3"><p className="text-[10px] text-muted-foreground">Os dados já estão sendo salvos no Supabase.</p></div>
+                <div className="bg-muted/50 rounded-xl p-3"><p className="text-[10px] text-muted-foreground">Os dados estão sendo persistidos no Supabase com backups diários automáticos.</p></div>
+                <div className="border-t border-border pt-4 space-y-3">
+                  <p className="text-xs font-semibold text-foreground">Exportar dados</p>
+                  <p className="text-[10px] text-muted-foreground">Baixe os dados das tabelas em formato JSON.</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Usuárias", table: "user_profiles" },
+                      { label: "Semanas", table: "week_contents" },
+                      { label: "Sintomas", table: "symptoms" },
+                      { label: "Exercícios", table: "exercises" },
+                      { label: "Dicas de Saúde", table: "health_tips" },
+                      { label: "Planos", table: "plans" },
+                    ].map(item => (
+                      <Button key={item.table} variant="outline" size="sm" className="rounded-xl text-xs justify-start" onClick={async () => {
+                        try {
+                          const { data, error } = await supabase.from(item.table as any).select("*");
+                          if (error) throw error;
+                          const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url; a.download = `${item.table}_${new Date().toISOString().slice(0, 10)}.json`; a.click();
+                          URL.revokeObjectURL(url);
+                          toast.success(`${item.label} exportado!`);
+                        } catch { toast.error(`Erro ao exportar ${item.label}`); }
+                      }}>
+                        <DownloadSimple className="w-3.5 h-3.5 mr-1.5" /> {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
               </>
             )}
             <div className="flex gap-2 pt-2">

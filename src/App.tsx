@@ -23,6 +23,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +42,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <PregnancyProvider>
+            <ScrollToTop />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
