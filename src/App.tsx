@@ -26,6 +26,7 @@ import Profile from "./pages/Profile";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
+import PwaInstallPrompt from "./components/PwaInstallPrompt";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +46,7 @@ const App = () => (
         <AuthProvider>
           <PregnancyProvider>
             <ScrollToTop />
+            <PwaInstallPrompt />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
