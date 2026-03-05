@@ -3,11 +3,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWeekContents, useCategories, useActivePromotions } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight } from "@phosphor-icons/react";
+import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, CalendarBlank, Stethoscope, Flask, Baby, Clock } from "@phosphor-icons/react";
 import mamybooWhite from "@/assets/mamyboo-white.png";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 import cardJourney from "@/assets/card-journey.png";
 import cardSymptoms from "@/assets/card-symptoms.png";
@@ -31,13 +35,43 @@ const iconMap: Record<string, React.ElementType> = {
   BookOpen, WarningCircle, Heartbeat, Heart, ChartBar, Robot,
 };
 
+const categoryIcons: Record<string, React.ElementType> = {
+  consulta: Stethoscope,
+  exame: Flask,
+  ultrassom: Baby,
+  outro: Clock,
+};
+
 const Dashboard = () => {
   const { profile, currentWeek, trimester, progressPercent, addMood, moods, logout } = usePregnancy();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
   const { data: weeks = [] } = useWeekContents();
   const { data: categories = [] } = useCategories();
   const { data: promotions = [] } = useActivePromotions();
+  
+  // Fetch next upcoming reminder
+  const { data: nextReminder } = useQuery({
+    queryKey: ["next-reminder", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("reminders")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("reminder_date", today)
+        .order("reminder_date", { ascending: true })
+        .order("reminder_time", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const [showMoodPicker, setShowMoodPicker] = useState(false);
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const promoRef = useRef<HTMLDivElement>(null);
@@ -164,6 +198,35 @@ const Dashboard = () => {
             </div>
           </motion.div>
         )}
+
+        {/* Next reminder */}
+        {nextReminder && (() => {
+          const Icon = categoryIcons[nextReminder.category] || Clock;
+          return (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              onClick={() => navigate("/diario")}
+              className="w-full bg-primary/10 border border-primary/20 rounded-2xl p-4 text-left hover:bg-primary/15 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-primary">Próximo lembrete</p>
+                  <p className="font-semibold text-sm truncate">{nextReminder.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(nextReminder.reminder_date + "T00:00:00"), "dd 'de' MMMM", { locale: ptBR })}
+                    {nextReminder.reminder_time && ` às ${nextReminder.reminder_time.slice(0, 5)}`}
+                  </p>
+                </div>
+                <CalendarBlank className="w-5 h-5 text-primary/50 flex-shrink-0" />
+              </div>
+            </motion.button>
+          );
+        })()}
 
         {/* Promotions Carousel */}
         {promotions.length > 0 && (
