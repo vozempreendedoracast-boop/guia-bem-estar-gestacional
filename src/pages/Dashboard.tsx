@@ -71,7 +71,7 @@ const Dashboard = () => {
   const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
   return (
-    <div className="min-h-screen bg-background pb-8">
+    <div className="min-h-screen bg-background pb-8 lg:px-16 xl:px-32">
       {/* Header */}
       <div className="gradient-hero text-primary-foreground px-6 pt-8 pb-10 rounded-b-[2rem]">
         <div className="flex items-center justify-between mb-6">
@@ -126,7 +126,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      <div className="px-6 lg:px-16 xl:px-32 -mt-4 space-y-6">
+      <div className="px-6 -mt-4 space-y-6">
         {/* Quick tip */}
         {weekData && (
           <motion.div
