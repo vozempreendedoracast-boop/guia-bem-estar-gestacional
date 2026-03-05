@@ -114,7 +114,7 @@ const Dashboard = () => {
       description: c.description,
       icon: iconMap[c.icon] || BookOpen,
       path: c.path,
-      image: localImages[c.slug] || cardJourney,
+      image: c.image_url?.trim() ? c.image_url : (localImages[c.slug] || cardJourney),
     }));
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };

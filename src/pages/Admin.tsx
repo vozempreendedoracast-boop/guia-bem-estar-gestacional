@@ -722,7 +722,7 @@ const Admin = () => {
                     >
                       <div className="flex flex-col sm:flex-row sm:items-stretch">
                         <div className="w-full sm:w-28 h-28 sm:h-auto flex-shrink-0 overflow-hidden">
-                          <img src={localImages[card.slug] || cardJourney} alt={card.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <img src={card.image_url?.trim() ? card.image_url : (localImages[card.slug] || cardJourney)} alt={card.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
                         <div className="flex-1 p-4 flex items-center justify-between gap-3">
                           <div className="min-w-0">
