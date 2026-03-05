@@ -282,6 +282,51 @@ export type Database = {
         }
         Relationships: []
       }
+      promotions: {
+        Row: {
+          active: boolean
+          button_text: string
+          created_at: string
+          description: string
+          display_order: number
+          ends_at: string | null
+          id: string
+          image_url: string
+          link_url: string
+          starts_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          button_text?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          ends_at?: string | null
+          id?: string
+          image_url?: string
+          link_url?: string
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          button_text?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          ends_at?: string | null
+          id?: string
+          image_url?: string
+          link_url?: string
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       symptoms: {
         Row: {
           active: boolean

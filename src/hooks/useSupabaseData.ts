@@ -432,3 +432,76 @@ export function useDeletePlan() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["plans"] }),
   });
 }
+
+// ─── Promotions ───
+export type PromotionRow = Tables<"promotions">;
+
+export function usePromotions() {
+  return useQuery({
+    queryKey: ["promotions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("promotions")
+        .select("*")
+        .order("display_order");
+      if (error) throw error;
+      return data as PromotionRow[];
+    },
+  });
+}
+
+export function useActivePromotions() {
+  return useQuery({
+    queryKey: ["promotions", "active"],
+    queryFn: async () => {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from("promotions")
+        .select("*")
+        .eq("active", true)
+        .order("display_order");
+      if (error) throw error;
+      // Filter by date range client-side
+      return (data as PromotionRow[]).filter(p => {
+        if (p.starts_at && p.starts_at > now) return false;
+        if (p.ends_at && p.ends_at < now) return false;
+        return true;
+      });
+    },
+  });
+}
+
+export function useCreatePromotion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (promo: TablesInsert<"promotions">) => {
+      const { data, error } = await supabase.from("promotions").insert(promo).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["promotions"] }),
+  });
+}
+
+export function useUpdatePromotion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: TablesUpdate<"promotions"> & { id: string }) => {
+      const { data, error } = await supabase.from("promotions").update(updates).eq("id", id).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["promotions"] }),
+  });
+}
+
+export function useDeletePromotion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("promotions").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["promotions"] }),
+  });
+}

@@ -1,13 +1,13 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWeekContents, useCategories } from "@/hooks/useSupabaseData";
+import { useWeekContents, useCategories, useActivePromotions } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut } from "@phosphor-icons/react";
+import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight } from "@phosphor-icons/react";
 import mamybooWhite from "@/assets/mamyboo-white.png";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import cardJourney from "@/assets/card-journey.png";
 import cardSymptoms from "@/assets/card-symptoms.png";
@@ -37,8 +37,11 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { data: weeks = [] } = useWeekContents();
   const { data: categories = [] } = useCategories();
+  const { data: promotions = [] } = useActivePromotions();
   const [showMoodPicker, setShowMoodPicker] = useState(false);
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const promoRef = useRef<HTMLDivElement>(null);
+  const [promoIndex, setPromoIndex] = useState(0);
 
   // Find the closest week data from DB
   const weekData = weeks.find(w => w.week_number === currentWeek)
@@ -141,6 +144,65 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground mt-1">{weekData.tip}</p>
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {/* Promotions Carousel */}
+        {promotions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+            className="relative overflow-hidden rounded-2xl"
+          >
+            <div
+              ref={promoRef}
+              className="flex transition-transform duration-300 ease-out"
+              style={{ transform: `translateX(-${promoIndex * 100}%)` }}
+            >
+              {promotions.map((promo) => (
+                <a
+                  key={promo.id}
+                  href={promo.link_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="min-w-full block"
+                >
+                  {promo.image_url ? (
+                    <div className="relative rounded-2xl overflow-hidden shadow-card border border-border">
+                      <img src={promo.image_url} alt={promo.title} className="w-full h-32 object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="text-white font-semibold text-sm">{promo.title}</p>
+                        {promo.description && <p className="text-white/80 text-xs mt-0.5 line-clamp-1">{promo.description}</p>}
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-white mt-1.5 bg-white/20 backdrop-blur-sm rounded-lg px-2 py-0.5">
+                          {promo.button_text} <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-card rounded-2xl p-4 shadow-card border border-border">
+                      <p className="font-semibold text-sm text-foreground">{promo.title}</p>
+                      {promo.description && <p className="text-xs text-muted-foreground mt-1">{promo.description}</p>}
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-primary mt-2">
+                        {promo.button_text} <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  )}
+                </a>
+              ))}
+            </div>
+            {promotions.length > 1 && (
+              <div className="flex justify-center gap-1.5 mt-2">
+                {promotions.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPromoIndex(i)}
+                    className={`w-2 h-2 rounded-full transition-all ${i === promoIndex ? "bg-primary w-4" : "bg-muted-foreground/30"}`}
+                  />
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
 
