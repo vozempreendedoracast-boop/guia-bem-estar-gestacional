@@ -19,10 +19,8 @@ const DynamicPage = () => {
   const navigate = useNavigate();
   const { data: categories = [], isLoading: catLoading } = useCategories();
 
-  // Match current path to a category
   const category = categories.find(c => c.path === location.pathname);
 
-  // Fetch weekly_tips linked to this category (generic content table)
   const { data: tips = [], isLoading: contentLoading } = useQuery({
     queryKey: ["dynamic-content", category?.id],
     queryFn: async () => {
@@ -39,7 +37,6 @@ const DynamicPage = () => {
     enabled: !!category,
   });
 
-  // Fetch symptoms linked to this category
   const { data: symptoms = [] } = useQuery({
     queryKey: ["dynamic-symptoms", category?.id],
     queryFn: async () => {
@@ -56,7 +53,6 @@ const DynamicPage = () => {
     enabled: !!category,
   });
 
-  // Fetch exercises linked to this category
   const { data: exercises = [] } = useQuery({
     queryKey: ["dynamic-exercises", category?.id],
     queryFn: async () => {
@@ -73,7 +69,6 @@ const DynamicPage = () => {
     enabled: !!category,
   });
 
-  // Fetch health tips linked to this category
   const { data: healthTips = [] } = useQuery({
     queryKey: ["dynamic-health-tips", category?.id],
     queryFn: async () => {
@@ -93,11 +88,10 @@ const DynamicPage = () => {
   const isLoading = catLoading || contentLoading;
   const hasAnyContent = tips.length > 0 || symptoms.length > 0 || exercises.length > 0 || healthTips.length > 0;
 
-  // If categories loaded and no match → real 404
   if (!catLoading && !category) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted">
-        <div className="text-center">
+        <div className="text-center px-6">
           <h1 className="mb-4 text-4xl font-bold">404</h1>
           <p className="mb-4 text-xl text-muted-foreground">Ops! Página não encontrada</p>
           <a href="/" className="text-primary underline hover:text-primary/90">
@@ -120,62 +114,74 @@ const DynamicPage = () => {
     );
   }
 
+  const ContentCard = ({ children, index = 0 }: { children: React.ReactNode; index?: number }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="bg-card rounded-2xl shadow-card border border-border overflow-hidden"
+    >
+      {/* Category sticky bar */}
+      <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 border-b border-primary/20">
+        <div className="w-1 h-4 rounded-full bg-primary" />
+        <span className="text-xs font-bold text-primary tracking-wide truncate">{category?.title}</span>
+      </div>
+      <div className="p-4 sm:p-5">{children}</div>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen bg-background pb-8">
       {/* Header */}
-      <div className="gradient-hero text-primary-foreground px-6 pt-8 pb-10 rounded-b-[2rem]">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="gradient-hero text-primary-foreground px-4 sm:px-6 lg:px-16 pt-6 sm:pt-8 pb-8 sm:pb-10 rounded-b-[2rem]">
+        <div className="flex items-center gap-3 mb-4 max-w-4xl mx-auto">
           <Button
             variant="ghost"
             size="icon"
-            className="text-primary-foreground hover:bg-primary-foreground/10"
+            className="text-primary-foreground hover:bg-primary-foreground/10 flex-shrink-0"
             onClick={() => navigate("/painel")}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold font-display">{category?.title}</h1>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold font-display truncate">{category?.title}</h1>
             {category?.description && (
-              <p className="text-sm opacity-80 mt-1">{category.description}</p>
+              <p className="text-xs sm:text-sm opacity-80 mt-1 line-clamp-2">{category.description}</p>
             )}
           </div>
         </div>
         {category?.image_url?.trim() && (
-          <div className="rounded-2xl overflow-hidden mt-2">
-            <img src={category.image_url} alt={category.title} className="w-full h-48 object-cover" />
+          <div className="rounded-2xl overflow-hidden mt-2 max-w-4xl mx-auto">
+            <img
+              src={category.image_url}
+              alt={category.title}
+              className="w-full h-40 sm:h-48 lg:h-64 object-cover"
+            />
           </div>
         )}
       </div>
 
-      <div className="px-6 -mt-4 space-y-6">
+      <div className="px-4 sm:px-6 lg:px-16 -mt-4 space-y-4 sm:space-y-6 max-w-4xl mx-auto">
         {/* No content yet */}
         {!hasAnyContent && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl p-8 shadow-card border border-border text-center"
-          >
-            <p className="text-muted-foreground">Conteúdo em breve! 🚀</p>
-            <p className="text-sm text-muted-foreground/70 mt-2">
-              O administrador ainda não adicionou conteúdo para esta seção.
-            </p>
-          </motion.div>
+          <ContentCard>
+            <div className="text-center py-4">
+              <p className="text-muted-foreground">Conteúdo em breve! 🚀</p>
+              <p className="text-sm text-muted-foreground/70 mt-2">
+                O administrador ainda não adicionou conteúdo para esta seção.
+              </p>
+            </div>
+          </ContentCard>
         )}
 
-        {/* Weekly Tips / Generic content */}
+        {/* Weekly Tips */}
         {tips.length > 0 && (
           <div className="space-y-3">
             {tips.map((tip, i) => (
-              <motion.div
-                key={tip.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-card rounded-2xl p-5 shadow-card border border-border"
-              >
-                <h3 className="font-semibold text-foreground">{tip.title}</h3>
-                <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line">{tip.content}</p>
-              </motion.div>
+              <ContentCard key={tip.id} index={i}>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">{tip.title}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2 whitespace-pre-line">{tip.content}</p>
+              </ContentCard>
             ))}
           </div>
         )}
@@ -183,24 +189,18 @@ const DynamicPage = () => {
         {/* Symptoms */}
         {symptoms.length > 0 && (
           <div className="space-y-3">
-            <h2 className="font-semibold text-lg text-foreground">Sintomas</h2>
+            <h2 className="font-semibold text-base sm:text-lg text-foreground">Sintomas</h2>
             {symptoms.map((s: any, i: number) => (
-              <motion.div
-                key={s.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-card rounded-2xl p-5 shadow-card border border-border"
-              >
-                <h3 className="font-semibold text-foreground">{s.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{s.description}</p>
+              <ContentCard key={s.id} index={i}>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">{s.name}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{s.description}</p>
                 {s.what_to_do && (
                   <div className="mt-3 p-3 bg-muted/50 rounded-xl">
                     <p className="text-xs font-medium text-foreground">O que fazer:</p>
                     <p className="text-xs text-muted-foreground mt-1">{s.what_to_do}</p>
                   </div>
                 )}
-              </motion.div>
+              </ContentCard>
             ))}
           </div>
         )}
@@ -208,24 +208,18 @@ const DynamicPage = () => {
         {/* Exercises */}
         {exercises.length > 0 && (
           <div className="space-y-3">
-            <h2 className="font-semibold text-lg text-foreground">Exercícios</h2>
+            <h2 className="font-semibold text-base sm:text-lg text-foreground">Exercícios</h2>
             {exercises.map((ex: any, i: number) => (
-              <motion.div
-                key={ex.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-card rounded-2xl p-5 shadow-card border border-border"
-              >
+              <ContentCard key={ex.id} index={i}>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-foreground">{ex.name}</h3>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    ex.intensity === "leve" ? "bg-green-100 text-green-700" :
-                    ex.intensity === "moderado" ? "bg-yellow-100 text-yellow-700" :
-                    "bg-red-100 text-red-700"
+                  <h3 className="font-semibold text-foreground text-sm sm:text-base">{ex.name}</h3>
+                  <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
+                    ex.intensity === "leve" ? "bg-accent text-accent-foreground" :
+                    ex.intensity === "moderado" ? "bg-peach text-peach-foreground" :
+                    "bg-destructive/10 text-destructive"
                   }`}>{ex.intensity}</span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">{ex.description}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{ex.description}</p>
                 {ex.steps?.length > 0 && (
                   <ol className="mt-3 space-y-1">
                     {ex.steps.map((step: string, si: number) => (
@@ -235,7 +229,7 @@ const DynamicPage = () => {
                     ))}
                   </ol>
                 )}
-              </motion.div>
+              </ContentCard>
             ))}
           </div>
         )}
@@ -243,26 +237,20 @@ const DynamicPage = () => {
         {/* Health Tips */}
         {healthTips.length > 0 && (
           <div className="space-y-3">
-            <h2 className="font-semibold text-lg text-foreground">Dicas de Saúde</h2>
+            <h2 className="font-semibold text-base sm:text-lg text-foreground">Dicas de Saúde</h2>
             {healthTips.map((ht: any, i: number) => (
-              <motion.div
-                key={ht.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-card rounded-2xl p-5 shadow-card border border-border"
-              >
-                <h3 className="font-semibold text-foreground">{ht.section_title}</h3>
+              <ContentCard key={ht.id} index={i}>
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">{ht.section_title}</h3>
                 {ht.tips?.length > 0 && (
                   <ul className="mt-2 space-y-1">
                     {ht.tips.map((tip: string, ti: number) => (
-                      <li key={ti} className="text-sm text-muted-foreground flex gap-2">
+                      <li key={ti} className="text-xs sm:text-sm text-muted-foreground flex gap-2">
                         <span>•</span> {tip}
                       </li>
                     ))}
                   </ul>
                 )}
-              </motion.div>
+              </ContentCard>
             ))}
           </div>
         )}
