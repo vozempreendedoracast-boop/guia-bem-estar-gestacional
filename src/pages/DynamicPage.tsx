@@ -189,7 +189,6 @@ const DynamicPage = () => {
         {/* Symptoms */}
         {symptoms.length > 0 && (
           <div className="space-y-3">
-            <h2 className="font-semibold text-base sm:text-lg text-foreground">Sintomas</h2>
             {symptoms.map((s: any, i: number) => (
               <ContentCard key={s.id} index={i}>
                 <h3 className="font-semibold text-foreground text-sm sm:text-base">{s.name}</h3>
@@ -208,7 +207,6 @@ const DynamicPage = () => {
         {/* Exercises */}
         {exercises.length > 0 && (
           <div className="space-y-3">
-            <h2 className="font-semibold text-base sm:text-lg text-foreground">Exercícios</h2>
             {exercises.map((ex: any, i: number) => (
               <ContentCard key={ex.id} index={i}>
                 <div className="flex items-center justify-between">
@@ -237,7 +235,6 @@ const DynamicPage = () => {
         {/* Health Tips */}
         {healthTips.length > 0 && (
           <div className="space-y-3">
-            <h2 className="font-semibold text-base sm:text-lg text-foreground">Dicas de Saúde</h2>
             {healthTips.map((ht: any, i: number) => (
               <ContentCard key={ht.id} index={i}>
                 <h3 className="font-semibold text-foreground text-sm sm:text-base">{ht.section_title}</h3>
