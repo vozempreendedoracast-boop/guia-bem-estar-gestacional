@@ -3,7 +3,7 @@ import { useCategories } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "@phosphor-icons/react";
+import { ArrowLeft, InstagramLogo, WhatsappLogo, YoutubeLogo, TiktokLogo, FacebookLogo, LinkedinLogo, Envelope, Phone, MapPin, Globe } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -12,6 +12,101 @@ type ContentItem = {
   title: string;
   content: string;
   display_order: number;
+};
+
+const SOCIAL_ICONS: Record<string, any> = {
+  instagram: InstagramLogo, whatsapp: WhatsappLogo, youtube: YoutubeLogo,
+  tiktok: TiktokLogo, facebook: FacebookLogo, linkedin: LinkedinLogo,
+  email: Envelope, phone: Phone,
+};
+
+const PageBlockRenderer = ({ block }: { block: any }) => {
+  const c = block.content || {};
+
+  if (block.block_type === "text_rich") {
+    return (
+      <div>
+        {block.title && <h3 className="font-semibold text-foreground text-sm sm:text-base">{block.title}</h3>}
+        {c.image_url && <img src={c.image_url} alt={block.title} className="w-full rounded-xl mt-2 max-h-48 object-cover" />}
+        {c.body && <p className="text-xs sm:text-sm text-muted-foreground mt-2 whitespace-pre-line">{c.body}</p>}
+        {c.link_url && c.link_text && (
+          <a href={c.link_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity">
+            {c.link_text}
+          </a>
+        )}
+      </div>
+    );
+  }
+
+  if (block.block_type === "button") {
+    const style = c.style === "outline" ? "border border-primary text-primary bg-transparent" : c.style === "secondary" ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground";
+    return (
+      <div className="text-center">
+        {block.title && <p className="text-xs text-muted-foreground mb-2">{block.title}</p>}
+        <a href={c.url} target="_blank" rel="noopener noreferrer" className={`inline-block w-full px-6 py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity ${style}`}>
+          {c.label || "Clique aqui"}
+        </a>
+      </div>
+    );
+  }
+
+  if (block.block_type === "image") {
+    const img = <img src={c.image_url} alt={c.alt || block.title} className="w-full rounded-xl max-h-64 object-cover" />;
+    return (
+      <div>
+        {block.title && <h3 className="font-semibold text-foreground text-sm sm:text-base mb-2">{block.title}</h3>}
+        {c.link_url ? <a href={c.link_url} target="_blank" rel="noopener noreferrer">{img}</a> : img}
+      </div>
+    );
+  }
+
+  if (block.block_type === "social_links") {
+    const links = (c.links || []) as Array<{ platform: string; url: string }>;
+    return (
+      <div>
+        {block.title && <h3 className="font-semibold text-foreground text-sm sm:text-base mb-3">{block.title}</h3>}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {links.map((link: any, i: number) => {
+            const Icon = SOCIAL_ICONS[link.platform] || Globe;
+            return (
+              <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-muted hover:bg-muted/80 transition-colors text-foreground text-xs font-medium">
+                <Icon className="w-4 h-4" weight="duotone" />
+                {link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  if (block.block_type === "professional") {
+    return (
+      <div className="text-center sm:text-left">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          {c.photo_url && <img src={c.photo_url} alt={c.name} className="w-20 h-20 rounded-full object-cover flex-shrink-0 border-2 border-primary/20" />}
+          <div className="min-w-0">
+            <h3 className="font-bold text-foreground text-base">{c.name || block.title}</h3>
+            {c.specialty && <p className="text-xs text-primary font-medium mt-0.5">{c.specialty}</p>}
+            {c.description && <p className="text-xs text-muted-foreground mt-1">{c.description}</p>}
+            {c.location && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 justify-center sm:justify-start">
+                <MapPin className="w-3 h-3" /> {c.location}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
+          {c.phone && <a href={`tel:${c.phone}`} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs hover:bg-muted/80 transition-colors"><Phone className="w-3.5 h-3.5" />{c.phone}</a>}
+          {c.email && <a href={`mailto:${c.email}`} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs hover:bg-muted/80 transition-colors"><Envelope className="w-3.5 h-3.5" />{c.email}</a>}
+          {c.instagram && <a href={c.instagram.startsWith("http") ? c.instagram : `https://instagram.com/${c.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs hover:bg-muted/80 transition-colors"><InstagramLogo className="w-3.5 h-3.5" />Instagram</a>}
+          {c.website && <a href={c.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs hover:bg-muted/80 transition-colors"><Globe className="w-3.5 h-3.5" />Site</a>}
+        </div>
+      </div>
+    );
+  }
+
+  return <p className="text-xs text-muted-foreground">Bloco não suportado: {block.block_type}</p>;
 };
 
 const DynamicPage = () => {
@@ -85,8 +180,24 @@ const DynamicPage = () => {
     enabled: !!category,
   });
 
+  const { data: pageBlocks = [] } = useQuery({
+    queryKey: ["dynamic-page-blocks", category?.id],
+    queryFn: async () => {
+      if (!category) return [];
+      const { data, error } = await supabase
+        .from("page_blocks" as any)
+        .select("*")
+        .eq("category_id", category.id)
+        .eq("active", true)
+        .order("display_order");
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!category,
+  });
+
   const isLoading = catLoading || contentLoading;
-  const hasAnyContent = tips.length > 0 || symptoms.length > 0 || exercises.length > 0 || healthTips.length > 0;
+  const hasAnyContent = tips.length > 0 || symptoms.length > 0 || exercises.length > 0 || healthTips.length > 0 || pageBlocks.length > 0;
 
   if (!catLoading && !category) {
     return (
@@ -247,6 +358,17 @@ const DynamicPage = () => {
                     ))}
                   </ul>
                 )}
+              </ContentCard>
+            ))}
+          </div>
+        )}
+
+        {/* Page Blocks (Bio Links) */}
+        {pageBlocks.length > 0 && (
+          <div className="space-y-3">
+            {pageBlocks.map((block: any, i: number) => (
+              <ContentCard key={block.id} index={i}>
+                <PageBlockRenderer block={block} />
               </ContentCard>
             ))}
           </div>

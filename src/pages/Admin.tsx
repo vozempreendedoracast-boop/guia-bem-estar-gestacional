@@ -28,6 +28,7 @@ import cardDiary from "@/assets/card-diary.png";
 import cardAssistant from "@/assets/card-assistant.png";
 import WebhookAdmin from "@/components/WebhookAdmin";
 import AdminSupportTab from "@/components/AdminSupportTab";
+import AdminBioLinksTab from "@/components/AdminBioLinksTab";
 
 import {
   useCategories, useUpdateCategory, useCreateCategory, useDeleteCategory,
@@ -786,6 +787,7 @@ const Admin = () => {
                   <TabsTrigger value="exercises" className="rounded-lg text-xs sm:text-sm data-[state=active]:shadow-sm">Exercícios</TabsTrigger>
                   <TabsTrigger value="health" className="rounded-lg text-xs sm:text-sm data-[state=active]:shadow-sm">Saúde</TabsTrigger>
                   <TabsTrigger value="tips" className="rounded-lg text-xs sm:text-sm data-[state=active]:shadow-sm">Dicas</TabsTrigger>
+                  <TabsTrigger value="biolinks" className="rounded-lg text-xs sm:text-sm data-[state=active]:shadow-sm">Bio Links</TabsTrigger>
                 </TabsList>
 
                 {/* Weeks tab */}
@@ -969,6 +971,10 @@ const Admin = () => {
                       </div>
                     )}
                   </div>
+                </TabsContent>
+                {/* Bio Links tab */}
+                <TabsContent value="biolinks" className="mt-4">
+                  <AdminBioLinksTab />
                 </TabsContent>
               </Tabs>
             </motion.div>

@@ -505,3 +505,65 @@ export function useDeletePromotion() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["promotions"] }),
   });
 }
+
+// ─── Page Blocks (Bio Links) ───
+export type PageBlockRow = {
+  id: string;
+  category_id: string | null;
+  block_type: string;
+  title: string;
+  content: Record<string, any>;
+  display_order: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export function usePageBlocks() {
+  return useQuery({
+    queryKey: ["page_blocks"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("page_blocks" as any)
+        .select("*")
+        .order("display_order");
+      if (error) throw error;
+      return data as unknown as PageBlockRow[];
+    },
+  });
+}
+
+export function useCreatePageBlock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (block: Omit<PageBlockRow, "id" | "created_at" | "updated_at">) => {
+      const { data, error } = await supabase.from("page_blocks" as any).insert(block as any).select().single();
+      if (error) throw error;
+      return data as unknown as PageBlockRow;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["page_blocks"] }),
+  });
+}
+
+export function useUpdatePageBlock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<PageBlockRow> & { id: string }) => {
+      const { data, error } = await supabase.from("page_blocks" as any).update(updates as any).eq("id", id).select().single();
+      if (error) throw error;
+      return data as unknown as PageBlockRow;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["page_blocks"] }),
+  });
+}
+
+export function useDeletePageBlock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("page_blocks" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["promotions"] }),
+  });
+}
