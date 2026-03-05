@@ -112,7 +112,7 @@ const Diary = () => {
   // Dates that have reminders for calendar highlighting
   const reminderDates = reminders.map(r => new Date(r.reminder_date + "T00:00:00"));
 
-  const upcomingReminders = reminders.filter(r => new Date(r.reminder_date) >= new Date(new Date().toDateString()));
+  const upcomingReminders = reminders.filter(r => new Date(r.reminder_date + "T23:59:59") >= new Date());
 
   return (
     <div className="min-h-screen bg-background pb-8">
