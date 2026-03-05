@@ -9,11 +9,11 @@ import mamybooWhite from "@/assets/mamyboo-white.png";
 
 const Index = () => {
   const { user, loading, isAdmin } = useAuth();
-  const { isOnboarded } = usePregnancy();
+  const { isOnboarded, loading: pregnancyLoading } = usePregnancy();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || pregnancyLoading) return;
     if (!user) return; // Not logged in, show landing
 
     if (isAdmin) {
@@ -23,10 +23,10 @@ const Index = () => {
     } else {
       navigate("/cadastro", { replace: true });
     }
-  }, [user, isOnboarded, isAdmin, navigate, loading]);
+  }, [user, isOnboarded, isAdmin, navigate, loading, pregnancyLoading]);
 
   // If loading or redirecting, show nothing
-  if (loading || user) {
+  if (loading || pregnancyLoading || user) {
     return null;
   }
 
