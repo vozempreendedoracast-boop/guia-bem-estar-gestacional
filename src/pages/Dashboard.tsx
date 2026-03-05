@@ -249,7 +249,7 @@ const Dashboard = () => {
               onClick={() => navigate(card.path)}
               className="bg-card rounded-2xl shadow-card border border-border text-left hover:shadow-elevated transition-shadow overflow-hidden"
             >
-              <div className="w-full h-24 overflow-hidden">
+              <div className="w-full h-24 md:h-44 lg:h-52 overflow-hidden">
                 <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
               </div>
               <div className="p-3">
