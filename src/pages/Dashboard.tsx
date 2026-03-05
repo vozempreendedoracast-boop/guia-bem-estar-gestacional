@@ -126,7 +126,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      <div className="px-6 -mt-4 space-y-6">
+      <div className="px-6 lg:px-16 xl:px-32 -mt-4 space-y-6">
         {/* Quick tip */}
         {weekData && (
           <motion.div
@@ -249,7 +249,7 @@ const Dashboard = () => {
               onClick={() => navigate(card.path)}
               className="bg-card rounded-2xl shadow-card border border-border text-left hover:shadow-elevated transition-shadow overflow-hidden"
             >
-              <div className="w-full h-24 md:h-44 lg:h-52 overflow-hidden">
+              <div className="w-full h-24 md:h-52 lg:h-64 xl:h-72 overflow-hidden">
                 <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
               </div>
               <div className="p-3">
