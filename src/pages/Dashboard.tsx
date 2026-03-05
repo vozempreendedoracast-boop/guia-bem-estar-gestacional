@@ -7,7 +7,7 @@ import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Spa
 import mamybooWhite from "@/assets/mamyboo-white.png";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 import cardJourney from "@/assets/card-journey.png";
 import cardSymptoms from "@/assets/card-symptoms.png";
@@ -42,6 +42,24 @@ const Dashboard = () => {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const promoRef = useRef<HTMLDivElement>(null);
   const [promoIndex, setPromoIndex] = useState(0);
+  const promoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Auto-play carousel
+  const autoPlayInterval = parseInt(localStorage.getItem("promo_carousel_interval") || "5", 10) * 1000;
+  const autoPlayEnabled = localStorage.getItem("promo_carousel_autoplay") !== "false";
+
+  const nextPromo = useCallback(() => {
+    if (promotions.length > 1) {
+      setPromoIndex(prev => (prev + 1) % promotions.length);
+    }
+  }, [promotions.length]);
+
+  useEffect(() => {
+    if (autoPlayEnabled && promotions.length > 1) {
+      promoTimerRef.current = setInterval(nextPromo, autoPlayInterval);
+      return () => { if (promoTimerRef.current) clearInterval(promoTimerRef.current); };
+    }
+  }, [autoPlayEnabled, autoPlayInterval, nextPromo, promotions.length]);
 
   // Find the closest week data from DB
   const weekData = weeks.find(w => w.week_number === currentWeek)
@@ -170,7 +188,7 @@ const Dashboard = () => {
                 >
                   {promo.image_url ? (
                     <div className="relative rounded-2xl overflow-hidden shadow-card border border-border">
-                      <img src={promo.image_url} alt={promo.title} className="w-full h-32 object-cover" />
+                      <img src={promo.image_url} alt={promo.title} className="w-full h-32 md:h-48 lg:h-56 object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-3">
                         <p className="text-white font-semibold text-sm">{promo.title}</p>

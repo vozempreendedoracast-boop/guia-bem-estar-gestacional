@@ -1008,6 +1008,32 @@ const Admin = () => {
                 </Button>
               </div>
 
+              {/* Carousel Settings */}
+              <div className="bg-card rounded-2xl border border-border shadow-card p-4 space-y-4">
+                <p className="text-sm font-semibold text-foreground">⚙️ Configurações do Carrossel</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Auto-play</Label>
+                    <Switch
+                      checked={localStorage.getItem("promo_carousel_autoplay") !== "false"}
+                      onCheckedChange={v => { localStorage.setItem("promo_carousel_autoplay", String(v)); toast.success(v ? "Auto-play ativado" : "Auto-play desativado"); }}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Intervalo (segundos)</Label>
+                    <Input
+                      type="number"
+                      min={2}
+                      max={30}
+                      defaultValue={localStorage.getItem("promo_carousel_interval") || "5"}
+                      onChange={e => { localStorage.setItem("promo_carousel_interval", e.target.value); }}
+                      className="mt-1 rounded-xl w-24"
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground">O carrossel de promoções no painel da usuária passará automaticamente conforme estas configurações.</p>
+              </div>
+
               {loadingPromotions ? (
                 <div className="flex justify-center py-12"><SpinnerGap className="w-6 h-6 animate-spin text-primary" /></div>
               ) : promotionsData.length === 0 ? (
