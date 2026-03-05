@@ -327,6 +327,69 @@ export type Database = {
         }
         Relationships: []
       }
+      reminders: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          reminder_date: string
+          reminder_time: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          reminder_date: string
+          reminder_time?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          reminder_date?: string
+          reminder_time?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          sender: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          sender?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          sender?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       symptoms: {
         Row: {
           active: boolean

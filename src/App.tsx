@@ -22,6 +22,7 @@ import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/saude" element={<ProtectedRoute requirePlan><Health /></ProtectedRoute>} />
               <Route path="/diario" element={<ProtectedRoute requirePlan><Diary /></ProtectedRoute>} />
               <Route path="/assistente" element={<ProtectedRoute requirePlan><Assistant /></ProtectedRoute>} />
+              <Route path="/suporte" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/administracao" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />

@@ -62,12 +62,12 @@ const Symptoms = () => {
                     return (
                       <motion.button key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} onClick={() => setSelected(s)}
                         className="w-full flex items-center gap-3 p-4 rounded-2xl bg-card border border-border shadow-card text-left hover:shadow-elevated transition-shadow">
-                        <div className={`w-10 h-10 rounded-xl ${cfg.color} flex items-center justify-center`}>
+                        <div className={`w-10 h-10 rounded-xl ${cfg.color} flex items-center justify-center flex-shrink-0`}>
                           <cfg.icon className={`w-5 h-5 ${cfg.textColor}`} />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm">{s.name}</p>
-                          <p className="text-xs text-muted-foreground">{s.description}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>
                         </div>
                         <span className={`text-[10px] font-medium px-2 py-1 rounded-full ${cfg.color} ${cfg.textColor}`}>{cfg.label}</span>
                       </motion.button>
@@ -85,12 +85,12 @@ const Symptoms = () => {
                     return (
                       <motion.button key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} onClick={() => setSelected(s)}
                         className="w-full flex items-center gap-3 p-4 rounded-2xl bg-card border border-border shadow-card text-left">
-                        <div className={`w-10 h-10 rounded-xl ${cfg.color} flex items-center justify-center`}>
+                        <div className={`w-10 h-10 rounded-xl ${cfg.color} flex items-center justify-center flex-shrink-0`}>
                           <cfg.icon className={`w-5 h-5 ${cfg.textColor}`} />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm">{s.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{s.description}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2">{s.description}</p>
                         </div>
                       </motion.button>
                     );
