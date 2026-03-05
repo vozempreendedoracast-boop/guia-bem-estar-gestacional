@@ -507,8 +507,8 @@ const Admin = () => {
         button_text: editingPromotion.button_text || "Ver oferta",
         active: editingPromotion.active ?? true,
         display_order: editingPromotion.display_order ?? 0,
-        starts_at: editingPromotion.starts_at || null,
-        ends_at: editingPromotion.ends_at || null,
+        starts_at: editingPromotion.starts_at ? new Date(editingPromotion.starts_at).toISOString() : null,
+        ends_at: editingPromotion.ends_at ? new Date(editingPromotion.ends_at).toISOString() : null,
       };
       if (editingPromotion.id) {
         await updatePromotionMut.mutateAsync({ id: editingPromotion.id, ...payload });
@@ -1034,12 +1034,12 @@ const Admin = () => {
               {/* Carousel Settings */}
               <div className="bg-card rounded-2xl border border-border shadow-card p-4 space-y-4">
                 <p className="text-sm font-semibold text-foreground">⚙️ Configurações do Carrossel</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm">Auto-play</Label>
                     <Switch
                       checked={localStorage.getItem("promo_carousel_autoplay") !== "false"}
-                      onCheckedChange={v => { localStorage.setItem("promo_carousel_autoplay", String(v)); toast.success(v ? "Auto-play ativado" : "Auto-play desativado"); }}
+                      onCheckedChange={v => { localStorage.setItem("promo_carousel_autoplay", String(v)); toast.success(v ? "Auto-play ativado" : "Auto-play desativado"); window.location.reload(); }}
                     />
                   </div>
                   <div>
@@ -1478,8 +1478,8 @@ const Admin = () => {
                 <div><Label className="text-sm font-medium">Texto do botão</Label><Input value={editingPromotion.button_text || ""} onChange={e => setEditingPromotion({ ...editingPromotion, button_text: e.target.value })} className="mt-1 rounded-xl" placeholder="Ver oferta" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-sm font-medium">Início (opcional)</Label><Input type="datetime-local" value={editingPromotion.starts_at ? new Date(editingPromotion.starts_at).toISOString().slice(0, 16) : ""} onChange={e => setEditingPromotion({ ...editingPromotion, starts_at: e.target.value ? new Date(e.target.value).toISOString() : null })} className="mt-1 rounded-xl" /></div>
-                <div><Label className="text-sm font-medium">Fim (opcional)</Label><Input type="datetime-local" value={editingPromotion.ends_at ? new Date(editingPromotion.ends_at).toISOString().slice(0, 16) : ""} onChange={e => setEditingPromotion({ ...editingPromotion, ends_at: e.target.value ? new Date(e.target.value).toISOString() : null })} className="mt-1 rounded-xl" /></div>
+                <div><Label className="text-sm font-medium">Início (opcional)</Label><Input type="datetime-local" value={editingPromotion.starts_at ? (() => { const d = new Date(editingPromotion.starts_at!); const offset = d.getTimezoneOffset(); const local = new Date(d.getTime() - offset * 60000); return local.toISOString().slice(0, 16); })() : ""} onChange={e => setEditingPromotion({ ...editingPromotion, starts_at: e.target.value || null })} className="mt-1 rounded-xl" /></div>
+                <div><Label className="text-sm font-medium">Fim (opcional)</Label><Input type="datetime-local" value={editingPromotion.ends_at ? (() => { const d = new Date(editingPromotion.ends_at!); const offset = d.getTimezoneOffset(); const local = new Date(d.getTime() - offset * 60000); return local.toISOString().slice(0, 16); })() : ""} onChange={e => setEditingPromotion({ ...editingPromotion, ends_at: e.target.value || null })} className="mt-1 rounded-xl" /></div>
               </div>
               <div><Label className="text-sm font-medium">Ordem</Label><Input type="number" value={editingPromotion.display_order ?? 0} onChange={e => setEditingPromotion({ ...editingPromotion, display_order: parseInt(e.target.value) || 0 })} className="mt-1 rounded-xl" /></div>
               <div className="flex items-center gap-3"><Switch checked={editingPromotion.active ?? true} onCheckedChange={v => setEditingPromotion({ ...editingPromotion, active: v })} /><Label className="text-sm">Ativa</Label></div>
