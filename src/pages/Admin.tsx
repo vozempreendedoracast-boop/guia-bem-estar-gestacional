@@ -519,6 +519,22 @@ const Admin = () => {
     } catch (e: any) { toast.error(e.message || "Erro ao salvar promoção"); }
   };
   /* ─────────── Helpers ─────────── */
+  const getCategoryName = (categoryId: string | null) => {
+    if (!categoryId) return null;
+    return categories.find(c => c.id === categoryId)?.title || null;
+  };
+
+  const CategoryBar = ({ categoryId }: { categoryId: string | null }) => {
+    const name = getCategoryName(categoryId);
+    if (!name) return null;
+    return (
+      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-t-xl bg-primary/10 border-b border-primary/20 -mx-4 -mt-4 mb-3">
+        <Globe className="w-3 h-3 text-primary" />
+        <span className="text-[11px] font-semibold text-primary truncate">{name}</span>
+      </div>
+    );
+  };
+
   const planBadge = (plan: string) => {
     if (plan === "premium") return <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-sm"><Crown className="w-3 h-3 mr-1" /> Premium</Badge>;
     if (plan === "essential") return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-0">Essencial</Badge>;
@@ -832,7 +848,9 @@ const Admin = () => {
                     {loadingSymptoms ? <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div> : (
                       <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
                         {symptomsData.map(s => (
-                          <div key={s.id} className={`p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors ${!s.active ? "opacity-50" : ""}`}>
+                          <div key={s.id} className={`p-4 hover:bg-muted/30 transition-colors ${!s.active ? "opacity-50" : ""}`}>
+                            <CategoryBar categoryId={s.category_id} />
+                            <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
                               <p className="font-medium text-sm text-foreground">{s.name}</p>
                               <p className="text-xs text-muted-foreground truncate">{s.description}</p>
@@ -846,6 +864,7 @@ const Admin = () => {
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingSymptom({ ...s }); setEditSymptomOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteSymptomMut.isPending} onClick={async () => { try { await deleteSymptomMut.mutateAsync(s.id); toast.success("Sintoma excluído"); } catch (error: any) { console.error("Erro ao excluir sintoma:", error); toast.error(error?.message || "Erro ao excluir sintoma"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                            </div>
                             </div>
                           </div>
                         ))}
@@ -866,7 +885,9 @@ const Admin = () => {
                     {loadingExercises ? <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div> : (
                       <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
                         {exercisesData.map(ex => (
-                          <div key={ex.id} className={`p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors ${!ex.active ? "opacity-50" : ""}`}>
+                          <div key={ex.id} className={`p-4 hover:bg-muted/30 transition-colors ${!ex.active ? "opacity-50" : ""}`}>
+                            <CategoryBar categoryId={ex.category_id} />
+                            <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
                               <p className="font-medium text-sm text-foreground">{ex.name}</p>
                               <p className="text-xs text-muted-foreground truncate">{ex.description}</p>
@@ -878,6 +899,7 @@ const Admin = () => {
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingExercise({ ...ex, stepsText: (ex.steps || []).join("\n") }); setEditExerciseOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteExerciseMut.isPending} onClick={async () => { try { await deleteExerciseMut.mutateAsync(ex.id); toast.success("Exercício excluído"); } catch (error: any) { console.error("Erro ao excluir exercício:", error); toast.error(error?.message || "Erro ao excluir exercício"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                            </div>
                             </div>
                           </div>
                         ))}
@@ -898,7 +920,9 @@ const Admin = () => {
                     {loadingHealthTips ? <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div> : (
                       <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
                         {healthTipsData.map(ht => (
-                          <div key={ht.id} className={`p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors ${!ht.active ? "opacity-50" : ""}`}>
+                          <div key={ht.id} className={`p-4 hover:bg-muted/30 transition-colors ${!ht.active ? "opacity-50" : ""}`}>
+                            <CategoryBar categoryId={ht.category_id} />
+                            <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
                               <p className="font-medium text-sm text-foreground">{ht.section_title}</p>
                               <p className="text-xs text-muted-foreground">{ht.tips.length} dica(s)</p>
@@ -906,6 +930,7 @@ const Admin = () => {
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingHealthTip({ ...ht, tipsText: ht.tips.join("\n") }); setEditHealthTipOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteHealthTipMut.isPending} onClick={async () => { try { await deleteHealthTipMut.mutateAsync(ht.id); toast.success("Seção excluída"); } catch (error: any) { console.error("Erro ao excluir seção de saúde:", error); toast.error(error?.message || "Erro ao excluir seção"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                            </div>
                             </div>
                           </div>
                         ))}
@@ -926,7 +951,9 @@ const Admin = () => {
                     {loadingTips ? <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 animate-spin text-primary" /></div> : (
                       <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
                         {tipsData.map(tip => (
-                          <div key={tip.id} className={`p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors ${!tip.active ? "opacity-50" : ""}`}>
+                          <div key={tip.id} className={`p-4 hover:bg-muted/30 transition-colors ${!tip.active ? "opacity-50" : ""}`}>
+                            <CategoryBar categoryId={tip.category_id} />
+                            <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
                               <p className="font-medium text-sm text-foreground">{tip.title}</p>
                               <p className="text-xs text-muted-foreground truncate">{tip.content}</p>
@@ -935,6 +962,7 @@ const Admin = () => {
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingTip({ ...tip }); setEditTipOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteTipMut.isPending} onClick={async () => { try { await deleteTipMut.mutateAsync(tip.id); toast.success("Dica excluída"); } catch (error: any) { console.error("Erro ao excluir dica semanal:", error); toast.error(error?.message || "Erro ao excluir dica"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                            </div>
                             </div>
                           </div>
                         ))}
