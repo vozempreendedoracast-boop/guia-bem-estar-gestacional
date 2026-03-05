@@ -282,6 +282,57 @@ export type Database = {
         }
         Relationships: []
       }
+      pregnancy_profiles: {
+        Row: {
+          age: number
+          created_at: string
+          current_symptoms: string[]
+          due_date: string
+          emotional_level: number
+          first_pregnancy: boolean
+          focus: string
+          has_medical_care: boolean
+          id: string
+          last_period_date: string | null
+          name: string
+          updated_at: string
+          user_id: string
+          working: boolean
+        }
+        Insert: {
+          age?: number
+          created_at?: string
+          current_symptoms?: string[]
+          due_date: string
+          emotional_level?: number
+          first_pregnancy?: boolean
+          focus?: string
+          has_medical_care?: boolean
+          id?: string
+          last_period_date?: string | null
+          name?: string
+          updated_at?: string
+          user_id: string
+          working?: boolean
+        }
+        Update: {
+          age?: number
+          created_at?: string
+          current_symptoms?: string[]
+          due_date?: string
+          emotional_level?: number
+          first_pregnancy?: boolean
+          focus?: string
+          has_medical_care?: boolean
+          id?: string
+          last_period_date?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+          working?: boolean
+        }
+        Relationships: []
+      }
       promotions: {
         Row: {
           active: boolean
