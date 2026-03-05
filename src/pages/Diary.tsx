@@ -40,6 +40,7 @@ const Diary = () => {
   const queryClient = useQueryClient();
   const [moodNote, setMoodNote] = useState("");
   const [showNoteInput, setShowNoteInput] = useState(false);
+  const [selectedMoodIndex, setSelectedMoodIndex] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [newReminder, setNewReminder] = useState({ title: "", description: "", category: "consulta", time: "" });
@@ -104,6 +105,7 @@ const Diary = () => {
     addMood(mood, moodNote || undefined);
     setMoodNote("");
     setShowNoteInput(false);
+    setSelectedMoodIndex(null);
     toast.success("Humor registrado!");
   };
 
@@ -149,30 +151,50 @@ const Diary = () => {
               </h2>
               <div className="flex justify-around mb-4">
                 {moodEmojis.map((emoji, i) => (
-                  <button key={i} onClick={() => handleMoodWithNote(i + 1)} className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
+                  <button
+                    key={i}
+                    onClick={() => setSelectedMoodIndex(i + 1)}
+                    className={`flex flex-col items-center gap-1 transition-transform ${selectedMoodIndex === i + 1 ? "scale-125 ring-2 ring-primary rounded-xl p-1" : "hover:scale-110"}`}
+                  >
                     <span className="text-3xl">{emoji}</span>
                     <span className="text-[10px] text-muted-foreground">{moodLabels[i]}</span>
                   </button>
                 ))}
               </div>
 
-              {!showNoteInput ? (
-                <button
-                  onClick={() => setShowNoteInput(true)}
-                  className="w-full flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-xl"
-                >
-                  <PencilSimple className="w-4 h-4" /> Escrever como me sinto
-                </button>
-              ) : (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
-                  <Textarea
-                    placeholder="Escreva aqui como você está se sentindo hoje..."
-                    value={moodNote}
-                    onChange={e => setMoodNote(e.target.value)}
-                    className="rounded-xl resize-none min-h-[80px]"
-                    maxLength={500}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1 text-right">{moodNote.length}/500</p>
+              {selectedMoodIndex && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-3">
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-xl">
+                    <span className="text-2xl">{moodEmojis[selectedMoodIndex - 1]}</span>
+                    <span className="text-sm font-medium">{moodLabels[selectedMoodIndex - 1]}</span>
+                  </div>
+
+                  {!showNoteInput ? (
+                    <button
+                      onClick={() => setShowNoteInput(true)}
+                      className="w-full flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-xl"
+                    >
+                      <PencilSimple className="w-4 h-4" /> Escrever como me sinto (opcional)
+                    </button>
+                  ) : (
+                    <div>
+                      <Textarea
+                        placeholder="Escreva aqui como você está se sentindo hoje..."
+                        value={moodNote}
+                        onChange={e => setMoodNote(e.target.value)}
+                        className="rounded-xl resize-none min-h-[80px]"
+                        maxLength={500}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1 text-right">{moodNote.length}/500</p>
+                    </div>
+                  )}
+
+                  <Button
+                    className="w-full rounded-xl"
+                    onClick={() => handleMoodWithNote(selectedMoodIndex)}
+                  >
+                    Registrar emoção {moodEmojis[selectedMoodIndex - 1]}
+                  </Button>
                 </motion.div>
               )}
             </div>
