@@ -45,25 +45,25 @@ const Dashboard = () => {
   const { data: promotions = [] } = useActivePromotions();
   
   // Fetch next upcoming reminder
-  const { data: nextReminder } = useQuery({
-    queryKey: ["next-reminder", user?.id],
+  // Fetch upcoming reminders count
+  const { data: upcomingReminders = [] } = useQuery({
+    queryKey: ["upcoming-reminders", user?.id],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user) return [];
       const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("reminders")
         .select("*")
         .eq("user_id", user.id)
         .gte("reminder_date", today)
-        .order("reminder_date", { ascending: true })
-        .order("reminder_time", { ascending: true })
-        .limit(1)
-        .maybeSingle();
+        .order("reminder_date", { ascending: true });
       if (error) throw error;
       return data;
     },
     enabled: !!user,
   });
+
+  const notificationCount = upcomingReminders.length;
 
   const [showMoodPicker, setShowMoodPicker] = useState(false);
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
@@ -125,10 +125,12 @@ const Dashboard = () => {
             <h1 className="text-2xl font-bold font-display">Semana {currentWeek}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/diario")} className="relative w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/30 transition-colors">
+            <button onClick={() => navigate("/notificacoes")} className="relative w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/30 transition-colors">
               <Bell className="w-5 h-5" />
-              {nextReminder && (
-                <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-destructive rounded-full border-2 border-primary animate-pulse" />
+              {notificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[hsl(45,100%,50%)] text-[hsl(45,100%,10%)] rounded-full text-[10px] font-bold flex items-center justify-center px-1 border-2 border-primary shadow-sm">
+                  {notificationCount > 9 ? "9+" : notificationCount}
+                </span>
               )}
             </button>
             <button onClick={() => navigate("/perfil")} className="w-12 h-12 rounded-full bg-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/30 transition-colors p-2">

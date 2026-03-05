@@ -15,6 +15,7 @@ import Symptoms from "./pages/Symptoms";
 import Exercises from "./pages/Exercises";
 import Health from "./pages/Health";
 import Diary from "./pages/Diary";
+import Notifications from "./pages/Notifications";
 import Assistant from "./pages/Assistant";
 import Sales from "./pages/Sales";
 import Plans from "./pages/Plans";
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/exercicios" element={<ProtectedRoute requirePlan><Exercises /></ProtectedRoute>} />
               <Route path="/saude" element={<ProtectedRoute requirePlan><Health /></ProtectedRoute>} />
               <Route path="/diario" element={<ProtectedRoute requirePlan><Diary /></ProtectedRoute>} />
+              <Route path="/notificacoes" element={<ProtectedRoute requirePlan><Notifications /></ProtectedRoute>} />
               <Route path="/assistente" element={<ProtectedRoute requirePlan><Assistant /></ProtectedRoute>} />
               <Route path="/suporte" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
