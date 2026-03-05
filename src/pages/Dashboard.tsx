@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWeekContents, useCategories, useActivePromotions } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight } from "@phosphor-icons/react";
+import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, ChatCircleDots } from "@phosphor-icons/react";
 import mamybooWhite from "@/assets/mamyboo-white.png";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
@@ -277,6 +277,18 @@ const Dashboard = () => {
             </motion.button>
           ))}
         </motion.div>
+
+        {/* Support FAB */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1 }}
+          onClick={() => navigate("/suporte")}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-elevated flex items-center justify-center hover:scale-105 transition-transform z-50"
+          aria-label="Suporte"
+        >
+          <ChatCircleDots className="w-6 h-6" />
+        </motion.button>
 
         {/* Legal disclaimer */}
         <p className="text-xs text-center text-muted-foreground/60 mt-4">
