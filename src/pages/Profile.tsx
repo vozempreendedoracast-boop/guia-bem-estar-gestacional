@@ -1,7 +1,7 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CalendarBlank, Heart, Briefcase, Stethoscope, User, EnvelopeSimple, Phone } from "@phosphor-icons/react";
+import { ArrowLeft, CalendarBlank, Heart, Briefcase, Stethoscope, User, EnvelopeSimple, Phone, ChatCircleDots } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -195,6 +195,18 @@ const Profile = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Support FAB - only on Profile */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => navigate("/suporte")}
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-elevated flex items-center justify-center hover:scale-105 transition-transform z-50"
+        aria-label="Suporte"
+      >
+        <ChatCircleDots className="w-6 h-6" />
+      </motion.button>
     </div>
   );
 };
