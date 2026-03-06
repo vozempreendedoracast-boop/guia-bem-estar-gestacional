@@ -1,5 +1,6 @@
 import { useCategories } from "@/hooks/useSupabaseData";
 import { usePlan } from "@/hooks/usePlan";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, Navigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useEffect, useRef } from "react";
