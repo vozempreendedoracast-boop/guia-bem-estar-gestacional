@@ -203,8 +203,8 @@ const Login = () => {
                 {showConfirmPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            <Button type="submit" disabled={loading || !email.trim() || !password.trim() || !confirmPassword.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
-              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (<>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>)}
+            <Button type="submit" disabled={loading || signupCooldownSeconds > 0 || !email.trim() || !password.trim() || !confirmPassword.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
+              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : signupCooldownSeconds > 0 ? `Aguarde ${signupCooldownSeconds}s` : (<>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>)}
             </Button>
             <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMode("login")}>
               Já tenho conta? <span className="underline">Entrar</span>

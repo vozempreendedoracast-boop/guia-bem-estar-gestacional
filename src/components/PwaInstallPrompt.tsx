@@ -48,12 +48,14 @@ const PwaInstallPrompt = () => {
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    // Fallback: show after 6s (for iOS or if event doesn't fire)
-    const timer = setTimeout(() => {
-      if (window.matchMedia("(display-mode: standalone)").matches) return;
-      if ((navigator as any).standalone === true) return;
-      setShow(true);
-    }, 6000);
+    // Fallback only for iOS (Android should rely on native install banner/event)
+    const timer = iosDevice
+      ? setTimeout(() => {
+          if (window.matchMedia("(display-mode: standalone)").matches) return;
+          if ((navigator as any).standalone === true) return;
+          setShow(true);
+        }, 6000)
+      : null;
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
