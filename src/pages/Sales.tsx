@@ -419,7 +419,7 @@ const Sales = () => {
                 gradient: "gradient-sage",
               },
               {
-                icon: ShieldStar,
+                icon: Seal,
                 title: "Garantia de 7 dias",
                 desc: "Teste o app com tranquilidade. Se não gostar, devolvemos seu dinheiro sem burocracia.",
                 gradient: "gradient-lilac",
