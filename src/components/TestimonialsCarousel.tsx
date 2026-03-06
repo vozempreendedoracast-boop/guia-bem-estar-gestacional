@@ -1,18 +1,18 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Star } from "@phosphor-icons/react";
 
 const testimonials = [
-  { name: "Camila S.", week: "Semana 28", text: "Me sinto acompanhada todos os dias. As dicas são certeiras e o diário me ajuda muito!" },
-  { name: "Juliana M.", week: "Semana 16", text: "A assistente IA me tranquilizou em vários momentos de dúvida. Recomendo muito!" },
-  { name: "Ana Paula R.", week: "Semana 34", text: "Os exercícios por trimestre são perfeitos. Me sinto mais preparada para o parto." },
-  { name: "Fernanda L.", week: "Semana 22", text: "Amo o acompanhamento semana a semana! Cada detalhe sobre o bebê me emociona." },
-  { name: "Mariana C.", week: "Semana 38", text: "O diário de humor salvou minha saúde mental. Consigo entender melhor minhas emoções." },
-  { name: "Beatriz O.", week: "Semana 12", text: "Estava muito ansiosa no primeiro trimestre e o app me deu segurança com informações confiáveis." },
-  { name: "Larissa T.", week: "Semana 30", text: "As comparações de tamanho do bebê são fofas demais! Meu marido adora ver também." },
-  { name: "Patrícia N.", week: "Semana 20", text: "Melhor investimento que fiz na minha gestação. Vale cada centavo!" },
-  { name: "Gabriela F.", week: "Semana 26", text: "A IA responde minhas dúvidas de madrugada, quando a ansiedade bate. Incrível!" },
-  { name: "Renata D.", week: "Semana 36", text: "Indiquei para todas as minhas amigas grávidas. É como ter uma doula no bolso!" },
+  { name: "Camila S.", week: "Semana 28", text: "Eu ficava muito ansiosa no começo da gestação. O app me ajudou muito a entender cada fase e me trouxe mais tranquilidade." },
+  { name: "Juliana M.", week: "Semana 16", text: "Uso todos os dias. O acompanhamento semanal é incrível." },
+  { name: "Gabriela F.", week: "Semana 26", text: "A assistente de IA já me ajudou várias vezes quando tive dúvidas." },
+  { name: "Ana Paula R.", week: "Semana 34", text: "Os exercícios são simples e me ajudaram muito com dores nas costas." },
+  { name: "Mariana C.", week: "Semana 38", text: "O diário de humor me ajudou muito a entender minhas emoções." },
+  { name: "Beatriz O.", week: "Semana 12", text: "Antes eu pesquisava tudo na internet e ficava confusa. No app tudo é claro." },
+  { name: "Larissa T.", week: "Semana 30", text: "As comparações de tamanho do bebê são muito fofas." },
+  { name: "Patrícia N.", week: "Semana 20", text: "Foi o melhor investimento da minha gravidez." },
+  { name: "Renata D.", week: "Semana 36", text: "Me sinto acompanhada todos os dias." },
+  { name: "Fernanda L.", week: "Semana 22", text: "Indiquei para várias amigas grávidas." },
 ];
 
 const VISIBLE_DESKTOP = 4;
@@ -31,13 +31,6 @@ const TestimonialsCarousel = () => {
     const timer = setInterval(next, 8000);
     return () => clearInterval(timer);
   }, [next, isPaused]);
-
-  // Build an extended array so we always have enough cards to show
-  const getVisible = (start: number, count: number) =>
-    Array.from({ length: count }, (_, i) => ({
-      index: (start + i) % total,
-      testimonial: testimonials[(start + i) % total],
-    }));
 
   return (
     <div
@@ -66,7 +59,7 @@ const TestimonialsCarousel = () => {
         </div>
       </div>
 
-      {/* Desktop: 4 visible, slides 1 at a time like a conveyor belt */}
+      {/* Desktop: 4 visible, slides 1 at a time */}
       <div className="hidden md:block">
         <div className="overflow-hidden">
           <motion.div
@@ -75,13 +68,8 @@ const TestimonialsCarousel = () => {
             className="flex gap-4"
             style={{ width: `${((total + VISIBLE_DESKTOP - 1) / VISIBLE_DESKTOP) * 100}%` }}
           >
-            {/* Render all cards + wrap-around extras */}
             {Array.from({ length: total + VISIBLE_DESKTOP - 1 }, (_, i) => (
-              <div
-                key={i}
-                className="px-1"
-                style={{ width: `${100 / (total + VISIBLE_DESKTOP - 1)}%` }}
-              >
+              <div key={i} className="px-1" style={{ width: `${100 / (total + VISIBLE_DESKTOP - 1)}%` }}>
                 <TestimonialCard testimonial={testimonials[i % total]} />
               </div>
             ))}
@@ -96,9 +84,7 @@ const TestimonialsCarousel = () => {
             key={i}
             onClick={() => setCurrent(i)}
             className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-              i === current
-                ? "bg-primary w-6"
-                : "bg-primary/30 hover:bg-primary/50"
+              i === current ? "bg-primary w-6" : "bg-primary/30 hover:bg-primary/50"
             }`}
           />
         ))}
