@@ -89,6 +89,7 @@ export type Database = {
           id: string
           image_url: string
           path: string
+          required_plan: string
           slug: string
           title: string
           updated_at: string
@@ -102,6 +103,7 @@ export type Database = {
           id?: string
           image_url?: string
           path?: string
+          required_plan?: string
           slug: string
           title: string
           updated_at?: string
@@ -115,6 +117,7 @@ export type Database = {
           id?: string
           image_url?: string
           path?: string
+          required_plan?: string
           slug?: string
           title?: string
           updated_at?: string
@@ -458,32 +461,79 @@ export type Database = {
         }
         Relationships: []
       }
-      support_messages: {
+      support_conversations: {
         Row: {
+          closed_at: string | null
+          closed_by: string | null
           created_at: string
           id: string
+          rating: number | null
+          rating_text: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          rating_text?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          rating_text?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          id: string
+          image_url: string | null
           message: string
           read: boolean
           sender: string
           user_id: string
         }
         Insert: {
+          conversation_id?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           message: string
           read?: boolean
           sender?: string
           user_id: string
         }
         Update: {
+          conversation_id?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           message?: string
           read?: boolean
           sender?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "support_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       symptoms: {
         Row: {
@@ -543,6 +593,7 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          account_status: string
           created_at: string
           email: string
           expires_at: string | null
@@ -555,6 +606,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_status?: string
           created_at?: string
           email?: string
           expires_at?: string | null
@@ -567,6 +619,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_status?: string
           created_at?: string
           email?: string
           expires_at?: string | null
@@ -742,6 +795,7 @@ export type Database = {
       ensure_user_profile: {
         Args: { _email?: string }
         Returns: {
+          account_status: string
           created_at: string
           email: string
           expires_at: string | null

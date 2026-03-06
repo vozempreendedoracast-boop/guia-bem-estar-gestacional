@@ -54,6 +54,7 @@ interface UserProfile {
   email: string;
   plan: "none" | "essential" | "premium";
   plan_status: "none" | "active" | "expired";
+  account_status?: string;
   kiwify_order_id: string | null;
   purchased_at: string | null;
   expires_at: string | null;
@@ -171,7 +172,7 @@ const Admin = () => {
   const [editingUser, setEditingUser] = useState<Partial<UserProfile> | null>(null);
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [newUserOpen, setNewUserOpen] = useState(false);
-  const [newUserData, setNewUserData] = useState({ email: "", plan: "none" as string, plan_status: "none" as string });
+  const [newUserData, setNewUserData] = useState({ email: "", plan: "none" as string, plan_status: "active" as string, password: "" });
   const [userActionLoading, setUserActionLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -216,7 +217,7 @@ const Admin = () => {
       if (!res.ok) throw new Error(result.error);
       toast.success("Usuária criada com sucesso!");
       setNewUserOpen(false);
-      setNewUserData({ email: "", plan: "none", plan_status: "none" });
+      setNewUserData({ email: "", plan: "none", plan_status: "active", password: "" });
       fetchUsers();
     } catch (e: any) { toast.error(e.message || "Erro ao criar usuária"); }
     finally { setUserActionLoading(false); }
@@ -988,7 +989,7 @@ const Admin = () => {
                   <h1 className="text-2xl font-bold font-display text-foreground">Usuárias</h1>
                   <p className="text-sm text-muted-foreground mt-1">{users.length} cadastrada{users.length !== 1 ? "s" : ""} · {users.filter(u => u.plan_status === "active").length} ativa{users.filter(u => u.plan_status === "active").length !== 1 ? "s" : ""}</p>
                 </div>
-                <Button className="rounded-xl gradient-primary text-primary-foreground shadow-soft" onClick={() => { setNewUserData({ email: "", plan: "none", plan_status: "none" }); setNewUserOpen(true); }}>
+                <Button className="rounded-xl gradient-primary text-primary-foreground shadow-soft" onClick={() => { setNewUserData({ email: "", plan: "none", plan_status: "active", password: "" }); setNewUserOpen(true); }}>
                   <Plus className="w-4 h-4 mr-1" /> Nova Usuária
                 </Button>
               </div>
@@ -1222,6 +1223,18 @@ const Admin = () => {
               <div><Label className="text-sm font-medium">Rota</Label><Input value={editingCard.path} onChange={e => setEditingCard({ ...editingCard, path: e.target.value })} className="mt-1 rounded-xl" /></div>
               <div><Label className="text-sm font-medium">URL da imagem</Label><Input value={editingCard.image_url} onChange={e => setEditingCard({ ...editingCard, image_url: e.target.value })} className="mt-1 rounded-xl" /></div>
               <div><Label className="text-sm font-medium">Ordem</Label><Input type="number" value={editingCard.display_order} onChange={e => setEditingCard({ ...editingCard, display_order: parseInt(e.target.value) || 0 })} className="mt-1 rounded-xl" /></div>
+              <div>
+                <Label className="text-sm font-medium">Plano mínimo necessário</Label>
+                <select
+                  value={(editingCard as any).required_plan || "none"}
+                  onChange={e => setEditingCard({ ...editingCard, required_plan: e.target.value } as any)}
+                  className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                >
+                  <option value="none">Todos os planos</option>
+                  <option value="essential">Essencial ou superior</option>
+                  <option value="premium">Somente Premium</option>
+                </select>
+              </div>
               <div className="flex items-center gap-3"><Switch checked={editingCard.visible} onCheckedChange={v => setEditingCard({ ...editingCard, visible: v })} /><Label className="text-sm">Visível</Label></div>
               <div className="flex gap-2 pt-2">
                 <Button className="flex-1 rounded-xl" onClick={handleSaveCard} disabled={updateCategory.isPending}>{updateCategory.isPending ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar</Button>
@@ -1853,10 +1866,15 @@ const Admin = () => {
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div><Label className="text-sm font-medium">Email</Label><Input value={newUserData.email} onChange={e => setNewUserData({ ...newUserData, email: e.target.value })} className="mt-1 rounded-xl" placeholder="email@exemplo.com" /></div>
+            <div>
+              <Label className="text-sm font-medium">Senha (opcional)</Label>
+              <p className="text-[10px] text-muted-foreground mb-1">Se informada, a conta é criada com login imediato. Caso contrário, um convite será enviado por email.</p>
+              <Input type="text" value={newUserData.password} onChange={e => setNewUserData({ ...newUserData, password: e.target.value })} className="mt-1 rounded-xl" placeholder="Mínimo 6 caracteres" />
+            </div>
             <div><Label className="text-sm font-medium">Plano</Label>
               <select
                 value={newUserData.plan}
-                onChange={e => setNewUserData({ ...newUserData, plan: e.target.value, plan_status: e.target.value !== "none" ? "active" : "none" })}
+                onChange={e => setNewUserData({ ...newUserData, plan: e.target.value, plan_status: "active" })}
                 className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
               >
                 <option value="none">Sem plano</option>

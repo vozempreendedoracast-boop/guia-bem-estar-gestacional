@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -8,6 +8,7 @@ export interface UserProfile {
   email: string;
   plan: "none" | "essential" | "premium";
   plan_status: "none" | "active" | "expired";
+  account_status?: string;
   kiwify_order_id: string | null;
   purchased_at: string | null;
   expires_at: string | null;
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchProfile = useCallback(async (userId: string, email?: string) => {
     try {
@@ -67,6 +69,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Check if account is banned
+      if (resolvedProfile && (resolvedProfile as any).account_status === "banned") {
+        await supabase.auth.signOut();
+        setUserProfile(null);
+        setIsAdmin(false);
+        setUser(null);
+        setSession(null);
+        return;
+      }
+
       setUserProfile(resolvedProfile);
       setIsAdmin(Boolean(adminResult.data));
     } catch (error) {
@@ -83,10 +95,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(false);
   }, []);
 
+  // Polling: check account_status every 30s
+  useEffect(() => {
+    if (!user) {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+      return;
+    }
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from("user_profiles")
+          .select("account_status")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) return;
+
+        // If account banned or profile deleted, force logout
+        if (!data || (data as any).account_status === "banned") {
+          await supabase.auth.signOut();
+          clearState();
+          window.location.href = "/login";
+        }
+      } catch {}
+    }, 30000);
+
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [user, clearState]);
+
   useEffect(() => {
     let mounted = true;
 
-    // 1. Set up auth listener FIRST (Supabase best practice)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         if (!mounted) return;
@@ -95,7 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          // Use setTimeout to avoid potential deadlocks with Supabase auth
           setTimeout(async () => {
             if (!mounted) return;
             await fetchProfile(currentSession.user.id, currentSession.user.email ?? "");
@@ -103,13 +150,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }, 0);
         } else {
           clearState();
-          // Keep session/user as null (already set above)
           if (mounted) setLoading(false);
         }
       }
     );
 
-    // 2. Then get initial session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       if (!mounted) return;
       setSession(currentSession);

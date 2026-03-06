@@ -3,9 +3,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWeekContents, useCategories, useActivePromotions } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, Bell, PencilSimple } from "@phosphor-icons/react";
+import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, Bell, PencilSimple, Lock } from "@phosphor-icons/react";
 import mamybooWhite from "@/assets/mamyboo-white.png";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { getWeekEmoji } from "@/data/weeks";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -106,16 +107,26 @@ const Dashboard = () => {
     setSelectedMoodIndex(null);
   };
 
+  const { plan } = usePlan();
   const visibleCards = categories
     .filter(c => c.visible)
     .sort((a, b) => a.display_order - b.display_order)
-    .map(c => ({
-      title: c.title,
-      description: c.description,
-      icon: iconMap[c.icon] || BookOpen,
-      path: c.path,
-      image: c.image_url?.trim() ? c.image_url : (localImages[c.slug] || cardJourney),
-    }));
+    .map(c => {
+      const requiredPlan = (c as any).required_plan || "none";
+      const planHierarchy: Record<string, number> = { none: 0, essential: 1, premium: 2 };
+      const userLevel = planHierarchy[plan] ?? 0;
+      const requiredLevel = planHierarchy[requiredPlan] ?? 0;
+      const locked = requiredLevel > userLevel;
+      return {
+        title: c.title,
+        description: c.description,
+        icon: iconMap[c.icon] || BookOpen,
+        path: c.path,
+        image: c.image_url?.trim() ? c.image_url : (localImages[c.slug] || cardJourney),
+        locked,
+        requiredPlan,
+      };
+    });
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
   const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -343,9 +354,20 @@ const Dashboard = () => {
             <motion.button
               key={card.title}
               variants={item}
-              onClick={() => navigate(card.path)}
-              className="bg-card rounded-2xl shadow-card border border-border text-left hover:shadow-elevated transition-shadow overflow-hidden"
+              onClick={() => {
+                if (card.locked) {
+                  toast("Este painel requer o plano " + (card.requiredPlan === "premium" ? "Premium" : "Essencial") + " 🔒");
+                  return;
+                }
+                navigate(card.path);
+              }}
+              className={`bg-card rounded-2xl shadow-card border border-border text-left hover:shadow-elevated transition-shadow overflow-hidden relative ${card.locked ? "opacity-60" : ""}`}
             >
+              {card.locked && (
+                <div className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-muted/80 backdrop-blur-sm flex items-center justify-center">
+                  <Lock className="w-4 h-4 text-muted-foreground" />
+                </div>
+              )}
               <div className="w-full h-24 md:h-52 lg:h-64 xl:h-72 overflow-hidden">
                 <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
               </div>
