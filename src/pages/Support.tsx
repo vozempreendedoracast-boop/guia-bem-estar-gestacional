@@ -24,6 +24,7 @@ const Support = () => {
   const [uploading, setUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { requestPermission, sendNotification } = useNotifications();
   const prevMessageCountRef = useRef(0);
 
   // Rating state
