@@ -257,7 +257,7 @@ const Support = () => {
               onKeyDown={e => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  if (message.trim()) sendMutation.mutate();
+                  if (message.trim()) sendMutation.mutate(undefined);
                 }
               }}
             />
