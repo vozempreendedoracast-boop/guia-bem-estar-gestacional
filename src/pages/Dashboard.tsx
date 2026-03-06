@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
 import { useUnreadSupport } from "@/hooks/useUnreadSupport";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 import cardJourney from "@/assets/card-journey.png";
 import cardSymptoms from "@/assets/card-symptoms.png";
@@ -79,9 +80,10 @@ const Dashboard = () => {
   // Show plan popup if no active plan
   const showPlanPopup = !hasAccess;
 
-  // Auto-play carousel
-  const autoPlayInterval = parseInt(localStorage.getItem("promo_carousel_interval") || "5", 10) * 1000;
-  const autoPlayEnabled = localStorage.getItem("promo_carousel_autoplay") !== "false";
+  // Auto-play carousel from Supabase settings
+  const { getSetting } = useAppSettings();
+  const autoPlayInterval = parseInt(getSetting("promo_carousel_interval", "5"), 10) * 1000;
+  const autoPlayEnabled = getSetting("promo_carousel_autoplay", "true") === "true";
 
   const nextPromo = useCallback(() => {
     if (promotions.length > 1) {
