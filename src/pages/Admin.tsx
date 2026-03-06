@@ -1866,10 +1866,15 @@ const Admin = () => {
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div><Label className="text-sm font-medium">Email</Label><Input value={newUserData.email} onChange={e => setNewUserData({ ...newUserData, email: e.target.value })} className="mt-1 rounded-xl" placeholder="email@exemplo.com" /></div>
+            <div>
+              <Label className="text-sm font-medium">Senha (opcional)</Label>
+              <p className="text-[10px] text-muted-foreground mb-1">Se informada, a conta é criada com login imediato. Caso contrário, um convite será enviado por email.</p>
+              <Input type="text" value={newUserData.password} onChange={e => setNewUserData({ ...newUserData, password: e.target.value })} className="mt-1 rounded-xl" placeholder="Mínimo 6 caracteres" />
+            </div>
             <div><Label className="text-sm font-medium">Plano</Label>
               <select
                 value={newUserData.plan}
-                onChange={e => setNewUserData({ ...newUserData, plan: e.target.value, plan_status: e.target.value !== "none" ? "active" : "none" })}
+                onChange={e => setNewUserData({ ...newUserData, plan: e.target.value, plan_status: "active" })}
                 className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
               >
                 <option value="none">Sem plano</option>
