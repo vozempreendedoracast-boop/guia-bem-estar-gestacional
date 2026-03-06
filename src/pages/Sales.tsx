@@ -166,8 +166,8 @@ const Sales = () => {
                 Começar meu acompanhamento
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-              <Button size="lg" variant="outline" className="rounded-xl text-base h-14 px-8" onClick={() => scrollToSection("plans")}>
-                Ver planos e preços
+              <Button size="lg" variant="outline" className="rounded-xl text-base h-14 px-8" onClick={() => scrollToSection("features")}>
+                Ver Recursos
               </Button>
             </div>
           </motion.div>
