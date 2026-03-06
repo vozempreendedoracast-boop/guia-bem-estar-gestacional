@@ -106,16 +106,26 @@ const Dashboard = () => {
     setSelectedMoodIndex(null);
   };
 
+  const { plan } = usePlan();
   const visibleCards = categories
     .filter(c => c.visible)
     .sort((a, b) => a.display_order - b.display_order)
-    .map(c => ({
-      title: c.title,
-      description: c.description,
-      icon: iconMap[c.icon] || BookOpen,
-      path: c.path,
-      image: c.image_url?.trim() ? c.image_url : (localImages[c.slug] || cardJourney),
-    }));
+    .map(c => {
+      const requiredPlan = (c as any).required_plan || "none";
+      const planHierarchy: Record<string, number> = { none: 0, essential: 1, premium: 2 };
+      const userLevel = planHierarchy[plan] ?? 0;
+      const requiredLevel = planHierarchy[requiredPlan] ?? 0;
+      const locked = requiredLevel > userLevel;
+      return {
+        title: c.title,
+        description: c.description,
+        icon: iconMap[c.icon] || BookOpen,
+        path: c.path,
+        image: c.image_url?.trim() ? c.image_url : (localImages[c.slug] || cardJourney),
+        locked,
+        requiredPlan,
+      };
+    });
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
   const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
