@@ -113,14 +113,17 @@ const Support = () => {
     }
   }, [messages, user, conversation?.id]);
 
-  // Detect new admin messages and notify
+  // Detect new admin messages and notify (only when NOT on the support page actively)
   useEffect(() => {
     if (messages.length > prevMessageCountRef.current && prevMessageCountRef.current > 0) {
       const newMsgs = messages.slice(prevMessageCountRef.current);
-      const hasAdminMsg = newMsgs.some(m => m.sender === "admin");
-      if (hasAdminMsg) {
+      const newAdminMsgs = newMsgs.filter(m => m.sender === "admin");
+      if (newAdminMsgs.length > 0) {
         toast.success("Nova resposta do suporte! 💬");
-        sendNotification("MamyBoo Suporte 💬", "Você recebeu uma nova resposta do suporte!");
+        // Only send push notification if page is not visible (user in background)
+        if (document.hidden) {
+          sendNotification("MamyBoo Suporte 💬", "Você recebeu uma nova resposta do suporte!");
+        }
       }
     }
     prevMessageCountRef.current = messages.length;

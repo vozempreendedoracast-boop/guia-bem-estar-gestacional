@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
         navigateFallbackDenylist: [/^\/~oauth/],
+        importScripts: ["/sw-custom.js"],
       },
       manifest: {
         name: "MamyBoo - Acompanhamento de Gestação",
