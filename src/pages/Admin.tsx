@@ -1061,6 +1061,15 @@ const Admin = () => {
                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingUser({ ...user }); setNewPassword(""); setEditUserOpen(true); }}>
                               <PencilSimple className="w-3.5 h-3.5" />
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={`h-8 w-8 rounded-lg ${user.account_status === "banned" ? "text-emerald-600 hover:text-emerald-700" : "text-amber-600 hover:text-amber-700"}`}
+                              title={user.account_status === "banned" ? "Reativar" : "Desativar"}
+                              onClick={() => handleBanUser(user.user_id, user.account_status || "active")}
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                            </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:text-destructive" onClick={() => handleDeleteUser(user.user_id)}>
                               <Trash className="w-3.5 h-3.5" />
                             </Button>
