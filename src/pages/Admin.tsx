@@ -989,7 +989,7 @@ const Admin = () => {
                   <h1 className="text-2xl font-bold font-display text-foreground">Usuárias</h1>
                   <p className="text-sm text-muted-foreground mt-1">{users.length} cadastrada{users.length !== 1 ? "s" : ""} · {users.filter(u => u.plan_status === "active").length} ativa{users.filter(u => u.plan_status === "active").length !== 1 ? "s" : ""}</p>
                 </div>
-                <Button className="rounded-xl gradient-primary text-primary-foreground shadow-soft" onClick={() => { setNewUserData({ email: "", plan: "none", plan_status: "none" }); setNewUserOpen(true); }}>
+                <Button className="rounded-xl gradient-primary text-primary-foreground shadow-soft" onClick={() => { setNewUserData({ email: "", plan: "none", plan_status: "active", password: "" }); setNewUserOpen(true); }}>
                   <Plus className="w-4 h-4 mr-1" /> Nova Usuária
                 </Button>
               </div>
