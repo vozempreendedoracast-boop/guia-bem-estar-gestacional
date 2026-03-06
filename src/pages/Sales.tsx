@@ -5,7 +5,7 @@ import {
   CheckCircle, ArrowRight, Crown, Sparkle, BabyCarriage,
   Butterfly, FlowerLotus, StarFour, Notebook,
   Stethoscope, Seal, Baby, Calendar, FirstAid, Brain,
-  ShieldStar, Lock, CertificateIcon,
+  Lock,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
