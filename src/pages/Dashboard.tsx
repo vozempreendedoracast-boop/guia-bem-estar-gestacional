@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
 import { useUnreadSupport } from "@/hooks/useUnreadSupport";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 import cardJourney from "@/assets/card-journey.png";
 import cardSymptoms from "@/assets/card-symptoms.png";
