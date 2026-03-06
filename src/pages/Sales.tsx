@@ -127,7 +127,7 @@ const Sales = () => {
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
             <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("features")}>Recursos</Button>
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => scrollToSection("plans")}>Planos</Button>
+            
             <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/login")}>Entrar</Button>
             <Button size="sm" className="rounded-xl text-xs sm:text-sm" onClick={() => scrollToSection("plans")}>
               Ver planos
