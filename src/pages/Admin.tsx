@@ -284,6 +284,26 @@ const Admin = () => {
     } catch (e: any) { toast.error(e.message || "Erro ao excluir"); }
   };
 
+  const handleBanUser = async (userId: string, currentStatus: string) => {
+    const isBanned = currentStatus === "banned";
+    const action = isBanned ? "unban" : "ban";
+    const label = isBanned ? "reativar" : "desativar";
+    if (!confirm(`Tem certeza que deseja ${label} esta usuária?`)) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+      const res = await fetch(`${ADMIN_BASE_URL}/functions/v1/admin-users?action=${action}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      toast.success(isBanned ? "Usuária reativada!" : "Usuária desativada!");
+      fetchUsers();
+    } catch (e: any) { toast.error(e.message || `Erro ao ${label}`); }
+  };
+
   const handleViewProfile = async (userId: string) => {
     setViewProfileLoading(true);
     setViewProfileOpen(true);
@@ -1027,6 +1047,7 @@ const Admin = () => {
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                 {planBadge(user.plan)}
                                 {statusBadge(user.plan_status)}
+                                {user.account_status === "banned" && <Badge className="bg-red-100 text-red-700 border-0 text-[10px]">Desativada</Badge>}
                                 <span className="text-[10px] text-muted-foreground hidden sm:inline">
                                   · {new Date(user.created_at).toLocaleDateString("pt-BR")}
                                 </span>
@@ -1039,6 +1060,15 @@ const Admin = () => {
                             </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingUser({ ...user }); setNewPassword(""); setEditUserOpen(true); }}>
                               <PencilSimple className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={`h-8 w-8 rounded-lg ${user.account_status === "banned" ? "text-emerald-600 hover:text-emerald-700" : "text-amber-600 hover:text-amber-700"}`}
+                              title={user.account_status === "banned" ? "Reativar" : "Desativar"}
+                              onClick={() => handleBanUser(user.user_id, user.account_status || "active")}
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5" />
                             </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:text-destructive" onClick={() => handleDeleteUser(user.user_id)}>
                               <Trash className="w-3.5 h-3.5" />
