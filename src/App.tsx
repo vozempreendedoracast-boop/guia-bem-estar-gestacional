@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PregnancyProvider } from "@/contexts/PregnancyContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PlanGate from "@/components/PlanGate";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -59,19 +60,19 @@ const App = () => (
               {/* Protected routes */}
               <Route path="/cadastro" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
               <Route path="/painel" element={<ProtectedRoute requirePlan><Dashboard /></ProtectedRoute>} />
-              <Route path="/jornada" element={<ProtectedRoute requirePlan><Journey /></ProtectedRoute>} />
-              <Route path="/jornada/:week" element={<ProtectedRoute requirePlan><WeekDetail /></ProtectedRoute>} />
-              <Route path="/sintomas" element={<ProtectedRoute requirePlan><Symptoms /></ProtectedRoute>} />
-              <Route path="/exercicios" element={<ProtectedRoute requirePlan><Exercises /></ProtectedRoute>} />
-              <Route path="/saude" element={<ProtectedRoute requirePlan><Health /></ProtectedRoute>} />
-              <Route path="/diario" element={<ProtectedRoute requirePlan><Diary /></ProtectedRoute>} />
-              <Route path="/notificacoes" element={<ProtectedRoute requirePlan><Notifications /></ProtectedRoute>} />
-              <Route path="/assistente" element={<ProtectedRoute requirePlan><Assistant /></ProtectedRoute>} />
+              <Route path="/jornada" element={<ProtectedRoute requirePlan><PlanGate><Journey /></PlanGate></ProtectedRoute>} />
+              <Route path="/jornada/:week" element={<ProtectedRoute requirePlan><PlanGate><WeekDetail /></PlanGate></ProtectedRoute>} />
+              <Route path="/sintomas" element={<ProtectedRoute requirePlan><PlanGate><Symptoms /></PlanGate></ProtectedRoute>} />
+              <Route path="/exercicios" element={<ProtectedRoute requirePlan><PlanGate><Exercises /></PlanGate></ProtectedRoute>} />
+              <Route path="/saude" element={<ProtectedRoute requirePlan><PlanGate><Health /></PlanGate></ProtectedRoute>} />
+              <Route path="/diario" element={<ProtectedRoute requirePlan><PlanGate><Diary /></PlanGate></ProtectedRoute>} />
+              <Route path="/notificacoes" element={<ProtectedRoute requirePlan><PlanGate><Notifications /></PlanGate></ProtectedRoute>} />
+              <Route path="/assistente" element={<ProtectedRoute requirePlan><PlanGate><Assistant /></PlanGate></ProtectedRoute>} />
               <Route path="/suporte" element={<ProtectedRoute><Support /></ProtectedRoute>} />
               <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/administracao" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
               {/* Dynamic pages created by admin */}
-              <Route path="*" element={<ProtectedRoute requirePlan><DynamicPage /></ProtectedRoute>} />
+              <Route path="*" element={<ProtectedRoute requirePlan><PlanGate><DynamicPage /></PlanGate></ProtectedRoute>} />
             </Routes>
           </PregnancyProvider>
         </AuthProvider>
