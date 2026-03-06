@@ -155,6 +155,8 @@ const Login = () => {
     setRecoveryCooldownUntil(Date.now() + 60_000);
   };
 
+  const signupCooldownSeconds = Math.max(0, Math.ceil((signupCooldownUntil - Date.now()) / 1000));
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-10">
       <motion.div
