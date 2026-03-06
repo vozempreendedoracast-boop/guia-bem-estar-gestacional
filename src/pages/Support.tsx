@@ -265,7 +265,7 @@ const Support = () => {
               size="icon"
               className="rounded-xl h-11 w-11 flex-shrink-0"
               disabled={!message.trim() || sendMutation.isPending}
-              onClick={() => sendMutation.mutate()}
+              onClick={() => sendMutation.mutate(undefined)}
             >
               <PaperPlaneRight className="w-5 h-5" />
             </Button>

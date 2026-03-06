@@ -330,7 +330,7 @@ const AdminSupportTab = () => {
                         }
                       }}
                     />
-                    <Button size="icon" className="rounded-xl h-11 w-11 flex-shrink-0" disabled={!reply.trim() || sendReply.isPending} onClick={() => sendReply.mutate()}>
+                    <Button size="icon" className="rounded-xl h-11 w-11 flex-shrink-0" disabled={!reply.trim() || sendReply.isPending} onClick={() => sendReply.mutate(undefined)}>
                       <PaperPlaneRight className="w-5 h-5" />
                     </Button>
                   </div>
