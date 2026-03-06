@@ -268,9 +268,19 @@ const AdminSupportTab = () => {
           ) : (
             <>
               <div className="p-3 border-b border-border bg-muted/20 flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{getUserDisplay(selectedConv?.user_id || "")}</p>
-                  {selectedConv?.status === "closed" && <Badge variant="outline" className="text-[10px]">Encerrada</Badge>}
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{getUserDisplay(selectedConv?.user_id || "")}</p>
+                    <div className="flex items-center gap-2">
+                      {selectedConv?.status === "closed" && <Badge variant="outline" className="text-[10px]">Encerrada</Badge>}
+                      {selectedConv?.status === "closed" && selectedConv?.closed_at && (
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {format(new Date(selectedConv.closed_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => selectedConv && handleViewProfile(selectedConv.user_id)} title="Ver perfil">
