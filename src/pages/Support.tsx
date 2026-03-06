@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const SUPABASE_URL = "https://hmtrjnosuwtmulerhgnr.supabase.co";
 
