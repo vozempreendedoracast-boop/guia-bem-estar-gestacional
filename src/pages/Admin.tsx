@@ -172,7 +172,7 @@ const Admin = () => {
   const [editingUser, setEditingUser] = useState<Partial<UserProfile> | null>(null);
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [newUserOpen, setNewUserOpen] = useState(false);
-  const [newUserData, setNewUserData] = useState({ email: "", plan: "none" as string, plan_status: "none" as string });
+  const [newUserData, setNewUserData] = useState({ email: "", plan: "none" as string, plan_status: "active" as string, password: "" });
   const [userActionLoading, setUserActionLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
