@@ -40,10 +40,22 @@ const Login = () => {
       return;
     }
 
-    // Small delay to let onAuthStateChange fire and fetch profile.
-    // We check admin status after profile is loaded to redirect correctly.
+    // Check account_status before proceeding
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("account_status")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+
+      if (profile && (profile as any).account_status === "banned") {
+        await supabase.auth.signOut();
+        toast.error("Sua conta foi desativada. Entre em contato com o suporte.");
+        return;
+      }
+    }
+
     setTimeout(async () => {
-      // Re-check admin from the RPC since isAdmin may not be updated yet
       const { data: adminCheck } = await supabase.rpc("has_role", { _user_id: data.user?.id ?? "", _role: "admin" });
       if (adminCheck) {
         navigate("/administracao", { replace: true });
@@ -82,7 +94,6 @@ const Login = () => {
     }
 
     if (user?.identities?.length === 0) {
-      // Email already exists but unconfirmed
       toast.error("Este email já está cadastrado. Verifique sua caixa de entrada.");
       return;
     }
@@ -162,69 +173,26 @@ const Login = () => {
           <form onSubmit={handleSignUp} className="space-y-3">
             <div className="relative">
               <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary"
-                required
-              />
+              <Input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary" required />
             </div>
-
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Crie uma senha"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              >
+              <Input type={showPassword ? "text" : "password"} placeholder="Crie uma senha" value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary" required />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirme a senha"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              >
+              <Input type={showConfirmPassword ? "text" : "password"} placeholder="Confirme a senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary" required />
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 {showConfirmPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-
-            <Button
-              type="submit"
-              disabled={loading || !email.trim() || !password.trim() || !confirmPassword.trim()}
-              className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft"
-            >
-              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (
-                <>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>
-              )}
+            <Button type="submit" disabled={loading || !email.trim() || !password.trim() || !confirmPassword.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
+              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (<>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>)}
             </Button>
-
-            <button
-              type="button"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setMode("login")}
-            >
+            <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMode("login")}>
               Já tenho conta? <span className="underline">Entrar</span>
             </button>
           </form>
@@ -232,80 +200,35 @@ const Login = () => {
           <form onSubmit={handleLogin} className="space-y-3">
             <div className="relative">
               <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary"
-                required
-              />
+              <Input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary" required />
             </div>
-
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Sua senha"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              >
+              <Input type={showPassword ? "text" : "password"} placeholder="Sua senha" value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary" required />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-
             <div className="flex justify-end">
-              <button
-                type="button"
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                onClick={handleForgotPassword}
-                disabled={loading}
-              >
+              <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={handleForgotPassword} disabled={loading}>
                 Esqueci minha senha
               </button>
             </div>
-
-            <Button
-              type="submit"
-              disabled={loading || !email.trim() || !password.trim()}
-              className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft"
-            >
-              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (
-                <>Entrar <ArrowRight className="w-5 h-5 ml-2" /></>
-              )}
+            <Button type="submit" disabled={loading || !email.trim() || !password.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
+              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (<>Entrar <ArrowRight className="w-5 h-5 ml-2" /></>)}
             </Button>
-
-            <button
-              type="button"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setMode("signup")}
-            >
+            <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMode("signup")}>
               Não tem conta? <span className="underline">Criar agora</span>
             </button>
           </form>
         )}
 
         <div className="flex items-center justify-center gap-4 pt-2">
-          <button
-            type="button"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
-            onClick={() => navigate("/planos")}
-          >
+          <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors underline" onClick={() => navigate("/planos")}>
             Ver planos
           </button>
           <span className="text-muted-foreground/40 text-xs">•</span>
-          <button
-            type="button"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
-            onClick={() => navigate("/vendas")}
-          >
+          <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors underline" onClick={() => navigate("/vendas")}>
             Conhecer o app
           </button>
         </div>

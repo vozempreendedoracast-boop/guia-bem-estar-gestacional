@@ -15,7 +15,6 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify the caller is authenticated
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -24,10 +23,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Service role client for admin operations — declared BEFORE usage
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
-    // Verify user with anon client
     const anonClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -39,7 +36,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify caller is admin
     const { data: roleCheck } = await admin
       .from("user_roles")
       .select("role")
@@ -107,9 +103,9 @@ Deno.serve(async (req) => {
     if (req.method === "POST") {
       const body = await req.json();
 
-      // CREATE user
+      // CREATE user — now supports optional password
       if (action === "create") {
-        const { email, plan, plan_status } = body;
+        const { email, plan, plan_status, password } = body;
         if (!email) {
           return new Response(JSON.stringify({ error: "Email é obrigatório" }), {
             status: 400,
@@ -117,37 +113,53 @@ Deno.serve(async (req) => {
           });
         }
 
-        const siteUrl = body.redirectTo || "https://mamyboo.vercel.app/cadastro";
-        const { data: newUser, error: createError } = await admin.auth.admin.inviteUserByEmail(email, {
-          redirectTo: siteUrl,
-        });
-        if (createError) throw createError;
+        let newUserId: string | undefined;
 
-        if (newUser.user) {
+        if (password && password.length >= 6) {
+          // Create user directly with password (no email confirmation needed)
+          const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+          });
+          if (createError) throw createError;
+          newUserId = newUser.user?.id;
+        } else {
+          // Legacy invite flow
+          const siteUrl = body.redirectTo || "https://mamyboo.vercel.app/cadastro";
+          const { data: newUser, error: createError } = await admin.auth.admin.inviteUserByEmail(email, {
+            redirectTo: siteUrl,
+          });
+          if (createError) throw createError;
+          newUserId = newUser.user?.id;
+        }
+
+        if (newUserId) {
           await new Promise(r => setTimeout(r, 500));
 
           const { error: updateError } = await admin
             .from("user_profiles")
             .update({
               plan: plan || "none",
-              plan_status: plan_status || "none",
-              purchased_at: (plan_status === "active") ? new Date().toISOString() : null,
-              expires_at: (plan_status === "active")
+              plan_status: plan_status || "active",
+              account_status: "active",
+              purchased_at: (plan_status === "active" && plan !== "none") ? new Date().toISOString() : null,
+              expires_at: (plan_status === "active" && plan !== "none")
                 ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
                 : null,
             })
-            .eq("user_id", newUser.user.id);
+            .eq("user_id", newUserId);
           if (updateError) throw updateError;
         }
 
-        return new Response(JSON.stringify({ success: true, user_id: newUser.user?.id }), {
+        return new Response(JSON.stringify({ success: true, user_id: newUserId }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       // UPDATE user profile
       if (action === "update") {
-        const { id, plan, plan_status, email } = body;
+        const { id, plan, plan_status, email, account_status } = body;
         if (!id) {
           return new Response(JSON.stringify({ error: "ID é obrigatório" }), {
             status: 400,
@@ -159,6 +171,7 @@ Deno.serve(async (req) => {
         if (plan !== undefined) updates.plan = plan;
         if (plan_status !== undefined) updates.plan_status = plan_status;
         if (email !== undefined) updates.email = email;
+        if (account_status !== undefined) updates.account_status = account_status;
 
         if (plan_status === "active" && plan !== "none") {
           updates.purchased_at = new Date().toISOString();
@@ -175,6 +188,28 @@ Deno.serve(async (req) => {
         if (error) throw error;
 
         return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // BAN / UNBAN user
+      if (action === "ban" || action === "unban") {
+        const { user_id } = body;
+        if (!user_id) {
+          return new Response(JSON.stringify({ error: "user_id é obrigatório" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const newStatus = action === "ban" ? "banned" : "active";
+        const { error } = await admin
+          .from("user_profiles")
+          .update({ account_status: newStatus })
+          .eq("user_id", user_id);
+        if (error) throw error;
+
+        return new Response(JSON.stringify({ success: true, account_status: newStatus }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
