@@ -1602,6 +1602,20 @@ const Admin = () => {
               <>
                 <div><Label className="text-sm font-medium">Nome do app</Label><Input value={settings.appName} onChange={e => setSettings({ ...settings, appName: e.target.value })} className="mt-1 rounded-xl" /></div>
                 <div><Label className="text-sm font-medium">Descrição</Label><Textarea value={settings.appDescription} onChange={e => setSettings({ ...settings, appDescription: e.target.value })} className="mt-1 rounded-xl" rows={3} /></div>
+                
+                <div className="border-t border-border pt-4 space-y-3">
+                  <p className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> SEO e Metadados</p>
+                  <div><Label className="text-sm font-medium">Título SEO (og:title)</Label><Input value={settings.seoTitle} onChange={e => setSettings({ ...settings, seoTitle: e.target.value })} className="mt-1 rounded-xl" placeholder="MamyBoo - Acompanhamento de Gestação" /><p className="text-[10px] text-muted-foreground mt-1">{(settings.seoTitle || "").length}/60 caracteres recomendados</p></div>
+                  <div><Label className="text-sm font-medium">Descrição SEO (og:description)</Label><Textarea value={settings.seoDescription} onChange={e => setSettings({ ...settings, seoDescription: e.target.value })} className="mt-1 rounded-xl" rows={2} placeholder="Acompanhe sua gestação semana a semana..." /><p className="text-[10px] text-muted-foreground mt-1">{(settings.seoDescription || "").length}/160 caracteres recomendados</p></div>
+                  <div><Label className="text-sm font-medium">Imagem destacada (og:image)</Label><Input value={settings.ogImageUrl} onChange={e => setSettings({ ...settings, ogImageUrl: e.target.value })} className="mt-1 rounded-xl" placeholder="https://..." /><p className="text-[10px] text-muted-foreground mt-1">Tamanho recomendado: 1200×630px. Usada por redes sociais e motores de busca.</p></div>
+                  {settings.ogImageUrl && (
+                    <div className="rounded-xl overflow-hidden border border-border">
+                      <img src={settings.ogImageUrl} alt="OG Preview" className="w-full h-32 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    </div>
+                  )}
+                  <div><Label className="text-sm font-medium">URL canônica</Label><Input value={settings.canonicalUrl} onChange={e => setSettings({ ...settings, canonicalUrl: e.target.value })} className="mt-1 rounded-xl" placeholder="https://mamyboo.vercel.app" /></div>
+                </div>
+
                 <div className="border-t border-border pt-4 space-y-3">
                   <p className="text-xs font-semibold text-foreground">Informações técnicas</p>
                   <div className="grid grid-cols-2 gap-2">
@@ -1624,7 +1638,7 @@ const Admin = () => {
                   </div>
                   <div className="bg-muted/40 rounded-xl p-3">
                     <p className="text-[10px] text-muted-foreground">URL de produção</p>
-                    <p className="text-sm font-medium text-foreground truncate">https://mamyboo.vercel.app</p>
+                    <p className="text-sm font-medium text-foreground truncate">{settings.canonicalUrl || "https://mamyboo.vercel.app"}</p>
                   </div>
                   <div className="bg-muted/40 rounded-xl p-3">
                     <div className="flex items-center justify-between">
