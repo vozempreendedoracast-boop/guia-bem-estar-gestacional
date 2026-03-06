@@ -1804,7 +1804,31 @@ const Admin = () => {
               </>
             )}
             <div className="flex gap-2 pt-2">
-              <Button className="flex-1 rounded-xl" onClick={() => editSettingType === "integrations" ? handleSaveAiSettings() : setEditSettingOpen(false)} disabled={aiLoading}>
+              <Button className="flex-1 rounded-xl" onClick={() => {
+                if (editSettingType === "integrations") {
+                  handleSaveAiSettings();
+                } else {
+                  // Persist settings to localStorage
+                  localStorage.setItem("admin_app_settings", JSON.stringify(settings));
+                  // Update meta tags dynamically
+                  if (settings.seoTitle) {
+                    document.title = settings.seoTitle;
+                    document.querySelector('meta[property="og:title"]')?.setAttribute("content", settings.seoTitle);
+                    document.querySelector('meta[name="twitter:title"]')?.setAttribute("content", settings.seoTitle);
+                  }
+                  if (settings.seoDescription) {
+                    document.querySelector('meta[name="description"]')?.setAttribute("content", settings.seoDescription);
+                    document.querySelector('meta[property="og:description"]')?.setAttribute("content", settings.seoDescription);
+                    document.querySelector('meta[name="twitter:description"]')?.setAttribute("content", settings.seoDescription);
+                  }
+                  if (settings.ogImageUrl) {
+                    document.querySelector('meta[property="og:image"]')?.setAttribute("content", settings.ogImageUrl);
+                    document.querySelector('meta[name="twitter:image"]')?.setAttribute("content", settings.ogImageUrl);
+                  }
+                  toast.success("Configurações salvas com sucesso!");
+                  setEditSettingOpen(false);
+                }
+              }} disabled={aiLoading}>
                 {aiLoading ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
               </Button>
               <Button variant="outline" className="rounded-xl" onClick={() => setEditSettingOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
