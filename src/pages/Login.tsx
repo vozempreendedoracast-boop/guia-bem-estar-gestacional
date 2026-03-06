@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { EnvelopeSimple, ArrowRight, SpinnerGap, Lock, Eye, EyeSlash } from "@phosphor-icons/react";
+import { EnvelopeSimple, ArrowRight, SpinnerGap, Lock, Eye, EyeSlash, CheckCircle } from "@phosphor-icons/react";
 import logoMamyboo from "@/assets/logo-mamyboo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ const Login = () => {
   const [mode, setMode] = useState<AuthMode>("login");
   const [recoveryCooldownUntil, setRecoveryCooldownUntil] = useState<number>(0);
   const [signupCooldownUntil, setSignupCooldownUntil] = useState<number>(0);
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,13 +112,7 @@ const Login = () => {
     }
 
     if (user) {
-      toast.success("Conta criada com sucesso!");
-      setTimeout(() => {
-        navigate("/cadastro", { replace: true });
-      }, 100);
-    } else {
-      toast.success("Conta criada! Verifique seu email para confirmar o acesso.");
-      setMode("login");
+      setShowEmailConfirmation(true);
     }
   };
 
@@ -172,69 +167,101 @@ const Login = () => {
           <img src={logoMamyboo} alt="MamyBoo" className="w-full h-full object-contain" />
         </motion.div>
 
-        <div className="space-y-1">
-          <h1 className="text-xl font-bold font-display text-foreground">
-            {mode === "signup" ? "Criar conta" : "Entrar no MamyBoo"}
-          </h1>
-          <p className="text-muted-foreground text-xs">
-            {mode === "signup"
-              ? "Cadastre-se com email e senha."
-              : "Entre com seu email e senha."}
-          </p>
-        </div>
-
-        {mode === "signup" ? (
-          <form onSubmit={handleSignUp} className="space-y-3">
-            <div className="relative">
-              <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary" required />
+        {showEmailConfirmation ? (
+          <div className="space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-primary" weight="fill" />
             </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input type={showPassword ? "text" : "password"} placeholder="Crie uma senha" value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary" required />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input type={showConfirmPassword ? "text" : "password"} placeholder="Confirme a senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary" required />
-              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {showConfirmPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-            <Button type="submit" disabled={loading || signupCooldownSeconds > 0 || !email.trim() || !password.trim() || !confirmPassword.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
-              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : signupCooldownSeconds > 0 ? `Aguarde ${signupCooldownSeconds}s` : (<>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>)}
+            <h2 className="text-lg font-bold font-display text-foreground">Conta criada com sucesso!</h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Enviamos um link de confirmação para{" "}
+              <span className="font-semibold text-foreground">{email}</span>.
+            </p>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              Abra seu email e clique no link para ativar sua conta. Depois é só voltar aqui e fazer login com a senha que você cadastrou.
+            </p>
+            <p className="text-muted-foreground/60 text-xs">
+              Não encontrou? Verifique a pasta de spam.
+            </p>
+            <Button
+              onClick={() => {
+                setShowEmailConfirmation(false);
+                setMode("login");
+                setPassword("");
+                setConfirmPassword("");
+              }}
+              className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft"
+            >
+              Ir para o login
             </Button>
-            <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMode("login")}>
-              Já tenho conta? <span className="underline">Entrar</span>
-            </button>
-          </form>
+          </div>
         ) : (
-          <form onSubmit={handleLogin} className="space-y-3">
-            <div className="relative">
-              <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary" required />
+          <>
+            <div className="space-y-1">
+              <h1 className="text-xl font-bold font-display text-foreground">
+                {mode === "signup" ? "Criar conta" : "Entrar no MamyBoo"}
+              </h1>
+              <p className="text-muted-foreground text-xs">
+                {mode === "signup"
+                  ? "Cadastre-se com email e senha."
+                  : "Entre com seu email e senha."}
+              </p>
             </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input type={showPassword ? "text" : "password"} placeholder="Sua senha" value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary" required />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-            <div className="flex justify-end">
-              <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={handleForgotPassword} disabled={loading}>
-                Esqueci minha senha
-              </button>
-            </div>
-            <Button type="submit" disabled={loading || !email.trim() || !password.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
-              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (<>Entrar <ArrowRight className="w-5 h-5 ml-2" /></>)}
-            </Button>
-            <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMode("signup")}>
-              Não tem conta? <span className="underline">Criar agora</span>
-            </button>
-          </form>
+
+            {mode === "signup" ? (
+              <form onSubmit={handleSignUp} className="space-y-3">
+                <div className="relative">
+                  <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary" required />
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input type={showPassword ? "text" : "password"} placeholder="Crie uma senha" value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary" required />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input type={showConfirmPassword ? "text" : "password"} placeholder="Confirme a senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary" required />
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    {showConfirmPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                <Button type="submit" disabled={loading || signupCooldownSeconds > 0 || !email.trim() || !password.trim() || !confirmPassword.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
+                  {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : signupCooldownSeconds > 0 ? `Aguarde ${signupCooldownSeconds}s` : (<>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>)}
+                </Button>
+                <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMode("login")}>
+                  Já tenho conta? <span className="underline">Entrar</span>
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleLogin} className="space-y-3">
+                <div className="relative">
+                  <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="h-12 rounded-xl pl-10 text-sm border-2 border-muted focus:border-primary" required />
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input type={showPassword ? "text" : "password"} placeholder="Sua senha" value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl pl-10 pr-12 text-sm border-2 border-muted focus:border-primary" required />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                <div className="flex justify-end">
+                  <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={handleForgotPassword} disabled={loading}>
+                    Esqueci minha senha
+                  </button>
+                </div>
+                <Button type="submit" disabled={loading || !email.trim() || !password.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
+                  {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (<>Entrar <ArrowRight className="w-5 h-5 ml-2" /></>)}
+                </Button>
+                <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMode("signup")}>
+                  Não tem conta? <span className="underline">Criar agora</span>
+                </button>
+              </form>
+            )}
+          </>
         )}
 
         <div className="flex items-center justify-center gap-4 pt-2">
