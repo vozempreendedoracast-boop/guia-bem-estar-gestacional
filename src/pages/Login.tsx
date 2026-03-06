@@ -111,13 +111,7 @@ const Login = () => {
     }
 
     if (user) {
-      toast.success("Conta criada com sucesso!");
-      setTimeout(() => {
-        navigate("/cadastro", { replace: true });
-      }, 100);
-    } else {
-      toast.success("Conta criada! Verifique seu email para confirmar o acesso.");
-      setMode("login");
+      setShowEmailConfirmation(true);
     }
   };
 
