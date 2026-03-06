@@ -20,6 +20,8 @@ const PlanGate = ({ children }: PlanGateProps) => {
 
   const category = categories.find(c => c.path === location.pathname);
   const requiredPlan = category?.required_plan || "none";
+  const userLevel = planHierarchy[plan] ?? 0;
+  const requiredLevel = planHierarchy[requiredPlan] ?? 0;
   const blocked = !isAdmin && requiredLevel > userLevel;
 
   useEffect(() => {
