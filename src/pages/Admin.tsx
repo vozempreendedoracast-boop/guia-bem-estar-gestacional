@@ -217,7 +217,7 @@ const Admin = () => {
       if (!res.ok) throw new Error(result.error);
       toast.success("Usuária criada com sucesso!");
       setNewUserOpen(false);
-      setNewUserData({ email: "", plan: "none", plan_status: "none" });
+      setNewUserData({ email: "", plan: "none", plan_status: "active", password: "" });
       fetchUsers();
     } catch (e: any) { toast.error(e.message || "Erro ao criar usuária"); }
     finally { setUserActionLoading(false); }
