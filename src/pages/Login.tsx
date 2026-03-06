@@ -80,13 +80,24 @@ const Login = () => {
       return;
     }
 
+    const now = Date.now();
+    if (now < signupCooldownUntil) {
+      const remainingSeconds = Math.ceil((signupCooldownUntil - now) / 1000);
+      toast.error(`Aguarde ${remainingSeconds}s para tentar criar conta novamente.`);
+      return;
+    }
+
     setLoading(true);
     const { error, user } = await signUp(email.trim(), password.trim());
     setLoading(false);
 
     if (error) {
       const msg = String(error.message || "").toLowerCase();
-      if (msg.includes("already registered") || msg.includes("already been registered")) {
+      if (msg.includes("rate limit") || msg.includes("429") || msg.includes("over_email_send_rate_limit")) {
+        const cooldown = Date.now() + 60_000;
+        setSignupCooldownUntil(cooldown);
+        toast.error("Muitas tentativas de cadastro. Aguarde 60 segundos e tente novamente.");
+      } else if (msg.includes("already registered") || msg.includes("already been registered")) {
         toast.error("Este email já está cadastrado. Tente fazer login.");
       } else {
         toast.error("Erro ao criar conta. Tente novamente.");
@@ -95,7 +106,7 @@ const Login = () => {
     }
 
     if (user?.identities?.length === 0) {
-      toast.error("Este email já está cadastrado. Verifique sua caixa de entrada.");
+      toast.error("Este email já está cadastrado. Tente fazer login.");
       return;
     }
 
