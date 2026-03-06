@@ -128,6 +128,7 @@ const ADMIN_BASE_URL = "https://hmtrjnosuwtmulerhgnr.supabase.co";
 
 const Admin = () => {
   const navigate = useNavigate();
+  const { getSetting, updateSetting: updateAppSetting } = useAppSettings();
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("admin_active_tab") || "overview";
   });
