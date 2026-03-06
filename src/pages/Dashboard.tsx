@@ -353,9 +353,20 @@ const Dashboard = () => {
             <motion.button
               key={card.title}
               variants={item}
-              onClick={() => navigate(card.path)}
-              className="bg-card rounded-2xl shadow-card border border-border text-left hover:shadow-elevated transition-shadow overflow-hidden"
+              onClick={() => {
+                if (card.locked) {
+                  toast("Este painel requer o plano " + (card.requiredPlan === "premium" ? "Premium" : "Essencial") + " 🔒");
+                  return;
+                }
+                navigate(card.path);
+              }}
+              className={`bg-card rounded-2xl shadow-card border border-border text-left hover:shadow-elevated transition-shadow overflow-hidden relative ${card.locked ? "opacity-60" : ""}`}
             >
+              {card.locked && (
+                <div className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-muted/80 backdrop-blur-sm flex items-center justify-center">
+                  <Lock className="w-4 h-4 text-muted-foreground" />
+                </div>
+              )}
               <div className="w-full h-24 md:h-52 lg:h-64 xl:h-72 overflow-hidden">
                 <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
               </div>
