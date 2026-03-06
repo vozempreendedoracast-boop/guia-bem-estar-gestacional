@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import {
   Heart, BookOpen, Heartbeat, Robot, ShieldCheck, Star,
   CheckCircle, ArrowRight, Crown, Sparkle, BabyCarriage,
-  Butterfly, FlowerLotus, StarFour, WarningCircle, Notebook,
-  Stethoscope, ShieldWarning, Seal,
+  Butterfly, FlowerLotus, StarFour, Notebook,
+  Stethoscope, Seal, Baby, Calendar, FirstAid, Brain,
+  Lock,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,14 +27,6 @@ const features = [
 ];
 
 const iconMap: Record<string, any> = { BookOpen, Crown, Star, Heart, Sparkle };
-
-const painPoints = [
-  "Dúvidas sobre sintomas",
-  "Ansiedade sobre o desenvolvimento do bebê",
-  "Incerteza sobre alimentação e cuidados",
-  "Medo do parto",
-  "Preocupações com a saúde",
-];
 
 const faqs = [
   { q: "Preciso de assinatura?", a: "Não! É pagamento único com acesso por 12 meses completos." },
@@ -92,6 +85,15 @@ const FloatingCuteElement = ({ Icon, className, delay, size, color }: typeof cut
     <Icon className={`${size} ${color}`} weight="fill" />
   </motion.div>
 );
+
+const staggerChild = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.12, duration: 0.5, ease: [0.25, 0.1, 0.25, 1] as const },
+  }),
+};
 
 const Sales = () => {
   const navigate = useNavigate();
@@ -180,61 +182,87 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* 02 — Valor percebido */}
-      <section className="gradient-peach py-14 relative z-10">
+      {/* 02 — Valor percebido — Cards modernos */}
+      <section className="gradient-peach py-16 relative z-10">
         <FloatingSparkle className="top-4 right-[10%]" delay={1} />
-        <div className="max-w-3xl mx-auto px-6 text-center">
+        <div className="max-w-5xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            className="text-center mb-10"
           >
             <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
               Menos que uma consulta médica 💜
             </h2>
-            <p className="text-muted-foreground mt-4 text-base leading-relaxed max-w-2xl mx-auto">
-              Por menos que o valor de uma consulta, você tem acompanhamento durante toda a sua gestação.
-            </p>
-            <p className="text-muted-foreground mt-3 text-base leading-relaxed max-w-2xl mx-auto">
-              Com o MamyBoo você acompanha cada semana da gravidez, recebe orientações importantes sobre sua saúde e entende melhor cada fase do desenvolvimento do seu bebê.
-            </p>
-            <p className="text-foreground font-medium mt-4 text-sm">
-              Tudo de forma simples, segura e sempre disponível no seu celular.
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+              Por menos que o valor de uma consulta, você tem acompanhamento durante toda a gestação.
             </p>
           </motion.div>
+
+          <div className="grid sm:grid-cols-3 gap-5">
+            {[
+              { icon: Calendar, number: "40", label: "Semanas de conteúdo", desc: "Acompanhamento completo do 1º ao último dia" },
+              { icon: Baby, number: "24h", label: "Sempre disponível", desc: "Acesse informações a qualquer hora do dia" },
+              { icon: Heart, number: "12", label: "Meses de acesso", desc: "Pagamento único sem renovação automática" },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={staggerChild}
+                className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 border border-border shadow-card text-center group hover:shadow-elevated hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <item.icon className="w-7 h-7 text-primary" weight="duotone" />
+                </div>
+                <span className="text-3xl font-bold font-display text-primary">{item.number}</span>
+                <h3 className="font-semibold text-foreground mt-1">{item.label}</h3>
+                <p className="text-sm text-muted-foreground mt-2">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 03 — Benefícios rápidos */}
-      <section className="py-14 relative z-10">
-        <div className="max-w-3xl mx-auto px-6">
+      {/* 03 — Benefícios rápidos — Cards com ícones */}
+      <section className="py-16 relative z-10">
+        <div className="max-w-5xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-8"
+            className="text-center mb-10"
           >
             <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
               Informação certa no momento certo ✨
             </h2>
           </motion.div>
-          <div className="space-y-4">
+          <div className="grid sm:grid-cols-2 gap-5">
             {[
-              "Saiba o que está acontecendo com seu bebê em cada semana da gestação",
-              "Entenda as mudanças do seu corpo e cuide melhor da sua saúde",
-              "Reduza a ansiedade com informações claras e confiáveis",
-              "Tire dúvidas a qualquer momento com uma assistente inteligente",
+              { icon: Baby, title: "Desenvolvimento do bebê", text: "Saiba o que está acontecendo com seu bebê em cada semana da gestação" },
+              { icon: Heart, title: "Mudanças no seu corpo", text: "Entenda as mudanças do seu corpo e cuide melhor da sua saúde" },
+              { icon: Brain, title: "Menos ansiedade", text: "Reduza a ansiedade com informações claras e confiáveis" },
+              { icon: Robot, title: "Assistente 24 horas", text: "Tire dúvidas a qualquer momento com uma assistente inteligente" },
             ].map((b, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="flex items-start gap-3 bg-card rounded-2xl p-4 border border-border shadow-card"
+                variants={staggerChild}
+                className="flex items-start gap-4 bg-card rounded-2xl p-5 border border-border shadow-card hover:shadow-elevated hover:-translate-y-1 transition-all duration-300"
               >
-                <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" weight="fill" />
-                <span className="text-foreground text-sm sm:text-base leading-relaxed">{b}</span>
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <b.icon className="w-6 h-6 text-primary" weight="duotone" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground text-sm">{b.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{b.text}</p>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -264,13 +292,14 @@ const Sales = () => {
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-card rounded-2xl p-6 border border-border shadow-card hover:shadow-elevated transition-all hover:-translate-y-1"
+                variants={staggerChild}
+                className="bg-card rounded-2xl p-6 border border-border shadow-card hover:shadow-elevated transition-all hover:-translate-y-1 group"
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <f.icon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground">{f.title}</h3>
@@ -281,49 +310,73 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* 07 — Dor da gestante */}
-      <section className="py-16 relative z-10">
-        <div className="max-w-3xl mx-auto px-6">
+      {/* 05 — Jornada da gestante — Layout moderno com cards lado a lado */}
+      <section className="py-16 relative z-10 overflow-hidden">
+        <FloatingBlob className="w-48 h-48 bg-peach/40 -top-10 right-0" delay={2} />
+        <div className="max-w-5xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-8"
+            className="text-center mb-10"
           >
             <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
               A gestação é um momento lindo… mas também cheio de dúvidas 🤔
             </h2>
-            <p className="text-muted-foreground mt-4 text-base leading-relaxed max-w-xl mx-auto">
-              Muitas gestantes passam por momentos de insegurança durante a gravidez.
-            </p>
           </motion.div>
-          <div className="space-y-3">
-            {painPoints.map((p, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="flex items-center gap-3 bg-card rounded-xl p-4 border border-border shadow-card"
-              >
-                <WarningCircle className="w-5 h-5 text-amber-500 flex-shrink-0" weight="fill" />
-                <span className="text-foreground text-sm">{p}</span>
-              </motion.div>
-            ))}
+
+          <div className="grid md:grid-cols-2 gap-6 items-stretch">
+            {/* Left: Grande card emocional */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="gradient-peach rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden"
+            >
+              <div className="absolute top-4 right-4 opacity-10">
+                <Heart className="w-32 h-32 text-primary" weight="fill" />
+              </div>
+              <h3 className="text-xl font-bold font-display text-foreground relative z-10">
+                Muitas gestantes sentem insegurança durante a gravidez
+              </h3>
+              <p className="text-muted-foreground mt-3 leading-relaxed relative z-10">
+                A busca por informações na internet pode gerar mais dúvidas do que respostas. 
+                Cada semana traz novas mudanças e novas perguntas.
+              </p>
+              <p className="text-primary font-semibold mt-4 relative z-10">
+                O MamyBoo foi criado para ajudar você a viver essa fase com mais tranquilidade. 💕
+              </p>
+            </motion.div>
+
+            {/* Right: Mini cards empilhados */}
+            <div className="space-y-4">
+              {[
+                { icon: FirstAid, text: "Dúvidas sobre sintomas e quando procurar o médico" },
+                { icon: Baby, text: "Ansiedade sobre o desenvolvimento do bebê" },
+                { icon: Heart, text: "Incerteza sobre alimentação e cuidados" },
+                { icon: Brain, text: "Medo do parto e preocupações emocionais" },
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  custom={i}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={staggerChild}
+                  className="flex items-center gap-4 bg-card rounded-2xl p-4 border border-border shadow-card hover:shadow-elevated transition-all hover:-translate-y-0.5"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-5 h-5 text-primary" weight="duotone" />
+                  </div>
+                  <span className="text-foreground text-sm font-medium">{item.text}</span>
+                </motion.div>
+              ))}
+            </div>
           </div>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mt-8 text-primary font-semibold text-base"
-          >
-            O MamyBoo foi criado para ajudar você a viver essa fase com mais tranquilidade. 💕
-          </motion.p>
         </div>
       </section>
 
-      {/* 05 — Testimonials */}
+      {/* 06 — Testimonials */}
       <section id="testimonials" className="py-16 gradient-peach relative z-10">
         <FloatingSparkle className="top-6 left-[25%]" delay={0} />
         <FloatingSparkle className="bottom-10 right-[15%]" delay={2.5} />
@@ -343,83 +396,98 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* 06 — Sessão explicativa */}
+      {/* 07 — Diferencial + Autoridade — Grid moderno de cards */}
       <section className="py-16 relative z-10">
-        <div className="max-w-3xl mx-auto px-6 text-center">
+        <div className="max-w-5xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="space-y-4"
+            className="text-center mb-10"
           >
             <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
-              Um acompanhamento que faz diferença na sua gestação 🌸
+              Por que confiar no MamyBoo? 💜
             </h2>
-            <p className="text-muted-foreground text-base leading-relaxed">
-              Durante a gravidez surgem muitas dúvidas e mudanças no corpo.
-            </p>
-            <p className="text-muted-foreground text-base leading-relaxed">
-              Cada semana traz novas fases no desenvolvimento do bebê e novas emoções para a mãe.
-            </p>
-            <p className="text-muted-foreground text-base leading-relaxed">
-              Ter acesso às informações certas no momento certo ajuda a viver essa fase com mais tranquilidade e segurança.
-            </p>
-            <p className="text-foreground font-medium text-base">
-              O MamyBoo foi criado para acompanhar você durante toda essa jornada. 💜
-            </p>
           </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Stethoscope,
+                title: "Base Médica",
+                desc: "Conteúdo desenvolvido com base em recomendações de profissionais de saúde e literatura médica.",
+                gradient: "gradient-sage",
+              },
+              {
+                icon: Seal,
+                title: "Garantia de 7 dias",
+                desc: "Teste o app com tranquilidade. Se não gostar, devolvemos seu dinheiro sem burocracia.",
+                gradient: "gradient-lilac",
+              },
+              {
+                icon: Lock,
+                title: "Pagamento Seguro",
+                desc: "Plataforma Kiwify com criptografia SSL. Seus dados estão sempre protegidos.",
+                gradient: "gradient-peach",
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={i}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={staggerChild}
+                className={`${card.gradient} rounded-3xl p-7 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300`}
+              >
+                <div className="absolute -bottom-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <card.icon className="w-32 h-32 text-foreground" weight="fill" />
+                </div>
+                <div className="w-14 h-14 rounded-2xl bg-card/60 backdrop-blur-sm flex items-center justify-center mb-5 shadow-card">
+                  <card.icon className="w-7 h-7 text-primary" weight="duotone" />
+                </div>
+                <h3 className="font-bold text-lg font-display text-foreground">{card.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed relative z-10">{card.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 08 — Autoridade */}
-      <section className="gradient-sage py-14 relative z-10">
-        <FloatingSparkle className="top-4 left-[15%]" delay={1.5} />
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Stethoscope className="w-7 h-7 text-primary" weight="duotone" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
-              Informações confiáveis 🩺
-            </h2>
-            <p className="text-muted-foreground mt-4 text-base leading-relaxed max-w-xl mx-auto">
-              Todo o conteúdo do MamyBoo é desenvolvido com base em recomendações de profissionais de saúde e em literatura médica sobre gestação.
-            </p>
-            <p className="text-muted-foreground mt-3 text-base leading-relaxed max-w-xl mx-auto">
-              Nosso objetivo é oferecer informações claras e seguras para acompanhar você durante toda a gravidez.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* 09 — Garantia */}
+      {/* 08 — Garantia — Card premium */}
       <section className="py-14 relative z-10">
-        <div className="max-w-2xl mx-auto px-6">
+        <div className="max-w-4xl mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-card rounded-3xl p-8 sm:p-10 border-2 border-primary/20 shadow-elevated text-center"
+            className="gradient-lilac rounded-3xl p-8 sm:p-12 relative overflow-hidden"
           >
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-              <Seal className="w-8 h-8 text-primary" weight="duotone" />
+            <div className="absolute top-0 right-0 opacity-5">
+              <Seal className="w-56 h-56 text-foreground" weight="fill" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
-              Experimente sem risco ✅
-            </h2>
-            <p className="text-muted-foreground mt-4 text-base leading-relaxed">
-              Você pode testar o app com tranquilidade.
-            </p>
-            <p className="text-foreground font-semibold text-lg mt-3">
-              Oferecemos garantia de 7 dias.
-            </p>
-            <p className="text-muted-foreground mt-3 text-base leading-relaxed">
-              Se dentro desse período você sentir que o app não é para você, basta solicitar o reembolso. Sem burocracia.
-            </p>
+            <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+              <div className="w-20 h-20 rounded-3xl bg-card/60 backdrop-blur-sm flex items-center justify-center shadow-elevated flex-shrink-0">
+                <Seal className="w-10 h-10 text-primary" weight="duotone" />
+              </div>
+              <div className="text-center md:text-left">
+                <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+                  Experimente sem risco ✅
+                </h2>
+                <p className="text-muted-foreground mt-3 text-base leading-relaxed">
+                  Você pode testar o app com tranquilidade. <strong className="text-foreground">Oferecemos garantia de 7 dias.</strong>
+                </p>
+                <p className="text-muted-foreground mt-2 text-base leading-relaxed">
+                  Se dentro desse período você sentir que o app não é para você, basta solicitar o reembolso. Sem burocracia.
+                </p>
+                <Button 
+                  className="mt-6 rounded-xl h-12 px-8"
+                  onClick={() => scrollToSection("plans")}
+                >
+                  Ver planos <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -451,10 +519,11 @@ const Sales = () => {
               return (
                 <motion.div
                   key={plan.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  custom={i}
+                  initial="hidden"
+                  whileInView="visible"
                   viewport={{ once: true }}
-                  transition={{ delay: 0.1 * (i + 1) }}
+                  variants={staggerChild}
                   className={`bg-card rounded-2xl p-6 flex flex-col relative ${
                     plan.highlighted
                       ? "border-2 border-primary shadow-elevated"
@@ -551,18 +620,19 @@ const Sales = () => {
           >
             Perguntas frequentes 🤔
           </motion.h2>
-          <div className="space-y-4">
+          <div className="grid sm:grid-cols-2 gap-4">
             {faqs.map((faq, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="bg-card/90 backdrop-blur-sm rounded-2xl p-5 border border-border shadow-card"
+                variants={staggerChild}
+                className="bg-card/90 backdrop-blur-sm rounded-2xl p-5 border border-border shadow-card hover:shadow-elevated transition-all hover:-translate-y-0.5"
               >
                 <h3 className="font-semibold text-sm text-foreground">{faq.q}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{faq.a}</p>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{faq.a}</p>
               </motion.div>
             ))}
           </div>
@@ -581,9 +651,6 @@ const Sales = () => {
           </h2>
           <p className="text-primary-foreground/80 mt-3 max-w-md mx-auto text-base leading-relaxed">
             Tenha acesso a informações confiáveis, acompanhamento semana a semana e ferramentas para cuidar da sua saúde e do seu bebê.
-          </p>
-          <p className="text-primary-foreground/70 mt-2 text-sm">
-            Escolha seu plano e comece agora.
           </p>
           <Button
             size="lg"
