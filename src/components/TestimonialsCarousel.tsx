@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Star } from "@phosphor-icons/react";
 
 const testimonials = [
@@ -15,15 +15,18 @@ const testimonials = [
   { name: "Fernanda L.", week: "Semana 22", text: "Indiquei para várias amigas grávidas." },
 ];
 
-const VISIBLE_DESKTOP = 4;
-
 const TestimonialsCarousel = () => {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const total = testimonials.length;
+  const touchStartX = useRef(0);
 
   const next = useCallback(() => {
     setCurrent((prev) => (prev + 1) % total);
+  }, [total]);
+
+  const prev = useCallback(() => {
+    setCurrent((p) => (p - 1 + total) % total);
   }, [total]);
 
   useEffect(() => {
@@ -32,49 +35,67 @@ const TestimonialsCarousel = () => {
     return () => clearInterval(timer);
   }, [next, isPaused]);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsPaused(true);
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? next() : prev();
+    }
+    setIsPaused(false);
+  };
+
+  // Desktop: show 3 cards at a time
+  const desktopVisible = 3;
+  const desktopCards = [];
+  for (let i = 0; i < desktopVisible; i++) {
+    desktopCards.push(testimonials[(current + i) % total]);
+  }
+
   return (
     <div
       className="relative overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
     >
-      {/* Mobile: 1 card sliding */}
-      <div className="md:hidden relative h-[220px]">
-        <div className="absolute inset-0 flex px-4">
+      {/* Mobile: single card with swipe */}
+      <div
+        className="md:hidden px-4"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <AnimatePresence mode="wait">
           <motion.div
-            key="mobile-track"
-            animate={{ x: `${-current * 100}%` }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="flex"
-            style={{ width: `${total * 100}%` }}
+            key={current}
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -60 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
           >
-            {testimonials.map((t, i) => (
-              <div key={i} className="flex items-center justify-center px-2" style={{ width: `${100 / total}%` }}>
-                <TestimonialCard testimonial={t} />
-              </div>
-            ))}
+            <TestimonialCard testimonial={testimonials[current]} />
           </motion.div>
-        </div>
+        </AnimatePresence>
       </div>
 
-      {/* Desktop: 4 visible, slides 1 at a time */}
-      <div className="hidden md:block">
-        <div className="overflow-hidden">
+      {/* Desktop: 3 cards */}
+      <div className="hidden md:block px-4">
+        <AnimatePresence mode="wait">
           <motion.div
-            animate={{ x: `${-current * (100 / (total + VISIBLE_DESKTOP - 1))}%` }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="flex gap-4"
-            style={{ width: `${((total + VISIBLE_DESKTOP - 1) / VISIBLE_DESKTOP) * 100}%` }}
+            key={current}
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="grid grid-cols-3 gap-4"
           >
-            {Array.from({ length: total + VISIBLE_DESKTOP - 1 }, (_, i) => (
-              <div key={i} className="px-1" style={{ width: `${100 / (total + VISIBLE_DESKTOP - 1)}%` }}>
-                <TestimonialCard testimonial={testimonials[i % total]} />
-              </div>
+            {desktopCards.map((t, i) => (
+              <TestimonialCard key={`${current}-${i}`} testimonial={t} />
             ))}
           </motion.div>
-        </div>
+        </AnimatePresence>
       </div>
 
       {/* Dots */}
@@ -94,13 +115,13 @@ const TestimonialsCarousel = () => {
 };
 
 const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] }) => (
-  <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-5 border border-border shadow-card w-full">
+  <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-5 border border-border shadow-card w-full h-full flex flex-col">
     <div className="flex gap-1 mb-3">
       {[...Array(5)].map((_, s) => (
         <Star key={s} className="w-4 h-4 text-primary" weight="fill" />
       ))}
     </div>
-    <p className="text-sm text-foreground leading-relaxed italic">
+    <p className="text-sm text-foreground leading-relaxed italic flex-1">
       "{testimonial.text}"
     </p>
     <div className="mt-4 pt-3 border-t border-border">
