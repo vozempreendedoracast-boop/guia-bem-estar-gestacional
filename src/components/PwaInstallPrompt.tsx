@@ -59,7 +59,7 @@ const PwaInstallPrompt = () => {
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
     };
   }, []);
 
