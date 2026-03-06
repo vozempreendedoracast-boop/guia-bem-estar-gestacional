@@ -1,5 +1,6 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUnreadSupport } from "@/hooks/useUnreadSupport";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, CalendarBlank, Heart, Briefcase, Stethoscope, User, EnvelopeSimple, Phone, ChatCircleDots } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import mamybooPink from "@/assets/mamyboo-pink.png";
 const Profile = () => {
   const { profile, setProfile, currentWeek, trimester, progressPercent } = usePregnancy();
   const { user } = useAuth();
+  const { unreadCount: unreadSupportCount } = useUnreadSupport();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
@@ -203,6 +205,11 @@ const Profile = () => {
         aria-label="Suporte"
       >
         <ChatCircleDots className="w-6 h-6" />
+        {unreadSupportCount > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-destructive text-destructive-foreground rounded-full text-[10px] font-bold flex items-center justify-center px-1 border-2 border-background shadow-sm animate-pulse">
+            {unreadSupportCount > 9 ? "9+" : unreadSupportCount}
+          </span>
+        )}
       </motion.button>
     </div>
   );
