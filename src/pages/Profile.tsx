@@ -15,6 +15,7 @@ import mamybooPink from "@/assets/mamyboo-pink.png";
 const Profile = () => {
   const { profile, setProfile, currentWeek, trimester, progressPercent } = usePregnancy();
   const { user } = useAuth();
+  const { unreadCount: unreadSupportCount } = useUnreadSupport();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
