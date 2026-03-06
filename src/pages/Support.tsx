@@ -37,6 +37,19 @@ const Support = () => {
     queryKey: ["support_conversation", user?.id],
     queryFn: async () => {
       if (!user) return null;
+      
+      // First check for a recently closed conversation pending rating
+      const { data: closedConv } = await supabase
+        .from("support_conversations")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "closed")
+        .is("rating", null)
+        .order("closed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (closedConv) return closedConv;
+      
       // Find open conversation
       const { data, error } = await supabase
         .from("support_conversations")
@@ -58,6 +71,7 @@ const Support = () => {
       return newConv;
     },
     enabled: !!user,
+    refetchInterval: 10000,
   });
 
   const { data: messages = [], isLoading } = useQuery({
