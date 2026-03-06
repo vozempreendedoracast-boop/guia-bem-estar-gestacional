@@ -357,16 +357,26 @@ const Admin = () => {
   const [editingPromotion, setEditingPromotion] = useState<Partial<PromotionRow> | null>(null);
   const [editPromotionOpen, setEditPromotionOpen] = useState(false);
 
-  // Settings state
-  const [settings, setSettings] = useState<SettingsState>({
-    appName: "Minha Gestação",
-    appDescription: "Sua companheira durante toda a jornada da gravidez.",
-    pushEnabled: true,
-    pushFrequency: "diária",
-    planFreeEnabled: true,
-    planPremiumPrice: "29,90",
-    analyticsEnabled: true,
-    backupEnabled: false,
+  // Settings state - load from localStorage
+  const [settings, setSettings] = useState<SettingsState>(() => {
+    const saved = localStorage.getItem("admin_app_settings");
+    if (saved) {
+      try { return JSON.parse(saved); } catch {}
+    }
+    return {
+      appName: "MamyBoo",
+      appDescription: "Sua companheira durante toda a jornada da gravidez.",
+      pushEnabled: true,
+      pushFrequency: "diária",
+      planFreeEnabled: true,
+      planPremiumPrice: "29,90",
+      analyticsEnabled: true,
+      backupEnabled: false,
+      seoTitle: "MamyBoo - Acompanhamento de Gestação",
+      seoDescription: "Acompanhe sua gestação semana a semana com informações personalizadas, dicas e suporte emocional.",
+      ogImageUrl: "",
+      canonicalUrl: "https://mamyboo.vercel.app",
+    };
   });
   const [editSettingOpen, setEditSettingOpen] = useState(false);
   const [editSettingType, setEditSettingType] = useState("");
