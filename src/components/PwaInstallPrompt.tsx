@@ -23,8 +23,13 @@ const PwaInstallPrompt = () => {
     // Already installed
     if (window.matchMedia("(display-mode: standalone)").matches) return;
     if ((navigator as any).standalone === true) return;
-    // Don't show on admin page
-    if (window.location.pathname.startsWith("/administracao")) return;
+    // Don't show on admin or sales/login pages
+    if (
+      window.location.pathname.startsWith("/administracao") ||
+      window.location.pathname.startsWith("/vendas") ||
+      window.location.pathname.startsWith("/planos") ||
+      window.location.pathname.startsWith("/login")
+    ) return;
 
     const dismissed = sessionStorage.getItem("pwa-prompt-dismissed");
     if (dismissed) return;

@@ -23,6 +23,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
   const [recoveryCooldownUntil, setRecoveryCooldownUntil] = useState<number>(0);
+  const [signupCooldownUntil, setSignupCooldownUntil] = useState<number>(0);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
