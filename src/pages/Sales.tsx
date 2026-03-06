@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   Heart, BookOpen, Heartbeat, Robot, ShieldCheck, Star,
   CheckCircle, ArrowRight, Crown, Sparkle, BabyCarriage,
-  Butterfly, FlowerLotus, StarFour,
+  Butterfly, FlowerLotus, StarFour, WarningCircle, Notebook,
+  Stethoscope, ShieldWarning, Seal,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,21 +17,30 @@ import trustKiwify from "@/assets/trust-kiwify.png";
 import trustSeguro from "@/assets/trust-seguro.webp";
 
 const features = [
-  { icon: BookOpen, title: "Jornada Semana a Semana", description: "Acompanhe as 40 semanas com conteúdo liberado automaticamente." },
-  { icon: Heart, title: "Saúde Integral", description: "Alimentação, sono, emocional e preparação para o parto." },
-  { icon: Heartbeat, title: "Exercícios por Trimestre", description: "Atividades seguras com instruções claras e detalhadas." },
-  { icon: Robot, title: "Assistente IA 24h", description: "Tire dúvidas a qualquer momento com IA empática." },
-  { icon: ShieldCheck, title: "Diário e Progresso", description: "Registre humor, sintomas e peso com gráficos fáceis." },
-  { icon: Star, title: "Conteúdo Profissional", description: "Revisado por profissionais de saúde." },
+  { icon: BookOpen, title: "Jornada Semana a Semana", description: "Acompanhe todas as semanas da gestação com conteúdos liberados automaticamente explicando o desenvolvimento do seu bebê e as mudanças no seu corpo." },
+  { icon: Heart, title: "Saúde Integral", description: "Orientações sobre alimentação, sono, saúde emocional e preparação para o parto." },
+  { icon: Heartbeat, title: "Exercícios por Trimestre", description: "Exercícios seguros para cada fase da gestação, ajudando a aliviar desconfortos e preparar o corpo para o parto." },
+  { icon: Robot, title: "Assistente IA 24h", description: "Tire dúvidas sempre que precisar com uma assistente treinada para responder perguntas comuns da gestação." },
+  { icon: Notebook, title: "Diário e Progresso", description: "Registre humor, sintomas e peso e acompanhe sua evolução com gráficos simples." },
+  { icon: ShieldCheck, title: "Conteúdo Revisado", description: "Informações desenvolvidas com base em recomendações de profissionais de saúde e literatura médica." },
 ];
 
 const iconMap: Record<string, any> = { BookOpen, Crown, Star, Heart, Sparkle };
+
+const painPoints = [
+  "Dúvidas sobre sintomas",
+  "Ansiedade sobre o desenvolvimento do bebê",
+  "Incerteza sobre alimentação e cuidados",
+  "Medo do parto",
+  "Preocupações com a saúde",
+];
 
 const faqs = [
   { q: "Preciso de assinatura?", a: "Não! É pagamento único com acesso por 12 meses completos." },
   { q: "Como funciona o acesso?", a: "Após o pagamento, você recebe um link no email para acessar imediatamente." },
   { q: "Posso fazer upgrade depois?", a: "Sim! Você pode migrar do Essencial para o Premium a qualquer momento." },
   { q: "O app substitui o médico?", a: "Não. O MamyBoo é informativo e complementar ao acompanhamento médico." },
+  { q: "Tem garantia?", a: "Sim! Oferecemos garantia de 7 dias. Se não gostar, devolvemos seu dinheiro sem burocracia." },
 ];
 
 /* Floating decorative blobs */
@@ -124,7 +134,7 @@ const Sales = () => {
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* 01 — Hero */}
       <section className="relative">
         <FloatingBlob className="w-72 h-72 bg-primary/20 -top-20 -left-20" delay={0} />
         <FloatingBlob className="w-56 h-56 bg-secondary -top-10 right-10" delay={2} />
@@ -140,22 +150,22 @@ const Sales = () => {
             className="flex-1 text-center md:text-left"
           >
             <span className="inline-block bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full mb-4">
-              ✨ A partir de R$ 47 · Pagamento único
+              ✨ A partir de R$ 47 · Pagamento único · Acesso por 12 meses
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold font-display text-foreground leading-tight">
-              Sua companheira durante toda a
-              <span className="text-primary"> gestação</span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display text-foreground leading-tight">
+              Acompanhe sua gestação semana a semana com
+              <span className="text-primary"> segurança e tranquilidade.</span>
             </h1>
-            <p className="text-muted-foreground mt-4 text-lg leading-relaxed max-w-lg">
-              Informação personalizada, apoio emocional e acompanhamento semana a semana. Tudo que você precisa em um único app.
+            <p className="text-muted-foreground mt-4 text-base sm:text-lg leading-relaxed max-w-lg">
+              Saiba exatamente o que acontece com seu bebê, cuide da sua saúde e tire dúvidas a qualquer momento — tudo em um único app.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
               <Button size="lg" className="rounded-xl text-base h-14 px-8" onClick={() => scrollToSection("plans")}>
-                Ver planos e preços
+                Começar meu acompanhamento
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-              <Button size="lg" variant="outline" className="rounded-xl text-base h-14 px-8" onClick={() => scrollToSection("features")}>
-                Conhecer recursos
+              <Button size="lg" variant="outline" className="rounded-xl text-base h-14 px-8" onClick={() => scrollToSection("plans")}>
+                Ver planos e preços
               </Button>
             </div>
           </motion.div>
@@ -165,42 +175,74 @@ const Sales = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="flex-1 max-w-md"
           >
-            <img src={heroLanding} alt="Gestante feliz com borboletas" className="w-full rounded-3xl shadow-elevated" />
+            <img src={heroLanding} alt="Gestante feliz acompanhando sua gestação" className="w-full rounded-3xl shadow-elevated" />
           </motion.div>
         </div>
       </section>
 
-      {/* Benefits strip */}
-      <section className="gradient-peach py-10 relative z-10">
+      {/* 02 — Valor percebido */}
+      <section className="gradient-peach py-14 relative z-10">
         <FloatingSparkle className="top-4 right-[10%]" delay={1} />
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+              Menos que uma consulta médica 💜
+            </h2>
+            <p className="text-muted-foreground mt-4 text-base leading-relaxed max-w-2xl mx-auto">
+              Por menos que o valor de uma consulta, você tem acompanhamento durante toda a sua gestação.
+            </p>
+            <p className="text-muted-foreground mt-3 text-base leading-relaxed max-w-2xl mx-auto">
+              Com o MamyBoo você acompanha cada semana da gravidez, recebe orientações importantes sobre sua saúde e entende melhor cada fase do desenvolvimento do seu bebê.
+            </p>
+            <p className="text-foreground font-medium mt-4 text-sm">
+              Tudo de forma simples, segura e sempre disponível no seu celular.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 03 — Benefícios rápidos */}
+      <section className="py-14 relative z-10">
+        <div className="max-w-3xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-8"
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+              Informação certa no momento certo ✨
+            </h2>
+          </motion.div>
+          <div className="space-y-4">
             {[
-              "Informação certa na hora certa",
-              "Reduz ansiedade e insegurança",
-              "Organiza toda a sua jornada",
-              "Apoio emocional contínuo",
-              "A partir de R$ 47 (pagamento único)",
-              "Funciona no celular e offline",
+              "Saiba o que está acontecendo com seu bebê em cada semana da gestação",
+              "Entenda as mudanças do seu corpo e cuide melhor da sua saúde",
+              "Reduza a ansiedade com informações claras e confiáveis",
+              "Tire dúvidas a qualquer momento com uma assistente inteligente",
             ].map((b, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="flex items-center gap-2"
+                transition={{ delay: i * 0.1 }}
+                className="flex items-start gap-3 bg-card rounded-2xl p-4 border border-border shadow-card"
               >
-                <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" weight="fill" />
-                <span className="text-sm text-foreground font-medium">{b}</span>
+                <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" weight="fill" />
+                <span className="text-foreground text-sm sm:text-base leading-relaxed">{b}</span>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-16 relative z-10">
+      {/* 04 — Features */}
+      <section id="features" className="py-16 gradient-lilac relative z-10">
         <FloatingBlob className="w-64 h-64 bg-lilac/40 -bottom-20 -right-20" delay={1} />
         <FloatingSparkle className="top-10 left-[8%]" delay={2} />
 
@@ -210,12 +252,12 @@ const Sales = () => {
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl font-bold font-display text-foreground"
+              className="text-2xl sm:text-3xl font-bold font-display text-foreground"
             >
-              Tudo que você precisa 💜
+              Tudo que você precisa durante sua gestação 💜
             </motion.h2>
             <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
-              Desenvolvido com carinho para acompanhar cada momento da sua gestação.
+              Desenvolvido com carinho para acompanhar cada momento dessa jornada.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -239,8 +281,50 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* Testimonials — carousel */}
-      <section id="testimonials" className="py-16 gradient-lilac relative z-10">
+      {/* 07 — Dor da gestante */}
+      <section className="py-16 relative z-10">
+        <div className="max-w-3xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-8"
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+              A gestação é um momento lindo… mas também cheio de dúvidas 🤔
+            </h2>
+            <p className="text-muted-foreground mt-4 text-base leading-relaxed max-w-xl mx-auto">
+              Muitas gestantes passam por momentos de insegurança durante a gravidez.
+            </p>
+          </motion.div>
+          <div className="space-y-3">
+            {painPoints.map((p, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="flex items-center gap-3 bg-card rounded-xl p-4 border border-border shadow-card"
+              >
+                <WarningCircle className="w-5 h-5 text-amber-500 flex-shrink-0" weight="fill" />
+                <span className="text-foreground text-sm">{p}</span>
+              </motion.div>
+            ))}
+          </div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-8 text-primary font-semibold text-base"
+          >
+            O MamyBoo foi criado para ajudar você a viver essa fase com mais tranquilidade. 💕
+          </motion.p>
+        </div>
+      </section>
+
+      {/* 05 — Testimonials */}
+      <section id="testimonials" className="py-16 gradient-peach relative z-10">
         <FloatingSparkle className="top-6 left-[25%]" delay={0} />
         <FloatingSparkle className="bottom-10 right-[15%]" delay={2.5} />
 
@@ -250,12 +334,93 @@ const Sales = () => {
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl font-bold font-display text-foreground"
+              className="text-2xl sm:text-3xl font-bold font-display text-foreground"
             >
               O que dizem as mamães 🥰
             </motion.h2>
           </div>
           <TestimonialsCarousel />
+        </div>
+      </section>
+
+      {/* 06 — Sessão explicativa */}
+      <section className="py-16 relative z-10">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-4"
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+              Um acompanhamento que faz diferença na sua gestação 🌸
+            </h2>
+            <p className="text-muted-foreground text-base leading-relaxed">
+              Durante a gravidez surgem muitas dúvidas e mudanças no corpo.
+            </p>
+            <p className="text-muted-foreground text-base leading-relaxed">
+              Cada semana traz novas fases no desenvolvimento do bebê e novas emoções para a mãe.
+            </p>
+            <p className="text-muted-foreground text-base leading-relaxed">
+              Ter acesso às informações certas no momento certo ajuda a viver essa fase com mais tranquilidade e segurança.
+            </p>
+            <p className="text-foreground font-medium text-base">
+              O MamyBoo foi criado para acompanhar você durante toda essa jornada. 💜
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 08 — Autoridade */}
+      <section className="gradient-sage py-14 relative z-10">
+        <FloatingSparkle className="top-4 left-[15%]" delay={1.5} />
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <Stethoscope className="w-7 h-7 text-primary" weight="duotone" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+              Informações confiáveis 🩺
+            </h2>
+            <p className="text-muted-foreground mt-4 text-base leading-relaxed max-w-xl mx-auto">
+              Todo o conteúdo do MamyBoo é desenvolvido com base em recomendações de profissionais de saúde e em literatura médica sobre gestação.
+            </p>
+            <p className="text-muted-foreground mt-3 text-base leading-relaxed max-w-xl mx-auto">
+              Nosso objetivo é oferecer informações claras e seguras para acompanhar você durante toda a gravidez.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 09 — Garantia */}
+      <section className="py-14 relative z-10">
+        <div className="max-w-2xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-card rounded-3xl p-8 sm:p-10 border-2 border-primary/20 shadow-elevated text-center"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+              <Seal className="w-8 h-8 text-primary" weight="duotone" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+              Experimente sem risco ✅
+            </h2>
+            <p className="text-muted-foreground mt-4 text-base leading-relaxed">
+              Você pode testar o app com tranquilidade.
+            </p>
+            <p className="text-foreground font-semibold text-lg mt-3">
+              Oferecemos garantia de 7 dias.
+            </p>
+            <p className="text-muted-foreground mt-3 text-base leading-relaxed">
+              Se dentro desse período você sentir que o app não é para você, basta solicitar o reembolso. Sem burocracia.
+            </p>
+          </motion.div>
         </div>
       </section>
 
@@ -271,7 +436,7 @@ const Sales = () => {
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl font-bold font-display text-foreground"
+              className="text-2xl sm:text-3xl font-bold font-display text-foreground"
             >
               Escolha seu plano ✨
             </motion.h2>
@@ -404,27 +569,32 @@ const Sales = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* 10 — Final CTA */}
       <section className="gradient-hero py-16 relative z-10">
         <FloatingSparkle className="top-4 left-[30%]" delay={1} />
         <FloatingSparkle className="bottom-4 right-[25%]" delay={3} />
 
         <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
           <img src={mamybooWhite} alt="MamyBoo" className="w-16 h-16 object-contain mx-auto mb-4" />
-          <h2 className="text-3xl font-bold font-display text-primary-foreground">Pronta para começar?</h2>
-          <p className="text-primary-foreground/80 mt-3 max-w-md mx-auto">
-            Escolha seu plano e comece a acompanhar sua gestação com carinho e segurança.
+          <h2 className="text-2xl sm:text-3xl font-bold font-display text-primary-foreground">
+            Comece hoje a acompanhar sua gestação com mais tranquilidade
+          </h2>
+          <p className="text-primary-foreground/80 mt-3 max-w-md mx-auto text-base leading-relaxed">
+            Tenha acesso a informações confiáveis, acompanhamento semana a semana e ferramentas para cuidar da sua saúde e do seu bebê.
+          </p>
+          <p className="text-primary-foreground/70 mt-2 text-sm">
+            Escolha seu plano e comece agora.
           </p>
           <Button
             size="lg"
             className="mt-8 rounded-xl text-base h-14 px-10 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
             onClick={() => scrollToSection("plans")}
           >
-            Escolher meu plano
+            Quero acompanhar minha gestação
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
           <p className="text-xs text-primary-foreground/50 mt-4">
-            Este app não substitui acompanhamento médico profissional.
+            Pagamento único • acesso por 12 meses • compra segura via Kiwify
           </p>
         </div>
       </section>
