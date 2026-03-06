@@ -326,7 +326,7 @@ const AdminSupportTab = () => {
                       onKeyDown={e => {
                         if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
-                          if (reply.trim()) sendReply.mutate();
+                          if (reply.trim()) sendReply.mutate(undefined);
                         }
                       }}
                     />
