@@ -77,6 +77,28 @@ const Support = () => {
     refetchInterval: 8000,
   });
 
+  // Request notification permission on mount
+  useEffect(() => {
+    requestPermission();
+  }, []);
+
+  // Mark admin messages as read when viewing
+  useEffect(() => {
+    if (!user || !conversation?.id || messages.length === 0) return;
+    const unreadAdminIds = messages
+      .filter(m => m.sender === "admin" && !m.read)
+      .map(m => m.id);
+    if (unreadAdminIds.length > 0) {
+      supabase
+        .from("support_messages")
+        .update({ read: true })
+        .in("id", unreadAdminIds)
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["unread-support"] });
+        });
+    }
+  }, [messages, user, conversation?.id]);
+
   // Detect new admin messages and notify
   useEffect(() => {
     if (messages.length > prevMessageCountRef.current && prevMessageCountRef.current > 0) {
@@ -84,12 +106,7 @@ const Support = () => {
       const hasAdminMsg = newMsgs.some(m => m.sender === "admin");
       if (hasAdminMsg) {
         toast.success("Nova resposta do suporte! 💬");
-        // Play notification sound
-        try {
-          const audio = new Audio("/notification.mp3");
-          audio.volume = 0.5;
-          audio.play().catch(() => {});
-        } catch {}
+        sendNotification("MamyBoo Suporte 💬", "Você recebeu uma nova resposta do suporte!");
       }
     }
     prevMessageCountRef.current = messages.length;
