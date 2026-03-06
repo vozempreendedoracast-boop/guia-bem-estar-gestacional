@@ -78,6 +78,10 @@ interface SettingsState {
   planPremiumPrice: string;
   analyticsEnabled: boolean;
   backupEnabled: boolean;
+  seoTitle: string;
+  seoDescription: string;
+  ogImageUrl: string;
+  canonicalUrl: string;
 }
 
 interface AISettingsState {
@@ -353,16 +357,26 @@ const Admin = () => {
   const [editingPromotion, setEditingPromotion] = useState<Partial<PromotionRow> | null>(null);
   const [editPromotionOpen, setEditPromotionOpen] = useState(false);
 
-  // Settings state
-  const [settings, setSettings] = useState<SettingsState>({
-    appName: "Minha Gestação",
-    appDescription: "Sua companheira durante toda a jornada da gravidez.",
-    pushEnabled: true,
-    pushFrequency: "diária",
-    planFreeEnabled: true,
-    planPremiumPrice: "29,90",
-    analyticsEnabled: true,
-    backupEnabled: false,
+  // Settings state - load from localStorage
+  const [settings, setSettings] = useState<SettingsState>(() => {
+    const saved = localStorage.getItem("admin_app_settings");
+    if (saved) {
+      try { return JSON.parse(saved); } catch {}
+    }
+    return {
+      appName: "MamyBoo",
+      appDescription: "Sua companheira durante toda a jornada da gravidez.",
+      pushEnabled: true,
+      pushFrequency: "diária",
+      planFreeEnabled: true,
+      planPremiumPrice: "29,90",
+      analyticsEnabled: true,
+      backupEnabled: false,
+      seoTitle: "MamyBoo - Acompanhamento de Gestação",
+      seoDescription: "Acompanhe sua gestação semana a semana com informações personalizadas, dicas e suporte emocional.",
+      ogImageUrl: "",
+      canonicalUrl: "https://mamyboo.vercel.app",
+    };
   });
   const [editSettingOpen, setEditSettingOpen] = useState(false);
   const [editSettingType, setEditSettingType] = useState("");
@@ -1588,6 +1602,20 @@ const Admin = () => {
               <>
                 <div><Label className="text-sm font-medium">Nome do app</Label><Input value={settings.appName} onChange={e => setSettings({ ...settings, appName: e.target.value })} className="mt-1 rounded-xl" /></div>
                 <div><Label className="text-sm font-medium">Descrição</Label><Textarea value={settings.appDescription} onChange={e => setSettings({ ...settings, appDescription: e.target.value })} className="mt-1 rounded-xl" rows={3} /></div>
+                
+                <div className="border-t border-border pt-4 space-y-3">
+                  <p className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> SEO e Metadados</p>
+                  <div><Label className="text-sm font-medium">Título SEO (og:title)</Label><Input value={settings.seoTitle} onChange={e => setSettings({ ...settings, seoTitle: e.target.value })} className="mt-1 rounded-xl" placeholder="MamyBoo - Acompanhamento de Gestação" /><p className="text-[10px] text-muted-foreground mt-1">{(settings.seoTitle || "").length}/60 caracteres recomendados</p></div>
+                  <div><Label className="text-sm font-medium">Descrição SEO (og:description)</Label><Textarea value={settings.seoDescription} onChange={e => setSettings({ ...settings, seoDescription: e.target.value })} className="mt-1 rounded-xl" rows={2} placeholder="Acompanhe sua gestação semana a semana..." /><p className="text-[10px] text-muted-foreground mt-1">{(settings.seoDescription || "").length}/160 caracteres recomendados</p></div>
+                  <div><Label className="text-sm font-medium">Imagem destacada (og:image)</Label><Input value={settings.ogImageUrl} onChange={e => setSettings({ ...settings, ogImageUrl: e.target.value })} className="mt-1 rounded-xl" placeholder="https://..." /><p className="text-[10px] text-muted-foreground mt-1">Tamanho recomendado: 1200×630px. Usada por redes sociais e motores de busca.</p></div>
+                  {settings.ogImageUrl && (
+                    <div className="rounded-xl overflow-hidden border border-border">
+                      <img src={settings.ogImageUrl} alt="OG Preview" className="w-full h-32 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    </div>
+                  )}
+                  <div><Label className="text-sm font-medium">URL canônica</Label><Input value={settings.canonicalUrl} onChange={e => setSettings({ ...settings, canonicalUrl: e.target.value })} className="mt-1 rounded-xl" placeholder="https://mamyboo.vercel.app" /></div>
+                </div>
+
                 <div className="border-t border-border pt-4 space-y-3">
                   <p className="text-xs font-semibold text-foreground">Informações técnicas</p>
                   <div className="grid grid-cols-2 gap-2">
@@ -1610,7 +1638,7 @@ const Admin = () => {
                   </div>
                   <div className="bg-muted/40 rounded-xl p-3">
                     <p className="text-[10px] text-muted-foreground">URL de produção</p>
-                    <p className="text-sm font-medium text-foreground truncate">https://mamyboo.vercel.app</p>
+                    <p className="text-sm font-medium text-foreground truncate">{settings.canonicalUrl || "https://mamyboo.vercel.app"}</p>
                   </div>
                   <div className="bg-muted/40 rounded-xl p-3">
                     <div className="flex items-center justify-between">
@@ -1776,7 +1804,31 @@ const Admin = () => {
               </>
             )}
             <div className="flex gap-2 pt-2">
-              <Button className="flex-1 rounded-xl" onClick={() => editSettingType === "integrations" ? handleSaveAiSettings() : setEditSettingOpen(false)} disabled={aiLoading}>
+              <Button className="flex-1 rounded-xl" onClick={() => {
+                if (editSettingType === "integrations") {
+                  handleSaveAiSettings();
+                } else {
+                  // Persist settings to localStorage
+                  localStorage.setItem("admin_app_settings", JSON.stringify(settings));
+                  // Update meta tags dynamically
+                  if (settings.seoTitle) {
+                    document.title = settings.seoTitle;
+                    document.querySelector('meta[property="og:title"]')?.setAttribute("content", settings.seoTitle);
+                    document.querySelector('meta[name="twitter:title"]')?.setAttribute("content", settings.seoTitle);
+                  }
+                  if (settings.seoDescription) {
+                    document.querySelector('meta[name="description"]')?.setAttribute("content", settings.seoDescription);
+                    document.querySelector('meta[property="og:description"]')?.setAttribute("content", settings.seoDescription);
+                    document.querySelector('meta[name="twitter:description"]')?.setAttribute("content", settings.seoDescription);
+                  }
+                  if (settings.ogImageUrl) {
+                    document.querySelector('meta[property="og:image"]')?.setAttribute("content", settings.ogImageUrl);
+                    document.querySelector('meta[name="twitter:image"]')?.setAttribute("content", settings.ogImageUrl);
+                  }
+                  toast.success("Configurações salvas com sucesso!");
+                  setEditSettingOpen(false);
+                }
+              }} disabled={aiLoading}>
                 {aiLoading ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar
               </Button>
               <Button variant="outline" className="rounded-xl" onClick={() => setEditSettingOpen(false)}><X className="w-4 h-4 mr-2" /> Cancelar</Button>
