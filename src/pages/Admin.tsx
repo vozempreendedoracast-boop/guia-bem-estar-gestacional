@@ -54,6 +54,7 @@ interface UserProfile {
   email: string;
   plan: "none" | "essential" | "premium";
   plan_status: "none" | "active" | "expired";
+  account_status?: string;
   kiwify_order_id: string | null;
   purchased_at: string | null;
   expires_at: string | null;
