@@ -1223,6 +1223,18 @@ const Admin = () => {
               <div><Label className="text-sm font-medium">Rota</Label><Input value={editingCard.path} onChange={e => setEditingCard({ ...editingCard, path: e.target.value })} className="mt-1 rounded-xl" /></div>
               <div><Label className="text-sm font-medium">URL da imagem</Label><Input value={editingCard.image_url} onChange={e => setEditingCard({ ...editingCard, image_url: e.target.value })} className="mt-1 rounded-xl" /></div>
               <div><Label className="text-sm font-medium">Ordem</Label><Input type="number" value={editingCard.display_order} onChange={e => setEditingCard({ ...editingCard, display_order: parseInt(e.target.value) || 0 })} className="mt-1 rounded-xl" /></div>
+              <div>
+                <Label className="text-sm font-medium">Plano mínimo necessário</Label>
+                <select
+                  value={(editingCard as any).required_plan || "none"}
+                  onChange={e => setEditingCard({ ...editingCard, required_plan: e.target.value } as any)}
+                  className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                >
+                  <option value="none">Todos os planos</option>
+                  <option value="essential">Essencial ou superior</option>
+                  <option value="premium">Somente Premium</option>
+                </select>
+              </div>
               <div className="flex items-center gap-3"><Switch checked={editingCard.visible} onCheckedChange={v => setEditingCard({ ...editingCard, visible: v })} /><Label className="text-sm">Visível</Label></div>
               <div className="flex gap-2 pt-2">
                 <Button className="flex-1 rounded-xl" onClick={handleSaveCard} disabled={updateCategory.isPending}>{updateCategory.isPending ? <SpinnerGap className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDisk className="w-4 h-4 mr-2" />} Salvar</Button>
