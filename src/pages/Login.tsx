@@ -23,6 +23,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
   const [recoveryCooldownUntil, setRecoveryCooldownUntil] = useState<number>(0);
+  const [signupCooldownUntil, setSignupCooldownUntil] = useState<number>(0);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,13 +80,24 @@ const Login = () => {
       return;
     }
 
+    const now = Date.now();
+    if (now < signupCooldownUntil) {
+      const remainingSeconds = Math.ceil((signupCooldownUntil - now) / 1000);
+      toast.error(`Aguarde ${remainingSeconds}s para tentar criar conta novamente.`);
+      return;
+    }
+
     setLoading(true);
     const { error, user } = await signUp(email.trim(), password.trim());
     setLoading(false);
 
     if (error) {
       const msg = String(error.message || "").toLowerCase();
-      if (msg.includes("already registered") || msg.includes("already been registered")) {
+      if (msg.includes("rate limit") || msg.includes("429") || msg.includes("over_email_send_rate_limit")) {
+        const cooldown = Date.now() + 60_000;
+        setSignupCooldownUntil(cooldown);
+        toast.error("Muitas tentativas de cadastro. Aguarde 60 segundos e tente novamente.");
+      } else if (msg.includes("already registered") || msg.includes("already been registered")) {
         toast.error("Este email já está cadastrado. Tente fazer login.");
       } else {
         toast.error("Erro ao criar conta. Tente novamente.");
@@ -94,7 +106,7 @@ const Login = () => {
     }
 
     if (user?.identities?.length === 0) {
-      toast.error("Este email já está cadastrado. Verifique sua caixa de entrada.");
+      toast.error("Este email já está cadastrado. Tente fazer login.");
       return;
     }
 
@@ -143,6 +155,8 @@ const Login = () => {
     setRecoveryCooldownUntil(Date.now() + 60_000);
   };
 
+  const signupCooldownSeconds = Math.max(0, Math.ceil((signupCooldownUntil - Date.now()) / 1000));
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-10">
       <motion.div
@@ -189,8 +203,8 @@ const Login = () => {
                 {showConfirmPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            <Button type="submit" disabled={loading || !email.trim() || !password.trim() || !confirmPassword.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
-              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : (<>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>)}
+            <Button type="submit" disabled={loading || signupCooldownSeconds > 0 || !email.trim() || !password.trim() || !confirmPassword.trim()} className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-soft">
+              {loading ? <SpinnerGap className="w-5 h-5 animate-spin" /> : signupCooldownSeconds > 0 ? `Aguarde ${signupCooldownSeconds}s` : (<>Criar conta <ArrowRight className="w-5 h-5 ml-2" /></>)}
             </Button>
             <button type="button" className="text-xs text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMode("login")}>
               Já tenho conta? <span className="underline">Entrar</span>

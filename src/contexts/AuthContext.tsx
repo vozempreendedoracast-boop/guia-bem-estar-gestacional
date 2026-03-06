@@ -185,7 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: "https://mamyboo.vercel.app/cadastro",
+        emailRedirectTo: `${window.location.origin}/cadastro`,
       },
     });
     return { error: error as Error | null, user: data.user ?? null };

@@ -23,8 +23,13 @@ const PwaInstallPrompt = () => {
     // Already installed
     if (window.matchMedia("(display-mode: standalone)").matches) return;
     if ((navigator as any).standalone === true) return;
-    // Don't show on admin page
-    if (window.location.pathname.startsWith("/administracao")) return;
+    // Don't show on admin or sales/login pages
+    if (
+      window.location.pathname.startsWith("/administracao") ||
+      window.location.pathname.startsWith("/vendas") ||
+      window.location.pathname.startsWith("/planos") ||
+      window.location.pathname.startsWith("/login")
+    ) return;
 
     const dismissed = sessionStorage.getItem("pwa-prompt-dismissed");
     if (dismissed) return;
@@ -43,16 +48,18 @@ const PwaInstallPrompt = () => {
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    // Fallback: show after 6s (for iOS or if event doesn't fire)
-    const timer = setTimeout(() => {
-      if (window.matchMedia("(display-mode: standalone)").matches) return;
-      if ((navigator as any).standalone === true) return;
-      setShow(true);
-    }, 6000);
+    // Fallback only for iOS (Android should rely on native install banner/event)
+    const timer = iosDevice
+      ? setTimeout(() => {
+          if (window.matchMedia("(display-mode: standalone)").matches) return;
+          if ((navigator as any).standalone === true) return;
+          setShow(true);
+        }, 6000)
+      : null;
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
     };
   }, []);
 
