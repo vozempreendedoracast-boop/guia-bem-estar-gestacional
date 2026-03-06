@@ -1047,6 +1047,7 @@ const Admin = () => {
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                 {planBadge(user.plan)}
                                 {statusBadge(user.plan_status)}
+                                {user.account_status === "banned" && <Badge className="bg-red-100 text-red-700 border-0 text-[10px]">Desativada</Badge>}
                                 <span className="text-[10px] text-muted-foreground hidden sm:inline">
                                   · {new Date(user.created_at).toLocaleDateString("pt-BR")}
                                 </span>
