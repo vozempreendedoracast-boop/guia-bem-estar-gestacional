@@ -78,6 +78,10 @@ interface SettingsState {
   planPremiumPrice: string;
   analyticsEnabled: boolean;
   backupEnabled: boolean;
+  seoTitle: string;
+  seoDescription: string;
+  ogImageUrl: string;
+  canonicalUrl: string;
 }
 
 interface AISettingsState {
