@@ -24,6 +24,7 @@ const Login = () => {
   const [mode, setMode] = useState<AuthMode>("login");
   const [recoveryCooldownUntil, setRecoveryCooldownUntil] = useState<number>(0);
   const [signupCooldownUntil, setSignupCooldownUntil] = useState<number>(0);
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
