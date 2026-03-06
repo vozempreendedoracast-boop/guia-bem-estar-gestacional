@@ -1119,20 +1119,29 @@ const Admin = () => {
                   <div className="flex items-center justify-between">
                     <Label className="text-sm">Auto-play</Label>
                     <Switch
-                      checked={localStorage.getItem("promo_carousel_autoplay") !== "false"}
-                      onCheckedChange={v => { localStorage.setItem("promo_carousel_autoplay", String(v)); toast.success(v ? "Auto-play ativado" : "Auto-play desativado"); window.location.reload(); }}
+                      checked={getSetting("promo_carousel_autoplay", "true") === "true"}
+                      onCheckedChange={v => {
+                        updateAppSetting.mutate({ key: "promo_carousel_autoplay", value: String(v) });
+                        toast.success(v ? "Auto-play ativado" : "Auto-play desativado");
+                      }}
                     />
                   </div>
                   <div>
                     <Label className="text-sm">Intervalo (segundos)</Label>
-                    <Input
-                      type="number"
-                      min={2}
-                      max={30}
-                      defaultValue={localStorage.getItem("promo_carousel_interval") || "5"}
-                      onChange={e => { localStorage.setItem("promo_carousel_interval", e.target.value); }}
-                      className="mt-1 rounded-xl w-24"
-                    />
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        type="number"
+                        min={2}
+                        max={30}
+                        defaultValue={getSetting("promo_carousel_interval", "5")}
+                        onBlur={e => {
+                          const val = Math.max(2, Math.min(30, parseInt(e.target.value) || 5));
+                          updateAppSetting.mutate({ key: "promo_carousel_interval", value: String(val) });
+                          toast.success(`Intervalo atualizado para ${val}s`);
+                        }}
+                        className="rounded-xl w-24"
+                      />
+                    </div>
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground">O carrossel de promoções no painel da usuária passará automaticamente conforme estas configurações.</p>
