@@ -13,6 +13,7 @@ interface PlanGateProps {
 
 const PlanGate = ({ children }: PlanGateProps) => {
   const { plan } = usePlan();
+  const { isAdmin } = useAuth();
   const { data: categories = [] } = useCategories();
   const location = useLocation();
   const toastShown = useRef(false);
