@@ -20,8 +20,7 @@ export function useNotifications() {
         icon: "/pwa-192.png",
         badge: "/pwa-192.png",
         tag: "mamyboo-support",
-        renotify: true,
-      });
+      } as NotificationOptions);
 
       // Play sound
       try {
