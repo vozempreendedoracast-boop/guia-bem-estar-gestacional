@@ -71,27 +71,43 @@ export function PregnancyProvider({ children }: { children: ReactNode }) {
 
     const loadProfile = async () => {
       try {
-        const { data, error } = await supabase
-          .from("pregnancy_profiles")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const [profileRes, moodsRes] = await Promise.all([
+          supabase
+            .from("pregnancy_profiles")
+            .select("*")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase
+            .from("mood_entries")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: true }),
+        ]);
 
-        if (data && !error) {
+        if (profileRes.data && !profileRes.error) {
           const loaded: PregnancyProfile = {
-            name: data.name,
-            dueDate: data.due_date,
-            lastPeriodDate: data.last_period_date || undefined,
-            age: data.age,
-            firstPregnancy: data.first_pregnancy,
-            working: data.working,
-            hasMedicalCare: data.has_medical_care,
-            currentSymptoms: data.current_symptoms,
-            emotionalLevel: data.emotional_level,
-            focus: data.focus as "physical" | "emotional" | "both",
+            name: profileRes.data.name,
+            dueDate: profileRes.data.due_date,
+            lastPeriodDate: profileRes.data.last_period_date || undefined,
+            age: profileRes.data.age,
+            firstPregnancy: profileRes.data.first_pregnancy,
+            working: profileRes.data.working,
+            hasMedicalCare: profileRes.data.has_medical_care,
+            currentSymptoms: profileRes.data.current_symptoms,
+            emotionalLevel: profileRes.data.emotional_level,
+            focus: profileRes.data.focus as "physical" | "emotional" | "both",
           };
           setProfileState(loaded);
           localStorage.setItem("pregnancy_profile", JSON.stringify(loaded));
+        }
+
+        if (moodsRes.data && !moodsRes.error) {
+          setMoods(moodsRes.data.map(m => ({
+            id: m.id,
+            date: m.created_at,
+            mood: m.mood,
+            note: m.note || undefined,
+          })));
         }
       } catch (err) {
         console.error("Error loading pregnancy profile:", err);
