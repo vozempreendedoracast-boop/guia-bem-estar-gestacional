@@ -1470,6 +1470,13 @@ const Admin = () => {
             <div className="space-y-4 mt-2">
               <CategorySelect value={editingHealthTip.category_id || null} onChange={v => setEditingHealthTip({ ...editingHealthTip, category_id: v })} categories={categories} />
               <div><Label className="text-sm font-medium">Título da seção</Label><Input value={editingHealthTip.section_title || ""} onChange={e => setEditingHealthTip({ ...editingHealthTip, section_title: e.target.value })} className="mt-1 rounded-xl" /></div>
+              <div><Label className="text-sm font-medium">URL da Imagem</Label><Input value={(editingHealthTip as any).image_url || ""} onChange={e => setEditingHealthTip({ ...editingHealthTip, image_url: e.target.value } as any)} className="mt-1 rounded-xl" placeholder="https://exemplo.com/imagem.jpg" /></div>
+              {(editingHealthTip as any).image_url && (
+                <div className="rounded-xl overflow-hidden border border-border">
+                  <img src={(editingHealthTip as any).image_url} alt="Preview" className="w-full h-28 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                </div>
+              )}
+              <div><Label className="text-sm font-medium">Descrição (importância do tema)</Label><Textarea value={(editingHealthTip as any).description || ""} onChange={e => setEditingHealthTip({ ...editingHealthTip, description: e.target.value } as any)} className="mt-1 rounded-xl" rows={3} placeholder="Explique a importância deste tema para a gestante..." /></div>
               <div><Label className="text-sm font-medium">Ícone</Label>
                 <select value={editingHealthTip.icon || "Heart"} onChange={e => setEditingHealthTip({ ...editingHealthTip, icon: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
                   <option value="Apple">Nutrição</option><option value="Moon">Sono</option><option value="Brain">Emocional</option><option value="Heart">Coração</option><option value="Baby">Bebê</option><option value="Sparkles">Brilho</option>

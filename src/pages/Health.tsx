@@ -31,30 +31,50 @@ const Health = () => {
         <h1 className="text-xl font-bold font-display">Saúde Integral</h1>
       </div>
 
-      <div className="px-6 space-y-4">
+      <div className="px-6 space-y-5">
         {healthTips.map((cat, i) => {
           const IconComp = iconMap[cat.icon] || Heart;
+          const imageUrl = (cat as any).image_url;
+          const description = (cat as any).description;
+
           return (
             <motion.div
               key={cat.id}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="bg-card rounded-2xl p-5 shadow-card border border-border"
+              className="bg-card rounded-2xl shadow-card border border-border overflow-hidden"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className={`w-11 h-11 rounded-xl ${gradientCycle[i % 3]} flex items-center justify-center`}>
-                  <IconComp className="w-5 h-5 text-foreground/70" />
+              {/* Image */}
+              {imageUrl && (
+                <div className="w-full h-40 md:h-52 overflow-hidden">
+                  <img src={imageUrl} alt={cat.section_title} className="w-full h-full object-cover" />
                 </div>
-                <h2 className="font-bold font-display">{cat.section_title}</h2>
-              </div>
-              <div className="space-y-2">
-                {cat.tips.map((tip, ti) => (
-                  <div key={ti} className="flex items-start gap-2">
-                    <span className="text-primary text-xs mt-1">●</span>
-                    <p className="text-sm text-muted-foreground">{tip}</p>
+              )}
+
+              <div className="p-5">
+                {/* Title with icon */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-11 h-11 rounded-xl ${gradientCycle[i % 3]} flex items-center justify-center`}>
+                    <IconComp className="w-5 h-5 text-foreground/70" />
                   </div>
-                ))}
+                  <h2 className="font-bold font-display text-lg">{cat.section_title}</h2>
+                </div>
+
+                {/* Description about importance */}
+                {description && (
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{description}</p>
+                )}
+
+                {/* Tips list */}
+                <div className="space-y-2">
+                  {cat.tips.map((tip, ti) => (
+                    <div key={ti} className="flex items-start gap-2">
+                      <span className="text-primary text-xs mt-1">●</span>
+                      <p className="text-sm text-muted-foreground">{tip}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           );
