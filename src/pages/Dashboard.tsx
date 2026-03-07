@@ -1,6 +1,6 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWeekContents, useCategories, useActivePromotions } from "@/hooks/useSupabaseData";
+import { useWeekContents, useCategories, useActivePromotions, useDailyTip } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, Bell, PencilSimple, Lock, ChatCircleDots } from "@phosphor-icons/react";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { getWeekEmoji } from "@/data/weeks";
+import { differenceInDays } from "date-fns";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
