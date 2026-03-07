@@ -493,8 +493,8 @@ const Admin = () => {
   const handleSaveTip = async () => {
     if (!editingTip) return;
     try {
-      if (editingTip.id) { await updateTip.mutateAsync({ id: editingTip.id, title: editingTip.title, content: editingTip.content, week_number: editingTip.week_number, active: editingTip.active, category_id: editingTip.category_id }); }
-      else { await createTip.mutateAsync({ title: editingTip.title || "", content: editingTip.content, week_number: editingTip.week_number || 1, category_id: editingTip.category_id }); }
+      if (editingTip.id) { await updateTip.mutateAsync({ id: editingTip.id, title: editingTip.title, content: editingTip.content, week_number: editingTip.week_number, active: editingTip.active, category_id: editingTip.category_id, day_of_week: (editingTip as any).day_of_week || 1 } as any); }
+      else { await createTip.mutateAsync({ title: editingTip.title || "", content: editingTip.content, week_number: editingTip.week_number || 1, category_id: editingTip.category_id, day_of_week: (editingTip as any).day_of_week || 1 } as any); }
       toast.success("Dica salva!"); setEditTipOpen(false); setEditingTip(null);
     } catch { toast.error("Erro ao salvar dica"); }
   };
