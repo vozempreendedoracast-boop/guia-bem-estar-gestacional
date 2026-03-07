@@ -86,9 +86,12 @@ const Dashboard = () => {
   const promoRef = useRef<HTMLDivElement>(null);
   const [promoIndex, setPromoIndex] = useState(0);
   const promoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [planPopupOpen, setPlanPopupOpen] = useState(!hasAccess);
 
-  // Show plan popup if no active plan
-  const showPlanPopup = !hasAccess;
+  // Re-open popup when hasAccess changes (e.g. after refresh)
+  useEffect(() => {
+    if (!hasAccess) setPlanPopupOpen(true);
+  }, [hasAccess]);
 
   // Auto-play carousel from Supabase settings
   const { getSetting } = useAppSettings();
