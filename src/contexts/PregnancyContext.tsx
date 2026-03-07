@@ -16,7 +16,8 @@ export interface PregnancyProfile {
   name: string;
 }
 
-interface MoodEntry {
+export interface MoodEntry {
+  id?: string;
   date: string;
   mood: number;
   note?: string;
@@ -54,10 +55,7 @@ export function PregnancyProvider({ children }: { children: ReactNode }) {
 
   const [loading, setLoading] = useState(true);
 
-  const [moods, setMoods] = useState<MoodEntry[]>(() => {
-    const saved = localStorage.getItem("pregnancy_moods");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [moods, setMoods] = useState<MoodEntry[]>([]);
 
   const [symptomEntries, setSymptomEntries] = useState<SymptomEntry[]>(() => {
     const saved = localStorage.getItem("pregnancy_symptoms");
@@ -73,27 +71,43 @@ export function PregnancyProvider({ children }: { children: ReactNode }) {
 
     const loadProfile = async () => {
       try {
-        const { data, error } = await supabase
-          .from("pregnancy_profiles")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        const [profileRes, moodsRes] = await Promise.all([
+          supabase
+            .from("pregnancy_profiles")
+            .select("*")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase
+            .from("mood_entries")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: true }),
+        ]);
 
-        if (data && !error) {
+        if (profileRes.data && !profileRes.error) {
           const loaded: PregnancyProfile = {
-            name: data.name,
-            dueDate: data.due_date,
-            lastPeriodDate: data.last_period_date || undefined,
-            age: data.age,
-            firstPregnancy: data.first_pregnancy,
-            working: data.working,
-            hasMedicalCare: data.has_medical_care,
-            currentSymptoms: data.current_symptoms,
-            emotionalLevel: data.emotional_level,
-            focus: data.focus as "physical" | "emotional" | "both",
+            name: profileRes.data.name,
+            dueDate: profileRes.data.due_date,
+            lastPeriodDate: profileRes.data.last_period_date || undefined,
+            age: profileRes.data.age,
+            firstPregnancy: profileRes.data.first_pregnancy,
+            working: profileRes.data.working,
+            hasMedicalCare: profileRes.data.has_medical_care,
+            currentSymptoms: profileRes.data.current_symptoms,
+            emotionalLevel: profileRes.data.emotional_level,
+            focus: profileRes.data.focus as "physical" | "emotional" | "both",
           };
           setProfileState(loaded);
           localStorage.setItem("pregnancy_profile", JSON.stringify(loaded));
+        }
+
+        if (moodsRes.data && !moodsRes.error) {
+          setMoods(moodsRes.data.map(m => ({
+            id: m.id,
+            date: m.created_at,
+            mood: m.mood,
+            note: m.note || undefined,
+          })));
         }
       } catch (err) {
         console.error("Error loading pregnancy profile:", err);
@@ -133,11 +147,24 @@ export function PregnancyProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addMood = (mood: number, note?: string) => {
+  const addMood = async (mood: number, note?: string) => {
     const entry: MoodEntry = { date: new Date().toISOString(), mood, note };
-    const updated = [...moods, entry];
-    setMoods(updated);
-    localStorage.setItem("pregnancy_moods", JSON.stringify(updated));
+    setMoods(prev => [...prev, entry]);
+
+    if (user) {
+      try {
+        const { data } = await supabase
+          .from("mood_entries")
+          .insert({ user_id: user.id, mood, note: note || "" })
+          .select()
+          .single();
+        if (data) {
+          setMoods(prev => prev.map(m => m === entry ? { ...m, id: data.id, date: data.created_at } : m));
+        }
+      } catch (err) {
+        console.error("Error saving mood:", err);
+      }
+    }
   };
 
   const addSymptomEntry = (symptoms: string[]) => {
