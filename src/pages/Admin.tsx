@@ -953,7 +953,7 @@ const Admin = () => {
                   <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                     <div className="p-4 border-b border-border flex items-center justify-between">
                       <span className="text-sm font-medium text-foreground">Saúde ({healthTipsData.length})</span>
-                      <Button size="sm" className="rounded-xl gradient-primary text-primary-foreground" onClick={() => { setEditingHealthTip({ section_title: "", icon: "Heart", tips: [], tipsText: "", active: true, category_id: null }); setEditHealthTipOpen(true); }}>
+                      <Button size="sm" className="rounded-xl gradient-primary text-primary-foreground" onClick={() => { setEditingHealthTip({ section_title: "", icon: "Heart", tips: [], tipsText: "", active: true, category_id: null, image_url: "", description: "" } as any); setEditHealthTipOpen(true); }}>
                         <Plus className="w-4 h-4 mr-1" /> Nova Seção
                       </Button>
                     </div>
