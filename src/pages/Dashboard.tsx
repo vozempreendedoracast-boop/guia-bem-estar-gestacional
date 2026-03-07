@@ -124,7 +124,7 @@ const Dashboard = () => {
     setSelectedMoodIndex(null);
   };
 
-  const { plan } = usePlan();
+  const { plan, hasAccess: planHasAccess } = usePlan();
   const visibleCards = categories
     .filter(c => c.visible)
     .sort((a, b) => a.display_order - b.display_order)
@@ -133,7 +133,8 @@ const Dashboard = () => {
       const planHierarchy: Record<string, number> = { none: 0, essential: 1, premium: 2 };
       const userLevel = planHierarchy[plan] ?? 0;
       const requiredLevel = planHierarchy[requiredPlan] ?? 0;
-      const locked = requiredLevel > userLevel;
+      // Lock if user doesn't have access OR plan level is insufficient
+      const locked = !planHasAccess || requiredLevel > userLevel;
       return {
         title: c.title,
         description: c.description,

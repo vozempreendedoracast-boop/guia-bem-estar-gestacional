@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data, error } = await supabase
           .from("user_profiles")
-          .select("account_status")
+          .select("account_status, plan, plan_status, purchased_at, expires_at, kiwify_order_id, email, id, user_id")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -120,7 +120,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await supabase.auth.signOut();
           clearState();
           window.location.href = "/login";
+          return;
         }
+
+        // Update profile in real-time so plan_status changes reflect immediately
+        setUserProfile(data as UserProfile);
       } catch {}
     }, 30000);
 
