@@ -314,8 +314,8 @@ export function useDeleteCategory() {
   });
 }
 
-// ─── Weekly Tips ───
-export type WeeklyTipRow = Tables<"weekly_tips">;
+// ─── Weekly Tips (Daily Tips) ───
+export type WeeklyTipRow = Tables<"weekly_tips"> & { day_of_week?: number };
 
 export function useWeeklyTips() {
   return useQuery({
@@ -324,10 +324,28 @@ export function useWeeklyTips() {
       const { data, error } = await supabase
         .from("weekly_tips")
         .select("*")
-        .order("week_number");
+        .order("week_number")
+        .order("day_of_week" as any);
       if (error) throw error;
       return data as WeeklyTipRow[];
     },
+  });
+}
+
+export function useDailyTip(weekNumber: number, dayOfWeek: number) {
+  return useQuery({
+    queryKey: ["daily_tip", weekNumber, dayOfWeek],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("weekly_tips")
+        .select("*")
+        .eq("week_number", weekNumber)
+        .eq("active", true) as any;
+      if (error) throw error;
+      const tips = (data || []) as WeeklyTipRow[];
+      return tips.find(t => (t as any).day_of_week === dayOfWeek) || tips[0] || null;
+    },
+    enabled: weekNumber >= 1 && weekNumber <= 40 && dayOfWeek >= 1 && dayOfWeek <= 7,
   });
 }
 

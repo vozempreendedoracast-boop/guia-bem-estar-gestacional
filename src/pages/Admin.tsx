@@ -482,9 +482,10 @@ const Admin = () => {
   const handleSaveHealthTip = async () => {
     if (!editingHealthTip) return;
     const tips = (editingHealthTip.tipsText || "").split("\n").filter(t => t.trim());
+    const extra = { image_url: (editingHealthTip as any).image_url || "", description: (editingHealthTip as any).description || "" };
     try {
-      if (editingHealthTip.id) { await updateHealthTip.mutateAsync({ id: editingHealthTip.id, section_title: editingHealthTip.section_title, icon: editingHealthTip.icon, tips, active: editingHealthTip.active, category_id: editingHealthTip.category_id }); }
-      else { await createHealthTip.mutateAsync({ section_title: editingHealthTip.section_title || "", icon: editingHealthTip.icon || "Heart", tips, category_id: editingHealthTip.category_id }); }
+      if (editingHealthTip.id) { await updateHealthTip.mutateAsync({ id: editingHealthTip.id, section_title: editingHealthTip.section_title, icon: editingHealthTip.icon, tips, active: editingHealthTip.active, category_id: editingHealthTip.category_id, ...extra } as any); }
+      else { await createHealthTip.mutateAsync({ section_title: editingHealthTip.section_title || "", icon: editingHealthTip.icon || "Heart", tips, category_id: editingHealthTip.category_id, ...extra } as any); }
       toast.success("Dica de saúde salva!"); setEditHealthTipOpen(false); setEditingHealthTip(null);
     } catch { toast.error("Erro ao salvar dica de saúde"); }
   };
@@ -493,8 +494,8 @@ const Admin = () => {
   const handleSaveTip = async () => {
     if (!editingTip) return;
     try {
-      if (editingTip.id) { await updateTip.mutateAsync({ id: editingTip.id, title: editingTip.title, content: editingTip.content, week_number: editingTip.week_number, active: editingTip.active, category_id: editingTip.category_id }); }
-      else { await createTip.mutateAsync({ title: editingTip.title || "", content: editingTip.content, week_number: editingTip.week_number || 1, category_id: editingTip.category_id }); }
+      if (editingTip.id) { await updateTip.mutateAsync({ id: editingTip.id, title: editingTip.title, content: editingTip.content, week_number: editingTip.week_number, active: editingTip.active, category_id: editingTip.category_id, day_of_week: (editingTip as any).day_of_week || 1 } as any); }
+      else { await createTip.mutateAsync({ title: editingTip.title || "", content: editingTip.content, week_number: editingTip.week_number || 1, category_id: editingTip.category_id, day_of_week: (editingTip as any).day_of_week || 1 } as any); }
       toast.success("Dica salva!"); setEditTipOpen(false); setEditingTip(null);
     } catch { toast.error("Erro ao salvar dica"); }
   };
@@ -952,7 +953,7 @@ const Admin = () => {
                   <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                     <div className="p-4 border-b border-border flex items-center justify-between">
                       <span className="text-sm font-medium text-foreground">Saúde ({healthTipsData.length})</span>
-                      <Button size="sm" className="rounded-xl gradient-primary text-primary-foreground" onClick={() => { setEditingHealthTip({ section_title: "", icon: "Heart", tips: [], tipsText: "", active: true, category_id: null }); setEditHealthTipOpen(true); }}>
+                      <Button size="sm" className="rounded-xl gradient-primary text-primary-foreground" onClick={() => { setEditingHealthTip({ section_title: "", icon: "Heart", tips: [], tipsText: "", active: true, category_id: null, image_url: "", description: "" } as any); setEditHealthTipOpen(true); }}>
                         <Plus className="w-4 h-4 mr-1" /> Nova Seção
                       </Button>
                     </div>
@@ -982,8 +983,8 @@ const Admin = () => {
                 <TabsContent value="tips" className="mt-4">
                   <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                     <div className="p-4 border-b border-border flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">Dicas ({tipsData.length})</span>
-                      <Button size="sm" className="rounded-xl gradient-primary text-primary-foreground" onClick={() => { setEditingTip({ title: "", content: "", week_number: 1, active: true, category_id: null }); setEditTipOpen(true); }}>
+                      <span className="text-sm font-medium text-foreground">Dicas Diárias ({tipsData.length})</span>
+                      <Button size="sm" className="rounded-xl gradient-primary text-primary-foreground" onClick={() => { setEditingTip({ title: "", content: "", week_number: 1, active: true, category_id: null, day_of_week: 1 } as any); setEditTipOpen(true); }}>
                         <Plus className="w-4 h-4 mr-1" /> Nova
                       </Button>
                     </div>
@@ -996,11 +997,14 @@ const Admin = () => {
                             <div className="min-w-0">
                               <p className="font-medium text-sm text-foreground">{tip.title}</p>
                               <p className="text-xs text-muted-foreground truncate">{tip.content}</p>
-                              <Badge variant="outline" className="text-[10px] mt-1">Semana {tip.week_number}</Badge>
+                              <div className="flex gap-1 mt-1">
+                                <Badge variant="outline" className="text-[10px]">Semana {tip.week_number}</Badge>
+                                <Badge variant="outline" className="text-[10px]">Dia {(tip as any).day_of_week || 1}</Badge>
+                              </div>
                             </div>
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingTip({ ...tip }); setEditTipOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteTipMut.isPending} onClick={async () => { try { await deleteTipMut.mutateAsync(tip.id); toast.success("Dica excluída"); } catch (error: any) { console.error("Erro ao excluir dica semanal:", error); toast.error(error?.message || "Erro ao excluir dica"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteTipMut.isPending} onClick={async () => { try { await deleteTipMut.mutateAsync(tip.id); toast.success("Dica excluída"); } catch (error: any) { console.error("Erro ao excluir dica:", error); toast.error(error?.message || "Erro ao excluir dica"); } }}><Trash className="w-3.5 h-3.5" /></Button>
                             </div>
                             </div>
                           </div>
@@ -1467,6 +1471,13 @@ const Admin = () => {
             <div className="space-y-4 mt-2">
               <CategorySelect value={editingHealthTip.category_id || null} onChange={v => setEditingHealthTip({ ...editingHealthTip, category_id: v })} categories={categories} />
               <div><Label className="text-sm font-medium">Título da seção</Label><Input value={editingHealthTip.section_title || ""} onChange={e => setEditingHealthTip({ ...editingHealthTip, section_title: e.target.value })} className="mt-1 rounded-xl" /></div>
+              <div><Label className="text-sm font-medium">URL da Imagem</Label><Input value={(editingHealthTip as any).image_url || ""} onChange={e => setEditingHealthTip({ ...editingHealthTip, image_url: e.target.value } as any)} className="mt-1 rounded-xl" placeholder="https://exemplo.com/imagem.jpg" /></div>
+              {(editingHealthTip as any).image_url && (
+                <div className="rounded-xl overflow-hidden border border-border">
+                  <img src={(editingHealthTip as any).image_url} alt="Preview" className="w-full h-28 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                </div>
+              )}
+              <div><Label className="text-sm font-medium">Descrição (importância do tema)</Label><Textarea value={(editingHealthTip as any).description || ""} onChange={e => setEditingHealthTip({ ...editingHealthTip, description: e.target.value } as any)} className="mt-1 rounded-xl" rows={3} placeholder="Explique a importância deste tema para a gestante..." /></div>
               <div><Label className="text-sm font-medium">Ícone</Label>
                 <select value={editingHealthTip.icon || "Heart"} onChange={e => setEditingHealthTip({ ...editingHealthTip, icon: e.target.value })} className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm">
                   <option value="Apple">Nutrição</option><option value="Moon">Sono</option><option value="Brain">Emocional</option><option value="Heart">Coração</option><option value="Baby">Bebê</option><option value="Sparkles">Brilho</option>
@@ -1496,7 +1507,10 @@ const Admin = () => {
             <div className="space-y-4 mt-2">
               <CategorySelect value={editingTip.category_id || null} onChange={v => setEditingTip({ ...editingTip, category_id: v })} categories={categories} />
               <div><Label className="text-sm font-medium">Título</Label><Input value={editingTip.title || ""} onChange={e => setEditingTip({ ...editingTip, title: e.target.value })} className="mt-1 rounded-xl" /></div>
-              <div><Label className="text-sm font-medium">Semana</Label><Input type="number" value={editingTip.week_number || 1} onChange={e => setEditingTip({ ...editingTip, week_number: parseInt(e.target.value) || 1 })} className="mt-1 rounded-xl" min={1} max={40} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-sm font-medium">Semana</Label><Input type="number" value={editingTip.week_number || 1} onChange={e => setEditingTip({ ...editingTip, week_number: parseInt(e.target.value) || 1 })} className="mt-1 rounded-xl" min={1} max={40} /></div>
+                <div><Label className="text-sm font-medium">Dia da semana</Label><Input type="number" value={(editingTip as any).day_of_week || 1} onChange={e => setEditingTip({ ...editingTip, day_of_week: parseInt(e.target.value) || 1 } as any)} className="mt-1 rounded-xl" min={1} max={7} /></div>
+              </div>
               <div><Label className="text-sm font-medium">Conteúdo</Label><Textarea value={editingTip.content || ""} onChange={e => setEditingTip({ ...editingTip, content: e.target.value })} className="mt-1 rounded-xl" rows={4} /></div>
               {editingTip.id && (
                 <div className="flex items-center gap-3"><Switch checked={editingTip.active ?? true} onCheckedChange={v => setEditingTip({ ...editingTip, active: v })} /><Label className="text-sm">Ativa</Label></div>

@@ -1,6 +1,6 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWeekContents, useCategories, useActivePromotions } from "@/hooks/useSupabaseData";
+import { useWeekContents, useCategories, useActivePromotions, useDailyTip } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, Bell, PencilSimple, Lock, ChatCircleDots } from "@phosphor-icons/react";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { getWeekEmoji } from "@/data/weeks";
+import { differenceInDays } from "date-fns";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -46,7 +47,16 @@ const Dashboard = () => {
   const { hasAccess } = usePlan();
   const navigate = useNavigate();
 
+  // Calculate day of week within current pregnancy week
+  const dayOfWeek = (() => {
+    if (!profile?.dueDate) return 1;
+    const daysUntilDue = differenceInDays(new Date(profile.dueDate), new Date());
+    const gestationalDays = Math.max(1, 280 - daysUntilDue);
+    return ((gestationalDays - 1) % 7) + 1;
+  })();
+
   const { data: weeks = [] } = useWeekContents();
+  const { data: dailyTip } = useDailyTip(currentWeek, dayOfWeek);
   const { data: categories = [] } = useCategories();
   const { data: promotions = [] } = useActivePromotions();
   
@@ -203,8 +213,8 @@ const Dashboard = () => {
       </div>
 
       <div className="px-6 -mt-4 space-y-6">
-        {/* Quick tip */}
-        {weekData && (
+        {/* Daily tip */}
+        {(dailyTip || weekData) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -216,8 +226,8 @@ const Dashboard = () => {
                 <Sparkle className="w-5 h-5 text-peach-foreground" />
               </div>
               <div>
-                <p className="font-semibold text-sm">Dica da semana</p>
-                <p className="text-sm text-muted-foreground mt-1">{weekData.tip}</p>
+                <p className="font-semibold text-sm">{dailyTip ? `✨ ${dailyTip.title}` : "Dica do dia"}</p>
+                <p className="text-sm text-muted-foreground mt-1">{dailyTip?.content || weekData?.tip}</p>
               </div>
             </div>
           </motion.div>
