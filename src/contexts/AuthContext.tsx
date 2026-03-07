@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserProfile(null);
       setIsAdmin(false);
     }
-  }, [isAccountBlocked]);
+  }, [isAccountBlocked, isPlanInactive]);
 
   const clearState = useCallback(() => {
     setUser(null);
