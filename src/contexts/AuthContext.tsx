@@ -36,6 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const isAccountBlocked = useCallback((status?: string | null) => {
+    const normalized = (status ?? "").toLowerCase().trim();
+    return normalized !== "" && normalized !== "active";
+  }, []);
+
   const fetchProfile = useCallback(async (userId: string, email?: string) => {
     try {
       const [profileResult, adminResult] = await Promise.all([
@@ -69,8 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Check if account is banned
-      if (resolvedProfile && (resolvedProfile as any).account_status === "banned") {
+      // Check if account is blocked
+      if (resolvedProfile && isAccountBlocked(resolvedProfile.account_status)) {
         await supabase.auth.signOut();
         setUserProfile(null);
         setIsAdmin(false);
@@ -86,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserProfile(null);
       setIsAdmin(false);
     }
-  }, []);
+  }, [isAccountBlocked]);
 
   const clearState = useCallback(() => {
     setUser(null);
