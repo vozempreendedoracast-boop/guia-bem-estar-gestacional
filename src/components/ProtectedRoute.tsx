@@ -34,11 +34,7 @@ const ProtectedRoute = ({ children, requirePlan = false, requireAdmin = false }:
   if (requirePlan && !isAdmin) {
     const hasActivePlan = userProfile?.plan !== "none" && userProfile?.plan_status === "active";
     if (!hasActivePlan) {
-      // Allow dashboard access (popup will show), block other protected routes
-      const isDashboard = window.location.pathname === "/painel";
-      if (!isDashboard) {
-        return <Navigate to="/painel" replace />;
-      }
+      return <Navigate to="/painel" replace />;
     }
   }
 

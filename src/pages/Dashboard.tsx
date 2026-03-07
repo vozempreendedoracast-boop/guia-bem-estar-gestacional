@@ -374,7 +374,7 @@ const Dashboard = () => {
               variants={item}
               onClick={() => {
                 if (card.locked) {
-                  toast("Este painel requer o plano " + (card.requiredPlan === "premium" ? "Premium" : "Essencial") + " 🔒");
+                  setPlanPopupOpen(true);
                   return;
                 }
                 navigate(card.path);

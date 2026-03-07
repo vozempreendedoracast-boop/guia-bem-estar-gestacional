@@ -59,7 +59,7 @@ const App = () => (
 
               {/* Protected routes */}
               <Route path="/cadastro" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-              <Route path="/painel" element={<ProtectedRoute requirePlan><Dashboard /></ProtectedRoute>} />
+              <Route path="/painel" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/jornada" element={<ProtectedRoute requirePlan><PlanGate><Journey /></PlanGate></ProtectedRoute>} />
               <Route path="/jornada/:week" element={<ProtectedRoute requirePlan><PlanGate><WeekDetail /></PlanGate></ProtectedRoute>} />
               <Route path="/sintomas" element={<ProtectedRoute requirePlan><PlanGate><Symptoms /></PlanGate></ProtectedRoute>} />
