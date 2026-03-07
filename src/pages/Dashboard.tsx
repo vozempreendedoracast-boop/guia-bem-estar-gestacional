@@ -226,7 +226,8 @@ const Dashboard = () => {
                 <Sparkle className="w-5 h-5 text-peach-foreground" />
               </div>
               <div>
-                <p className="font-semibold text-sm">✨ Dica Importante para Você</p>
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Dica Importante para Você</p>
+                {dailyTip && <p className="font-semibold text-sm mt-0.5">✨ {dailyTip.title}</p>}
                 <p className="text-sm text-muted-foreground mt-1">{dailyTip?.content || weekData?.tip}</p>
               </div>
             </div>
