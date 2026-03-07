@@ -27,7 +27,8 @@ const PlanSelectionPopup = ({ open, onClose }: PlanSelectionPopupProps) => {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="bg-card rounded-3xl border border-border shadow-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto"
+            className="bg-card rounded-3xl border border-border shadow-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {onClose && (
               <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground">

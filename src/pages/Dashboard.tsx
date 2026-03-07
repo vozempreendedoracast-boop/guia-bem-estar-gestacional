@@ -216,6 +216,24 @@ const Dashboard = () => {
       </div>
 
       <div className="px-6 -mt-4 space-y-6">
+        {/* Expired plan alert */}
+        {isExpired && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-destructive/10 border border-destructive/30 rounded-2xl p-4 flex items-start gap-3"
+          >
+            <WarningCircle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-sm text-destructive">Seu plano expirou</p>
+              <p className="text-xs text-muted-foreground mt-1">Renove para continuar acessando todas as ferramentas do MamyBoo.</p>
+              <Button size="sm" className="mt-2 rounded-xl" onClick={() => setPlanPopupOpen(true)}>
+                Renovar plano
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
         {/* Daily tip */}
         {(dailyTip || weekData) && (
           <motion.div
