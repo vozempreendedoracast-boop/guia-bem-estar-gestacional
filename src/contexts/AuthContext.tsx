@@ -146,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         pollingRef.current = null;
       }
     };
-  }, [user, clearState]);
+  }, [user, clearState, isAdmin, isAccountBlocked, isPlanInactive]);
 
   useEffect(() => {
     let mounted = true;
