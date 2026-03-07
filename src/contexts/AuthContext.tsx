@@ -198,13 +198,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: error as Error | null, user: data.user ?? null };
     }
 
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("account_status")
-      .eq("user_id", data.user.id)
-      .maybeSingle();
+    const [profileResult, adminResult] = await Promise.all([
+      supabase
+        .from("user_profiles")
+        .select("account_status, plan_status")
+        .eq("user_id", data.user.id)
+        .maybeSingle(),
+      supabase.rpc("has_role", { _user_id: data.user.id, _role: "admin" }),
+    ]);
 
-    if (profile && isAccountBlocked((profile as { account_status?: string }).account_status)) {
+    const profile = profileResult.data as Pick<UserProfile, "account_status" | "plan_status"> | null;
+    const isAdminUser = Boolean(adminResult.data);
+
+    if (profile && (isAccountBlocked(profile.account_status) || (!isAdminUser && isPlanInactive(profile.plan_status)))) {
       await supabase.auth.signOut();
       return { error: new Error("ACCOUNT_INACTIVE"), user: null };
     }
