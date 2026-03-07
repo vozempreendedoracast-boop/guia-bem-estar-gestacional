@@ -47,7 +47,16 @@ const Dashboard = () => {
   const { hasAccess } = usePlan();
   const navigate = useNavigate();
 
+  // Calculate day of week within current pregnancy week
+  const dayOfWeek = (() => {
+    if (!profile?.dueDate) return 1;
+    const daysUntilDue = differenceInDays(new Date(profile.dueDate), new Date());
+    const gestationalDays = Math.max(1, 280 - daysUntilDue);
+    return ((gestationalDays - 1) % 7) + 1;
+  })();
+
   const { data: weeks = [] } = useWeekContents();
+  const { data: dailyTip } = useDailyTip(currentWeek, dayOfWeek);
   const { data: categories = [] } = useCategories();
   const { data: promotions = [] } = useActivePromotions();
   
