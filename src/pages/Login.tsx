@@ -38,23 +38,12 @@ const Login = () => {
     setLoading(false);
 
     if (error) {
-      toast.error("Email ou senha incorretos.");
-      return;
-    }
-
-    // Check account_status before proceeding
-    if (data.user) {
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("account_status")
-        .eq("user_id", data.user.id)
-        .maybeSingle();
-
-      if (profile && (profile as any).account_status === "banned") {
-        await supabase.auth.signOut();
-        toast.error("Sua conta foi desativada. Entre em contato com o suporte.");
-        return;
+      if (error.message === "ACCOUNT_INACTIVE") {
+        toast.error("Sua conta está inativa. Entre em contato com o suporte.");
+      } else {
+        toast.error("Email ou senha incorretos.");
       }
+      return;
     }
 
     setTimeout(async () => {
