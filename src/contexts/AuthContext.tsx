@@ -41,6 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return normalized !== "" && normalized !== "active";
   }, []);
 
+  const isPlanInactive = useCallback((planStatus?: string | null) => {
+    const normalized = (planStatus ?? "").toLowerCase().trim();
+    return normalized === "none" || normalized === "inactive" || normalized === "inativo";
+  }, []);
+
   const fetchProfile = useCallback(async (userId: string, email?: string) => {
     try {
       const [profileResult, adminResult] = await Promise.all([
