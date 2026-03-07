@@ -79,8 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Check if account is blocked
-      if (resolvedProfile && isAccountBlocked(resolvedProfile.account_status)) {
+      const isAdminUser = Boolean(adminResult.data);
+
+      // Check if account/plan is blocked
+      if (resolvedProfile && (isAccountBlocked(resolvedProfile.account_status) || (!isAdminUser && isPlanInactive(resolvedProfile.plan_status)))) {
         await supabase.auth.signOut();
         setUserProfile(null);
         setIsAdmin(false);
@@ -90,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUserProfile(resolvedProfile);
-      setIsAdmin(Boolean(adminResult.data));
+      setIsAdmin(isAdminUser);
     } catch (error) {
       console.error("Falha inesperada ao buscar dados:", error);
       setUserProfile(null);
