@@ -19,6 +19,7 @@ const Profile = () => {
   const { user, userProfile } = useAuth();
   const { plan, planStatus, isPremium, isEssential, hasAccess } = usePlan();
   const { unreadCount: unreadSupportCount } = useUnreadSupport();
+  const { data: plansData = [] } = usePlans();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
