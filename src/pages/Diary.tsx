@@ -1,23 +1,25 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePregnancy } from "@/contexts/PregnancyContext";
+import { usePregnancy, MoodEntry } from "@/contexts/PregnancyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowLeft, Smiley, TrendUp, CalendarBlank, PencilSimple, Plus, Trash, Clock, Stethoscope, Flask, Baby } from "@phosphor-icons/react";
+import { ArrowLeft, Smiley, TrendUp, CalendarBlank, PencilSimple, Plus, Trash, Clock, Stethoscope, Flask, Baby, CaretLeft, CaretRight, ChartLine } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, isWithinInterval, isSameWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 const moodEmojis = ["😢", "😟", "😐", "🙂", "😊"];
 const moodLabels = ["Muito triste", "Preocupada", "Neutra", "Bem", "Ótima"];
+const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 const categoryIcons: Record<string, React.ElementType> = {
   consulta: Stethoscope,
@@ -31,6 +33,129 @@ const categoryLabels: Record<string, string> = {
   exame: "Exame",
   ultrassom: "Ultrassom",
   outro: "Outro",
+};
+
+const MoodChart = ({ moods }: { moods: MoodEntry[] }) => {
+  const [selectedWeek, setSelectedWeek] = useState(new Date());
+
+  const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(selectedWeek, { weekStartsOn: 1 });
+
+  const isCurrentWeek = isSameWeek(selectedWeek, new Date(), { weekStartsOn: 1 });
+
+  const chartData = useMemo(() => {
+    const weekMoods = moods.filter(m =>
+      isWithinInterval(new Date(m.date), { start: weekStart, end: weekEnd })
+    );
+
+    return dayNames.map((day, i) => {
+      const dayIndex = (i + 1) % 7; // Mon=1..Sun=0
+      const dayMoods = weekMoods.filter(m => new Date(m.date).getDay() === dayIndex);
+      const avg = dayMoods.length > 0
+        ? dayMoods.reduce((s, m) => s + m.mood, 0) / dayMoods.length
+        : null;
+      return { day, mood: avg, count: dayMoods.length };
+    });
+  }, [moods, weekStart, weekEnd]);
+
+  const hasData = chartData.some(d => d.mood !== null);
+
+  const weekLabel = `${format(weekStart, "dd/MM")} - ${format(weekEnd, "dd/MM")}`;
+
+  // Find weeks that have mood data
+  const weeksWithData = useMemo(() => {
+    const weeks = new Set<string>();
+    moods.forEach(m => {
+      const ws = startOfWeek(new Date(m.date), { weekStartsOn: 1 });
+      weeks.add(ws.toISOString());
+    });
+    return weeks;
+  }, [moods]);
+
+  return (
+    <div className="bg-card rounded-2xl p-5 shadow-card border border-border">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold flex items-center gap-2 text-sm">
+          <ChartLine className="w-5 h-5 text-primary" /> Emoções da Semana
+        </h2>
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-lg"
+          onClick={() => setSelectedWeek(prev => subWeeks(prev, 1))}
+        >
+          <CaretLeft className="w-4 h-4" />
+        </Button>
+        <span className="text-sm font-medium text-muted-foreground">{weekLabel}</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-lg"
+          onClick={() => setSelectedWeek(prev => addWeeks(prev, 1))}
+          disabled={isCurrentWeek}
+        >
+          <CaretRight className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {hasData ? (
+        <ResponsiveContainer width="100%" height={160}>
+          <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+            <defs>
+              <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+            <YAxis
+              domain={[1, 5]}
+              ticks={[1, 2, 3, 4, 5]}
+              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+              tickFormatter={(v) => moodEmojis[v - 1] || ""}
+            />
+            <Tooltip
+              content={({ active, payload }) => {
+                if (active && payload?.[0]?.value != null) {
+                  const val = Math.round(payload[0].value as number);
+                  return (
+                    <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-md text-xs">
+                      <span>{moodEmojis[val - 1]} {moodLabels[val - 1]}</span>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            <Area
+              type="monotone"
+              dataKey="mood"
+              stroke="hsl(var(--primary))"
+              strokeWidth={2}
+              fill="url(#moodGradient)"
+              connectNulls
+              dot={{ r: 4, fill: "hsl(var(--primary))" }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      ) : (
+        <div className="text-center py-8 text-muted-foreground">
+          <Smiley className="w-8 h-8 mx-auto mb-2 opacity-30" />
+          <p className="text-xs">Nenhum registro nesta semana</p>
+        </div>
+      )}
+
+      {weeksWithData.size > 1 && (
+        <p className="text-[10px] text-muted-foreground text-center mt-2">
+          Use as setas para navegar entre semanas anteriores
+        </p>
+      )}
+    </div>
+  );
 };
 
 const Diary = () => {
@@ -109,9 +234,7 @@ const Diary = () => {
     toast.success("Humor registrado!");
   };
 
-  // Dates that have reminders for calendar highlighting
   const reminderDates = reminders.map(r => new Date(r.reminder_date + "T00:00:00"));
-
   const upcomingReminders = reminders.filter(r => new Date(r.reminder_date + "T23:59:59") >= new Date());
 
   return (
@@ -199,6 +322,9 @@ const Diary = () => {
               )}
             </div>
 
+            {/* Weekly Mood Chart */}
+            <MoodChart moods={moods} />
+
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-card rounded-2xl p-4 shadow-card border border-border text-center">
@@ -226,7 +352,7 @@ const Diary = () => {
                 <div className="space-y-2">
                   {sortedMoods.slice(0, 20).map((entry, i) => (
                     <motion.div
-                      key={i}
+                      key={entry.id || i}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: i * 0.03 }}
