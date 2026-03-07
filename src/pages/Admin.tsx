@@ -982,8 +982,8 @@ const Admin = () => {
                 <TabsContent value="tips" className="mt-4">
                   <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
                     <div className="p-4 border-b border-border flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">Dicas ({tipsData.length})</span>
-                      <Button size="sm" className="rounded-xl gradient-primary text-primary-foreground" onClick={() => { setEditingTip({ title: "", content: "", week_number: 1, active: true, category_id: null }); setEditTipOpen(true); }}>
+                      <span className="text-sm font-medium text-foreground">Dicas Diárias ({tipsData.length})</span>
+                      <Button size="sm" className="rounded-xl gradient-primary text-primary-foreground" onClick={() => { setEditingTip({ title: "", content: "", week_number: 1, active: true, category_id: null, day_of_week: 1 } as any); setEditTipOpen(true); }}>
                         <Plus className="w-4 h-4 mr-1" /> Nova
                       </Button>
                     </div>
@@ -996,11 +996,14 @@ const Admin = () => {
                             <div className="min-w-0">
                               <p className="font-medium text-sm text-foreground">{tip.title}</p>
                               <p className="text-xs text-muted-foreground truncate">{tip.content}</p>
-                              <Badge variant="outline" className="text-[10px] mt-1">Semana {tip.week_number}</Badge>
+                              <div className="flex gap-1 mt-1">
+                                <Badge variant="outline" className="text-[10px]">Semana {tip.week_number}</Badge>
+                                <Badge variant="outline" className="text-[10px]">Dia {(tip as any).day_of_week || 1}</Badge>
+                              </div>
                             </div>
                             <div className="flex gap-0.5 flex-shrink-0">
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingTip({ ...tip }); setEditTipOpen(true); }}><PencilSimple className="w-3.5 h-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteTipMut.isPending} onClick={async () => { try { await deleteTipMut.mutateAsync(tip.id); toast.success("Dica excluída"); } catch (error: any) { console.error("Erro ao excluir dica semanal:", error); toast.error(error?.message || "Erro ao excluir dica"); } }}><Trash className="w-3.5 h-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" disabled={deleteTipMut.isPending} onClick={async () => { try { await deleteTipMut.mutateAsync(tip.id); toast.success("Dica excluída"); } catch (error: any) { console.error("Erro ao excluir dica:", error); toast.error(error?.message || "Erro ao excluir dica"); } }}><Trash className="w-3.5 h-3.5" /></Button>
                             </div>
                             </div>
                           </div>
