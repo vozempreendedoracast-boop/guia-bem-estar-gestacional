@@ -186,7 +186,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithPassword = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null, user: data.user ?? null };
+
+    if (error || !data.user) {
+      return { error: error as Error | null, user: data.user ?? null };
+    }
+
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("account_status")
+      .eq("user_id", data.user.id)
+      .maybeSingle();
+
+    if (profile && isAccountBlocked((profile as { account_status?: string }).account_status)) {
+      await supabase.auth.signOut();
+      return { error: new Error("ACCOUNT_INACTIVE"), user: null };
+    }
+
+    return { error: null, user: data.user };
   };
 
   const signUp = async (email: string, password: string) => {
