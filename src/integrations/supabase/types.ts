@@ -207,9 +207,11 @@ export type Database = {
           active: boolean
           category_id: string | null
           created_at: string
+          description: string
           display_order: number
           icon: string
           id: string
+          image_url: string
           section_title: string
           tips: string[]
           updated_at: string
@@ -218,9 +220,11 @@ export type Database = {
           active?: boolean
           category_id?: string | null
           created_at?: string
+          description?: string
           display_order?: number
           icon?: string
           id?: string
+          image_url?: string
           section_title: string
           tips?: string[]
           updated_at?: string
@@ -229,9 +233,11 @@ export type Database = {
           active?: boolean
           category_id?: string | null
           created_at?: string
+          description?: string
           display_order?: number
           icon?: string
           id?: string
+          image_url?: string
           section_title?: string
           tips?: string[]
           updated_at?: string
@@ -773,6 +779,7 @@ export type Database = {
           category_id: string | null
           content: string
           created_at: string
+          day_of_week: number
           display_order: number
           id: string
           title: string
@@ -784,6 +791,7 @@ export type Database = {
           category_id?: string | null
           content?: string
           created_at?: string
+          day_of_week?: number
           display_order?: number
           id?: string
           title: string
@@ -795,6 +803,7 @@ export type Database = {
           category_id?: string | null
           content?: string
           created_at?: string
+          day_of_week?: number
           display_order?: number
           id?: string
           title?: string
