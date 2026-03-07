@@ -86,9 +86,12 @@ const Dashboard = () => {
   const promoRef = useRef<HTMLDivElement>(null);
   const [promoIndex, setPromoIndex] = useState(0);
   const promoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [planPopupOpen, setPlanPopupOpen] = useState(!hasAccess);
 
-  // Show plan popup if no active plan
-  const showPlanPopup = !hasAccess;
+  // Re-open popup when hasAccess changes (e.g. after refresh)
+  useEffect(() => {
+    if (!hasAccess) setPlanPopupOpen(true);
+  }, [hasAccess]);
 
   // Auto-play carousel from Supabase settings
   const { getSetting } = useAppSettings();
@@ -148,7 +151,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background pb-8 lg:px-16 xl:px-32">
       {/* Plan selection popup for users without plan */}
-      <PlanSelectionPopup open={showPlanPopup} />
+      <PlanSelectionPopup open={planPopupOpen} onClose={() => setPlanPopupOpen(false)} />
 
       {/* Header */}
       <div className="gradient-hero text-primary-foreground px-6 pt-8 pb-10 rounded-b-[2rem]">
@@ -371,7 +374,7 @@ const Dashboard = () => {
               variants={item}
               onClick={() => {
                 if (card.locked) {
-                  toast("Este painel requer o plano " + (card.requiredPlan === "premium" ? "Premium" : "Essencial") + " 🔒");
+                  setPlanPopupOpen(true);
                   return;
                 }
                 navigate(card.path);
