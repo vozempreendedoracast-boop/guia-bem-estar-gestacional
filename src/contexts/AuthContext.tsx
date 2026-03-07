@@ -120,8 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (error) return;
 
-        // If account banned or profile deleted, force logout
-        if (!data || (data as any).account_status === "banned") {
+        // If account is blocked or profile deleted, force logout
+        if (!data || isAccountBlocked((data as UserProfile).account_status)) {
           await supabase.auth.signOut();
           clearState();
           window.location.href = "/login";
