@@ -1499,7 +1499,10 @@ const Admin = () => {
             <div className="space-y-4 mt-2">
               <CategorySelect value={editingTip.category_id || null} onChange={v => setEditingTip({ ...editingTip, category_id: v })} categories={categories} />
               <div><Label className="text-sm font-medium">Título</Label><Input value={editingTip.title || ""} onChange={e => setEditingTip({ ...editingTip, title: e.target.value })} className="mt-1 rounded-xl" /></div>
-              <div><Label className="text-sm font-medium">Semana</Label><Input type="number" value={editingTip.week_number || 1} onChange={e => setEditingTip({ ...editingTip, week_number: parseInt(e.target.value) || 1 })} className="mt-1 rounded-xl" min={1} max={40} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-sm font-medium">Semana</Label><Input type="number" value={editingTip.week_number || 1} onChange={e => setEditingTip({ ...editingTip, week_number: parseInt(e.target.value) || 1 })} className="mt-1 rounded-xl" min={1} max={40} /></div>
+                <div><Label className="text-sm font-medium">Dia da semana</Label><Input type="number" value={(editingTip as any).day_of_week || 1} onChange={e => setEditingTip({ ...editingTip, day_of_week: parseInt(e.target.value) || 1 } as any)} className="mt-1 rounded-xl" min={1} max={7} /></div>
+              </div>
               <div><Label className="text-sm font-medium">Conteúdo</Label><Textarea value={editingTip.content || ""} onChange={e => setEditingTip({ ...editingTip, content: e.target.value })} className="mt-1 rounded-xl" rows={4} /></div>
               {editingTip.id && (
                 <div className="flex items-center gap-3"><Switch checked={editingTip.active ?? true} onCheckedChange={v => setEditingTip({ ...editingTip, active: v })} /><Label className="text-sm">Ativa</Label></div>

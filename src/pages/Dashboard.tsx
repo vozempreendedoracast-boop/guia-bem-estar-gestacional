@@ -213,8 +213,8 @@ const Dashboard = () => {
       </div>
 
       <div className="px-6 -mt-4 space-y-6">
-        {/* Quick tip */}
-        {weekData && (
+        {/* Daily tip */}
+        {(dailyTip || weekData) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -226,8 +226,8 @@ const Dashboard = () => {
                 <Sparkle className="w-5 h-5 text-peach-foreground" />
               </div>
               <div>
-                <p className="font-semibold text-sm">Dica da semana</p>
-                <p className="text-sm text-muted-foreground mt-1">{weekData.tip}</p>
+                <p className="font-semibold text-sm">{dailyTip ? `✨ ${dailyTip.title}` : "Dica do dia"}</p>
+                <p className="text-sm text-muted-foreground mt-1">{dailyTip?.content || weekData?.tip}</p>
               </div>
             </div>
           </motion.div>
