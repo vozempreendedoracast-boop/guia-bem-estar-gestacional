@@ -106,3 +106,9 @@
     box-shadow: var(--shadow-elevated);
   }
 }
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

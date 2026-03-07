@@ -1,8 +1,9 @@
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePlan } from "@/hooks/usePlan";
 import { useUnreadSupport } from "@/hooks/useUnreadSupport";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CalendarBlank, Heart, Briefcase, Stethoscope, User, EnvelopeSimple, Phone, ChatCircleDots } from "@phosphor-icons/react";
+import { ArrowLeft, CalendarBlank, Heart, Briefcase, Stethoscope, User, EnvelopeSimple, Phone, ChatCircleDots, Crown, Lock } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,8 @@ import mamybooPink from "@/assets/mamyboo-pink.png";
 
 const Profile = () => {
   const { profile, setProfile, currentWeek, trimester, progressPercent } = usePregnancy();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
+  const { plan, planStatus, isPremium, isEssential, hasAccess } = usePlan();
   const { unreadCount: unreadSupportCount } = useUnreadSupport();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
@@ -167,6 +169,50 @@ const Profile = () => {
           {editing && (
             <Button className="w-full rounded-xl" onClick={handleSave}>Salvar alterações</Button>
           )}
+        </motion.div>
+
+        {/* Plan info */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-card rounded-2xl p-5 border border-border shadow-card space-y-3">
+          <div className="flex items-center gap-2">
+            <Crown className="w-4 h-4 text-primary" />
+            <h3 className="font-semibold text-sm">Meu Plano</h3>
+          </div>
+          <div className={`rounded-xl p-4 ${hasAccess ? "bg-primary/5 border border-primary/20" : "bg-muted"}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {hasAccess ? <Crown className="w-5 h-5 text-primary" /> : <Lock className="w-5 h-5 text-muted-foreground" />}
+                <span className="font-bold text-sm">
+                  {isPremium ? "Premium" : isEssential ? "Essencial" : "Sem plano"}
+                </span>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                planStatus === "active" ? "bg-primary/10 text-primary" :
+                planStatus === "expired" ? "bg-destructive/10 text-destructive" :
+                "bg-muted-foreground/10 text-muted-foreground"
+              }`}>
+                {planStatus === "active" ? "Ativo" : planStatus === "expired" ? "Expirado" : "Inativo"}
+              </span>
+            </div>
+            <div className="mt-2 text-xs text-muted-foreground space-y-1">
+              {hasAccess ? (
+                <>
+                  <p>✅ Acesso ao conteúdo completo</p>
+                  {isPremium && <p>✅ Assistente de IA 24h</p>}
+                  {userProfile?.purchased_at && (
+                    <p>📅 Início: {new Date(userProfile.purchased_at).toLocaleDateString("pt-BR")}</p>
+                  )}
+                  {userProfile?.expires_at && (
+                    <p>📅 Válido até: {new Date(userProfile.expires_at).toLocaleDateString("pt-BR")}</p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p>Você tem acesso à tela inicial do app.</p>
+                  <p>Escolha um plano para desbloquear todas as ferramentas.</p>
+                </>
+              )}
+            </div>
+          </div>
         </motion.div>
 
         {/* Pregnancy info */}

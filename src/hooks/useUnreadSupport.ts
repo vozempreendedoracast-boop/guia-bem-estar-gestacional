@@ -10,13 +10,23 @@ export function useUnreadSupport() {
     queryFn: async () => {
       if (!user) return 0;
 
-      // Count ALL unread admin messages for this user (across all conversations)
+      // Only count unread admin messages from OPEN conversations
+      const { data: openConvos } = await supabase
+        .from("support_conversations")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("status", "open");
+
+      if (!openConvos || openConvos.length === 0) return 0;
+
+      const openIds = openConvos.map(c => c.id);
       const { count, error } = await supabase
         .from("support_messages")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id)
         .eq("sender", "admin")
-        .eq("read", false);
+        .eq("read", false)
+        .in("conversation_id", openIds);
 
       if (error) return 0;
       return count || 0;

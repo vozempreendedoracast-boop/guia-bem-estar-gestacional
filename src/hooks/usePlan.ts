@@ -6,6 +6,8 @@ export function usePlan() {
   const plan = userProfile?.plan || "none";
   const planStatus = userProfile?.plan_status || "none";
   const isActive = planStatus === "active";
+  const isExpired = planStatus === "expired";
+  const isInactive = planStatus === "none" || (!isActive && !isExpired);
   const isPremium = isActive && plan === "premium";
   const isEssential = isActive && plan === "essential";
   const hasAccess = isActive && (plan === "essential" || plan === "premium");
@@ -15,6 +17,8 @@ export function usePlan() {
     plan,
     planStatus,
     isActive,
+    isExpired,
+    isInactive,
     isPremium,
     isEssential,
     hasAccess,
