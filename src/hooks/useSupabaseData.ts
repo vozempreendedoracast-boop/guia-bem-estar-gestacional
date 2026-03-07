@@ -340,12 +340,10 @@ export function useDailyTip(weekNumber: number, dayOfWeek: number) {
         .from("weekly_tips")
         .select("*")
         .eq("week_number", weekNumber)
-        .eq("day_of_week" as any, dayOfWeek)
-        .eq("active", true)
-        .limit(1)
-        .maybeSingle();
+        .eq("active", true) as any;
       if (error) throw error;
-      return data as WeeklyTipRow | null;
+      const tips = (data || []) as WeeklyTipRow[];
+      return tips.find(t => (t as any).day_of_week === dayOfWeek) || tips[0] || null;
     },
     enabled: weekNumber >= 1 && weekNumber <= 40 && dayOfWeek >= 1 && dayOfWeek <= 7,
   });
