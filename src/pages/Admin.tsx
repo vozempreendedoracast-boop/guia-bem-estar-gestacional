@@ -482,9 +482,10 @@ const Admin = () => {
   const handleSaveHealthTip = async () => {
     if (!editingHealthTip) return;
     const tips = (editingHealthTip.tipsText || "").split("\n").filter(t => t.trim());
+    const extra = { image_url: (editingHealthTip as any).image_url || "", description: (editingHealthTip as any).description || "" };
     try {
-      if (editingHealthTip.id) { await updateHealthTip.mutateAsync({ id: editingHealthTip.id, section_title: editingHealthTip.section_title, icon: editingHealthTip.icon, tips, active: editingHealthTip.active, category_id: editingHealthTip.category_id }); }
-      else { await createHealthTip.mutateAsync({ section_title: editingHealthTip.section_title || "", icon: editingHealthTip.icon || "Heart", tips, category_id: editingHealthTip.category_id }); }
+      if (editingHealthTip.id) { await updateHealthTip.mutateAsync({ id: editingHealthTip.id, section_title: editingHealthTip.section_title, icon: editingHealthTip.icon, tips, active: editingHealthTip.active, category_id: editingHealthTip.category_id, ...extra } as any); }
+      else { await createHealthTip.mutateAsync({ section_title: editingHealthTip.section_title || "", icon: editingHealthTip.icon || "Heart", tips, category_id: editingHealthTip.category_id, ...extra } as any); }
       toast.success("Dica de saúde salva!"); setEditHealthTipOpen(false); setEditingHealthTip(null);
     } catch { toast.error("Erro ao salvar dica de saúde"); }
   };
