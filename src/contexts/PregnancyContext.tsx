@@ -55,10 +55,7 @@ export function PregnancyProvider({ children }: { children: ReactNode }) {
 
   const [loading, setLoading] = useState(true);
 
-  const [moods, setMoods] = useState<MoodEntry[]>(() => {
-    const saved = localStorage.getItem("pregnancy_moods");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [moods, setMoods] = useState<MoodEntry[]>([]);
 
   const [symptomEntries, setSymptomEntries] = useState<SymptomEntry[]>(() => {
     const saved = localStorage.getItem("pregnancy_symptoms");
