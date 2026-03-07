@@ -147,11 +147,24 @@ export function PregnancyProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addMood = (mood: number, note?: string) => {
+  const addMood = async (mood: number, note?: string) => {
     const entry: MoodEntry = { date: new Date().toISOString(), mood, note };
-    const updated = [...moods, entry];
-    setMoods(updated);
-    localStorage.setItem("pregnancy_moods", JSON.stringify(updated));
+    setMoods(prev => [...prev, entry]);
+
+    if (user) {
+      try {
+        const { data } = await supabase
+          .from("mood_entries")
+          .insert({ user_id: user.id, mood, note: note || "" })
+          .select()
+          .single();
+        if (data) {
+          setMoods(prev => prev.map(m => m === entry ? { ...m, id: data.id, date: data.created_at } : m));
+        }
+      } catch (err) {
+        console.error("Error saving mood:", err);
+      }
+    }
   };
 
   const addSymptomEntry = (symptoms: string[]) => {
