@@ -16,7 +16,8 @@ export interface PregnancyProfile {
   name: string;
 }
 
-interface MoodEntry {
+export interface MoodEntry {
+  id?: string;
   date: string;
   mood: number;
   note?: string;
