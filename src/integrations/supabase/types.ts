@@ -388,6 +388,8 @@ export type Database = {
           age: number
           created_at: string
           current_symptoms: string[]
+          doctor_name: string
+          doctor_phone: string
           due_date: string
           emotional_level: number
           first_pregnancy: boolean
@@ -396,6 +398,7 @@ export type Database = {
           id: string
           last_period_date: string | null
           name: string
+          phone: string
           updated_at: string
           user_id: string
           working: boolean
@@ -404,6 +407,8 @@ export type Database = {
           age?: number
           created_at?: string
           current_symptoms?: string[]
+          doctor_name?: string
+          doctor_phone?: string
           due_date: string
           emotional_level?: number
           first_pregnancy?: boolean
@@ -412,6 +417,7 @@ export type Database = {
           id?: string
           last_period_date?: string | null
           name?: string
+          phone?: string
           updated_at?: string
           user_id: string
           working?: boolean
@@ -420,6 +426,8 @@ export type Database = {
           age?: number
           created_at?: string
           current_symptoms?: string[]
+          doctor_name?: string
+          doctor_phone?: string
           due_date?: string
           emotional_level?: number
           first_pregnancy?: boolean
@@ -428,6 +436,7 @@ export type Database = {
           id?: string
           last_period_date?: string | null
           name?: string
+          phone?: string
           updated_at?: string
           user_id?: string
           working?: boolean
