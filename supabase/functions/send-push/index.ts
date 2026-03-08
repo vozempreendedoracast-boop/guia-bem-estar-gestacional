@@ -89,10 +89,6 @@ async function getAccessToken(): Promise<string> {
   const clientEmailEnv = Deno.env.get("FCM_CLIENT_EMAIL") || "";
   const privateKeyEnv = Deno.env.get("FCM_PRIVATE_KEY") || "";
 
-  // DEBUG: log format info (remove after fixing)
-  console.log("DEBUG FCM_CLIENT_EMAIL length:", clientEmailEnv.length, "starts:", clientEmailEnv.slice(0, 20));
-  console.log("DEBUG FCM_PRIVATE_KEY length:", privateKeyEnv.length, "starts:", privateKeyEnv.slice(0, 30), "ends:", privateKeyEnv.slice(-30));
-
   const parsedFromPrivateKey = parseServiceAccountFromEnv(privateKeyEnv);
   const parsedFromClientEmail = parseServiceAccountFromEnv(clientEmailEnv);
 
@@ -104,7 +100,7 @@ async function getAccessToken(): Promise<string> {
   const rawPrivateKey = parsedFromPrivateKey.private_key || privateKeyEnv;
   const privateKeyPem = normalizePrivateKey(rawPrivateKey);
 
-  console.log("DEBUG privateKeyPem length:", privateKeyPem.length, "starts:", privateKeyPem.slice(0, 40), "ends:", privateKeyPem.slice(-40));
+  
 
   if (!clientEmail || !privateKeyPem) {
     throw new Error("FCM_CLIENT_EMAIL ou FCM_PRIVATE_KEY não configurados corretamente");
@@ -128,7 +124,7 @@ async function getAccessToken(): Promise<string> {
     .replace(/-----END PRIVATE KEY-----/g, "")
     .replace(/\s/g, "");
 
-  console.log("DEBUG pemContents length:", pemContents.length, "first40:", pemContents.slice(0, 40));
+  
 
   const binaryKey = decodeBase64ToBytes(pemContents);
 
