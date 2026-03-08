@@ -102,6 +102,7 @@ const sidebarItems = [
   { id: "cards", label: "Cards", icon: Stack },
   { id: "content", label: "Conteúdos", icon: FileText },
   { id: "promotions", label: "Promoções", icon: Megaphone },
+  { id: "notifications", label: "Notificações", icon: Bell },
   { id: "users", label: "Usuárias", icon: Users },
   { id: "support", label: "Suporte", icon: ChatCircleDots },
   { id: "webhooks", label: "Webhooks", icon: Link },
