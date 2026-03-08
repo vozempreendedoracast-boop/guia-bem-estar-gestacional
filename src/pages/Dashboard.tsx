@@ -16,7 +16,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import ReactMarkdown from "react-markdown";
 import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
 import PremiumUpgradeCard from "@/components/PremiumUpgradeCard";
 
@@ -49,13 +48,7 @@ const Dashboard = () => {
   const { profile, currentWeek, trimester, progressPercent, addMood, moods, logout } = usePregnancy();
   const { user, signOut } = useAuth();
   const { hasAccess, isExpired, isEssential } = usePlan();
-  const { registerToken } = usePushNotifications();
   const navigate = useNavigate();
-
-  // Register FCM token on mount
-  useEffect(() => {
-    registerToken();
-  }, [registerToken]);
 
   // Calculate day of week within current pregnancy week
   const dayOfWeek = (() => {

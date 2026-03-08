@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +8,7 @@ import { PregnancyProvider } from "@/contexts/PregnancyContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PlanGate from "@/components/PlanGate";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -40,6 +42,16 @@ const queryClient = new QueryClient({
   },
 });
 
+const PushBootstrap = () => {
+  const { registerToken } = usePushNotifications();
+
+  useEffect(() => {
+    void registerToken();
+  }, [registerToken]);
+
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -47,6 +59,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <PushBootstrap />
           <PregnancyProvider>
             <ScrollToTop />
             <PwaInstallPrompt />
@@ -84,3 +97,4 @@ const App = () => (
 );
 
 export default App;
+
