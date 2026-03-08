@@ -92,6 +92,11 @@ const Dashboard = () => {
   const [planPopupOpen, setPlanPopupOpen] = useState(!hasAccess);
   const [planPopupFilter, setPlanPopupFilter] = useState<string | undefined>(undefined);
 
+  // AI mood feedback state
+  const [moodFeedbackOpen, setMoodFeedbackOpen] = useState(false);
+  const [moodFeedbackText, setMoodFeedbackText] = useState("");
+  const [moodFeedbackLoading, setMoodFeedbackLoading] = useState(false);
+
   // Re-open popup when hasAccess changes (e.g. after refresh)
   useEffect(() => {
     if (!hasAccess) setPlanPopupOpen(true);
