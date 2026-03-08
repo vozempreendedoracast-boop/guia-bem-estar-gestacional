@@ -103,6 +103,7 @@ const PushDiagnostics = () => {
       const { data, error } = await supabase.functions.invoke("send-push", {
         body: {
           target_user_id: user.id,
+          target_token: fcmToken,
           title: "🔔 Teste de Push",
           body: "Se você está vendo isso, as notificações funcionam!",
           url: "/perfil",
