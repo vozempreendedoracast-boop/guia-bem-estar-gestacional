@@ -376,34 +376,68 @@ const AdminSupportTab = () => {
             </div>
           ) : (
             <div className="space-y-3 mt-2">
-              <div className="bg-muted/40 rounded-xl p-3 text-center">
-                <p className="text-lg font-bold text-foreground">{viewingProfile.name || "Sem nome"}</p>
-                <p className="text-xs text-muted-foreground">{viewingProfile.age} anos</p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { label: "Data prevista", value: viewingProfile.due_date ? new Date(viewingProfile.due_date).toLocaleDateString("pt-BR") : "—" },
-                  { label: "Primeira gestação", value: viewingProfile.first_pregnancy ? "Sim" : "Não" },
-                  { label: "Trabalhando", value: viewingProfile.working ? "Sim" : "Não" },
-                  { label: "Acompanhamento médico", value: viewingProfile.has_medical_care ? "Sim" : "Não" },
-                  { label: "Foco", value: viewingProfile.focus === "physical" ? "Físico" : viewingProfile.focus === "emotional" ? "Emocional" : "Ambos" },
-                  { label: "Nível emocional", value: `${viewingProfile.emotional_level}/5` },
-                ].map(item => (
-                  <div key={item.label} className="bg-muted/30 rounded-lg p-2.5">
-                    <p className="text-[10px] text-muted-foreground">{item.label}</p>
-                    <p className="text-sm font-medium text-foreground">{item.value}</p>
-                  </div>
-                ))}
-              </div>
-              {viewingProfile.current_symptoms?.length > 0 && (
-                <div className="bg-muted/30 rounded-lg p-2.5">
-                  <p className="text-[10px] text-muted-foreground mb-1">Sintomas</p>
-                  <div className="flex flex-wrap gap-1">
-                    {viewingProfile.current_symptoms.map((s: string) => (
-                      <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>
-                    ))}
+              {viewingProfile._userProfile && (
+                <div className="bg-primary/5 rounded-xl p-3 space-y-2 border border-primary/10">
+                  <p className="text-xs font-semibold text-primary">Dados da Conta</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Email</p>
+                      <p className="text-xs font-medium text-foreground truncate">{viewingProfile._userProfile.email || "—"}</p>
+                    </div>
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Plano</p>
+                      <p className="text-xs font-medium text-foreground capitalize">{viewingProfile._userProfile.plan || "—"}</p>
+                    </div>
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Status do plano</p>
+                      <p className="text-xs font-medium text-foreground capitalize">{viewingProfile._userProfile.plan_status || "—"}</p>
+                    </div>
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Status da conta</p>
+                      <p className="text-xs font-medium text-foreground capitalize">{viewingProfile._userProfile.account_status || "—"}</p>
+                    </div>
                   </div>
                 </div>
+              )}
+
+              {viewingProfile.name ? (
+                <>
+                  <div className="bg-muted/40 rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-foreground">{viewingProfile.name || "Sem nome"}</p>
+                    <p className="text-xs text-muted-foreground">{viewingProfile.age} anos</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Data prevista", value: viewingProfile.due_date ? new Date(viewingProfile.due_date).toLocaleDateString("pt-BR") : "—" },
+                      { label: "Primeira gestação", value: viewingProfile.first_pregnancy ? "Sim" : "Não" },
+                      { label: "Trabalhando", value: viewingProfile.working ? "Sim" : "Não" },
+                      { label: "Acompanhamento médico", value: viewingProfile.has_medical_care ? "Sim" : "Não" },
+                      { label: "Foco", value: viewingProfile.focus === "physical" ? "Físico" : viewingProfile.focus === "emotional" ? "Emocional" : "Ambos" },
+                      { label: "Nível emocional", value: `${viewingProfile.emotional_level}/5` },
+                    ].map(item => (
+                      <div key={item.label} className="bg-muted/30 rounded-lg p-2.5">
+                        <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                        <p className="text-sm font-medium text-foreground">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {viewingProfile.current_symptoms?.length > 0 && (
+                    <div className="bg-muted/30 rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground mb-1">Sintomas</p>
+                      <div className="flex flex-wrap gap-1">
+                        {viewingProfile.current_symptoms.map((s: string) => (
+                          <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                !viewingProfile._userProfile && (
+                  <div className="text-center py-4 text-muted-foreground">
+                    <p className="text-xs">Cadastro de gestação não preenchido.</p>
+                  </div>
+                )
               )}
             </div>
           )}

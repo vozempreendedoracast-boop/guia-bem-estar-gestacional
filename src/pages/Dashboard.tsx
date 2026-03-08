@@ -417,6 +417,8 @@ const Dashboard = () => {
           ))}
         </motion.div>
 
+        {/* Premium upgrade card for essential users */}
+        <PremiumUpgradeCard />
         {/* Legal disclaimer */}
         <p className="text-xs text-center text-muted-foreground/60 mt-4">
           Este aplicativo não substitui acompanhamento médico profissional.
