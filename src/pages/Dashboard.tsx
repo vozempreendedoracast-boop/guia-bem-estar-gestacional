@@ -476,22 +476,6 @@ const Dashboard = () => {
         </p>
       </div>
 
-      {/* Support FAB */}
-      <motion.button
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.8 }}
-        onClick={() => navigate("/suporte")}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-elevated flex items-center justify-center hover:scale-105 transition-transform z-50"
-        aria-label="Suporte"
-      >
-        <ChatCircleDots className="w-6 h-6" />
-        {unreadSupportCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-destructive text-destructive-foreground rounded-full text-[10px] font-bold flex items-center justify-center px-1 border-2 border-background shadow-sm animate-pulse">
-            {unreadSupportCount > 9 ? "9+" : unreadSupportCount}
-          </span>
-        )}
-      </motion.button>
 
       {/* AI Mood Feedback Dialog */}
       <Dialog open={moodFeedbackOpen} onOpenChange={setMoodFeedbackOpen}>
