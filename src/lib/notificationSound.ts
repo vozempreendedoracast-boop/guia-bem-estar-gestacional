@@ -1,8 +1,13 @@
 export async function playNotificationSound() {
+  // Vibrate first (works on mobile without user gesture)
+  if ("vibrate" in navigator) {
+    navigator.vibrate([200, 100, 200, 100, 200]);
+  }
+
   // Try mp3 first
   try {
     const audio = new Audio("/notification.mp3");
-    audio.volume = 0.7;
+    audio.volume = 1.0;
     await audio.play();
     return;
   } catch {
@@ -15,16 +20,22 @@ export async function playNotificationSound() {
     if (!AudioContextCtor) return;
 
     const ctx = new AudioContextCtor();
+
+    // Resume context if suspended (mobile autoplay policy)
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
+
     const now = ctx.currentTime;
 
-    // First ding
-    playDing(ctx, now, 1200, 0.15);
-    // Second ding (higher pitch, slight delay)
-    playDing(ctx, now + 0.15, 1500, 0.12);
+    // Three-tone notification chime
+    playDing(ctx, now, 880, 0.15);
+    playDing(ctx, now + 0.18, 1100, 0.15);
+    playDing(ctx, now + 0.36, 1320, 0.2);
 
     setTimeout(() => {
       ctx.close().catch(() => {});
-    }, 500);
+    }, 800);
   } catch {
     // ignore sound errors
   }
@@ -37,7 +48,7 @@ function playDing(ctx: AudioContext, startTime: number, freq: number, duration: 
   osc.type = "sine";
   osc.frequency.value = freq;
 
-  gain.gain.setValueAtTime(0.3, startTime);
+  gain.gain.setValueAtTime(0.4, startTime);
   gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
 
   osc.connect(gain);
