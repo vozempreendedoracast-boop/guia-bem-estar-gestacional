@@ -99,6 +99,9 @@ serve(async (req) => {
     const maxTokens = settings?.max_tokens ?? 1024;
 
     let systemPrompt = settings?.system_prompt || "Você é uma assistente carinhosa especializada em gestação.";
+    if (context?.moodFeedback) {
+      systemPrompt += `\n\nA gestante acabou de registrar como está se sentindo. Responda com empatia e acolhimento. Dê um conselho breve e prático (máximo 3-4 parágrafos) sobre como lidar com essa emoção durante a gestação. Inclua 2-3 dicas práticas. Sempre encoraje e valide os sentimentos dela. Não use listas longas. Seja calorosa e direta.`;
+    }
     if (context?.name || context?.week) {
       systemPrompt += `\n\nContexto da gestante: nome "${context.name || 'não informado'}", semana ${context.week || '?'}, ${context.trimester || '?'}° trimestre.`;
     }
