@@ -13,6 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import mamybooWhite from "@/assets/mamyboo-white.png";
 import mamybooPink from "@/assets/mamyboo-pink.png";
+import PushDiagnostics from "@/components/PushDiagnostics";
 
 const Profile = () => {
   const { profile, setProfile, currentWeek, trimester, progressPercent } = usePregnancy();
