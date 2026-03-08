@@ -100,7 +100,7 @@ async function getAccessToken(): Promise<string> {
   const rawPrivateKey = parsedFromPrivateKey.private_key || privateKeyEnv;
   const privateKeyPem = normalizePrivateKey(rawPrivateKey);
 
-  console.log("DEBUG privateKeyPem length:", privateKeyPem.length, "starts:", privateKeyPem.slice(0, 40), "ends:", privateKeyPem.slice(-40));
+  
 
   if (!clientEmail || !privateKeyPem) {
     throw new Error("FCM_CLIENT_EMAIL ou FCM_PRIVATE_KEY não configurados corretamente");
