@@ -124,7 +124,7 @@ async function getAccessToken(): Promise<string> {
     .replace(/-----END PRIVATE KEY-----/g, "")
     .replace(/\s/g, "");
 
-  console.log("DEBUG pemContents length:", pemContents.length, "first40:", pemContents.slice(0, 40));
+  
 
   const binaryKey = decodeBase64ToBytes(pemContents);
 
