@@ -124,14 +124,29 @@ const AdminSupportTab = () => {
     mutationFn: async (imageUrl?: string) => {
       if (!selectedConv || !user) return;
       if (!reply.trim() && !imageUrl) return;
+      const messageText = imageUrl ? (reply.trim() || "📷 Imagem") : reply.trim();
       const { error } = await supabase.from("support_messages").insert({
         user_id: selectedConv.user_id,
-        message: imageUrl ? (reply.trim() || "📷 Imagem") : reply.trim(),
+        message: messageText,
         sender: "admin",
         conversation_id: selectedConv.id,
         image_url: imageUrl || "",
       });
       if (error) throw error;
+
+      // Send push notification to user
+      try {
+        await supabase.functions.invoke("send-push", {
+          body: {
+            target_user_id: selectedConv.user_id,
+            title: "💬 Nova resposta do suporte",
+            body: messageText.slice(0, 100),
+            url: "/suporte",
+          },
+        });
+      } catch (e) {
+        console.warn("Push notification failed:", e);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin_support_messages"] });
