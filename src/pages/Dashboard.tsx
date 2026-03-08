@@ -81,7 +81,8 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
-  const notificationCount = upcomingReminders.length;
+  const { unreadCount: unreadPushCount } = useUnreadNotifications();
+  const notificationCount = upcomingReminders.length + unreadPushCount;
   
 
   const [selectedMoodIndex, setSelectedMoodIndex] = useState<number | null>(null);
