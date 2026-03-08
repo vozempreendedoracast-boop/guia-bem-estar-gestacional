@@ -57,6 +57,7 @@ const App = () => (
               <Route path="/planos" element={<Plans />} /> {/* redirects to /vendas */}
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/termos" element={<ProtectedRoute><Terms /></ProtectedRoute>} />
 
               {/* Protected routes */}
               <Route path="/cadastro" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
