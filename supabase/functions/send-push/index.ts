@@ -27,6 +27,24 @@ type ServiceAccountLike = {
   private_key?: string;
 };
 
+function decodeBase64ToBytes(value: string): Uint8Array {
+  const cleaned = value
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/\s/g, "")
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  const normalized = cleaned.length % 4 === 0 ? cleaned : cleaned + "=".repeat(4 - (cleaned.length % 4));
+
+  try {
+    const decoded = atob(normalized);
+    return Uint8Array.from(decoded, (c) => c.charCodeAt(0));
+  } catch {
+    throw new Error("FCM_PRIVATE_KEY inválida: base64 malformado");
+  }
+}
+
 function parseServiceAccountFromEnv(rawValue: string): ServiceAccountLike {
   const trimmed = rawValue.trim();
   const unquoted =
@@ -39,23 +57,38 @@ function parseServiceAccountFromEnv(rawValue: string): ServiceAccountLike {
     try {
       return JSON.parse(unquoted) as ServiceAccountLike;
     } catch {
-      // fall through and treat as plain key
+      // fall through
+    }
+  }
+
+  // Accept full service-account JSON encoded as base64
+  if (/^[A-Za-z0-9+/=_-]+$/.test(unquoted) && unquoted.length > 100) {
+    try {
+      const decoded = new TextDecoder().decode(decodeBase64ToBytes(unquoted));
+      if (decoded.trim().startsWith("{")) {
+        return JSON.parse(decoded) as ServiceAccountLike;
+      }
+    } catch {
+      // fall through
     }
   }
 
   return { private_key: unquoted };
 }
 
-function decodeBase64ToBytes(value: string): Uint8Array {
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
-  const decoded = atob(normalized + padding);
-  return Uint8Array.from(decoded, (c) => c.charCodeAt(0));
-}
-
 function normalizePrivateKey(rawKey: string): string {
-  return rawKey
+  let key = rawKey.trim();
+
+  if (
+    (key.startsWith('"') && key.endsWith('"')) ||
+    (key.startsWith("'") && key.endsWith("'"))
+  ) {
+    key = key.slice(1, -1);
+  }
+
+  return key
     .replace(/\\r/g, "")
+    .replace(/\\\\n/g, "\\n")
     .replace(/\\n/g, "\n")
     .replace(/\r/g, "")
     .trim();
