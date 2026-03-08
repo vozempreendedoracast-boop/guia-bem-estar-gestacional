@@ -25,18 +25,45 @@ const Profile = () => {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     name: profile?.name || "",
-    phone: localStorage.getItem("pregnancy_phone") || "",
-    doctorName: localStorage.getItem("pregnancy_doctor_name") || "",
-    doctorPhone: localStorage.getItem("pregnancy_doctor_phone") || "",
+    phone: "",
+    doctorName: "",
+    doctorPhone: "",
   });
 
-  const handleSave = () => {
+  // Load extra profile fields from Supabase
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("pregnancy_profiles")
+      .select("phone, doctor_name, doctor_phone")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setForm(prev => ({
+            ...prev,
+            phone: (data as any).phone || "",
+            doctorName: (data as any).doctor_name || "",
+            doctorPhone: (data as any).doctor_phone || "",
+          }));
+        }
+      });
+  }, [user]);
+
+  const handleSave = async () => {
     if (profile) {
       setProfile({ ...profile, name: form.name });
     }
-    localStorage.setItem("pregnancy_phone", form.phone);
-    localStorage.setItem("pregnancy_doctor_name", form.doctorName);
-    localStorage.setItem("pregnancy_doctor_phone", form.doctorPhone);
+    if (user) {
+      await supabase
+        .from("pregnancy_profiles")
+        .update({
+          phone: form.phone,
+          doctor_name: form.doctorName,
+          doctor_phone: form.doctorPhone,
+        } as any)
+        .eq("user_id", user.id);
+    }
     setEditing(false);
     toast.success("Perfil atualizado!");
   };
