@@ -181,7 +181,7 @@ serve(async (req) => {
 
     // Determine action based on event
     if (mappedEvento === "compra aprovada") {
-      return await handlePurchase(supabase, resolvedProfile, normalizedEmail, normalizedProduto, produto);
+      return await handlePurchase(supabase, resolvedProfile, normalizedEmail, normalizedProduto, produto, subscriptionPlanName);
     } else if (["reembolso", "chargeback", "compra cancelada"].includes(mappedEvento)) {
       return await handleRevoke(supabase, resolvedProfile, normalizedEmail, mappedEvento, produto);
     } else if (mappedEvento === "pix gerado") {
