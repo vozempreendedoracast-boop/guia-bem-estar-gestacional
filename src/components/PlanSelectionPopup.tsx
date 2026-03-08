@@ -7,6 +7,7 @@ import { useActivePlans } from "@/hooks/useSupabaseData";
 interface PlanSelectionPopupProps {
   open: boolean;
   onClose?: () => void;
+  filterPlan?: string;
 }
 
 const PlanSelectionPopup = ({ open, onClose }: PlanSelectionPopupProps) => {
