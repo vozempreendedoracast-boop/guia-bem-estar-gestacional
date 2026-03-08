@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import ReactMarkdown from "react-markdown";
 import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
 import PremiumUpgradeCard from "@/components/PremiumUpgradeCard";
 
