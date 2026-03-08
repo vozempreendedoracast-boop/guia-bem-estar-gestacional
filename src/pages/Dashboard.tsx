@@ -45,7 +45,7 @@ const iconMap: Record<string, React.ElementType> = {
 const Dashboard = () => {
   const { profile, currentWeek, trimester, progressPercent, addMood, moods, logout } = usePregnancy();
   const { user, signOut } = useAuth();
-  const { hasAccess, isExpired } = usePlan();
+  const { hasAccess, isExpired, isEssential } = usePlan();
   const navigate = useNavigate();
 
   // Calculate day of week within current pregnancy week
