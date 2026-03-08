@@ -88,6 +88,7 @@ const Dashboard = () => {
   const [promoIndex, setPromoIndex] = useState(0);
   const promoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [planPopupOpen, setPlanPopupOpen] = useState(!hasAccess);
+  const [planPopupFilter, setPlanPopupFilter] = useState<string | undefined>(undefined);
 
   // Re-open popup when hasAccess changes (e.g. after refresh)
   useEffect(() => {
