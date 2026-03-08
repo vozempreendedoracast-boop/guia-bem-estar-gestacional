@@ -73,7 +73,7 @@ const PwaInstallPrompt = () => {
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === "accepted") {
           setShow(false);
-          sessionStorage.setItem("pwa-prompt-dismissed", "1");
+          localStorage.setItem("pwa-prompt-dismissed", "1");
         }
       } catch (err) {
         console.warn("Install prompt error:", err);
