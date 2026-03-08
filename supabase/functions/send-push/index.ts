@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
 
     // Admin check moved after JSON parsing to allow self-test
 
-    const { target_user_id, title, body, url, self_test } = await req.json();
+    const { target_user_id, target_token, title, body, url, self_test } = await req.json();
 
     if (!target_user_id || !title) {
       return new Response(JSON.stringify({ error: "target_user_id and title required" }), {

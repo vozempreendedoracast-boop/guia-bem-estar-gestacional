@@ -48,19 +48,43 @@ const PushDiagnostics = () => {
     }
 
     // FCM Token
+    let token: string | null = null;
     try {
-      const token = await requestFCMToken();
+      token = await requestFCMToken();
       setFcmToken(token);
-    } catch (e: any) {
+    } catch {
+      token = null;
       setFcmToken(null);
     }
 
     // DB tokens
     if (user) {
-      const { data } = await supabase
+      let { data } = await supabase
         .from("push_subscriptions")
         .select("id, fcm_token, device_info, created_at, updated_at")
         .eq("user_id", user.id);
+
+      // Auto-sync: se o token atual não estiver salvo, salva e recarrega lista
+      if (token && !(data || []).some((row) => row.fcm_token === token)) {
+        await supabase
+          .from("push_subscriptions")
+          .upsert(
+            {
+              user_id: user.id,
+              fcm_token: token,
+              device_info: navigator.userAgent.slice(0, 200),
+            },
+            { onConflict: "user_id,fcm_token" }
+          );
+
+        const refreshed = await supabase
+          .from("push_subscriptions")
+          .select("id, fcm_token, device_info, created_at, updated_at")
+          .eq("user_id", user.id);
+
+        data = refreshed.data || data;
+      }
+
       setDbTokens(data || []);
     }
 
