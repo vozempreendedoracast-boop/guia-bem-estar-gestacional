@@ -82,7 +82,7 @@ const PwaInstallPrompt = () => {
     } else {
       // On iOS, just dismiss - the instructions are in the text
       setShow(false);
-      sessionStorage.setItem("pwa-prompt-dismissed", "1");
+      localStorage.setItem("pwa-prompt-dismissed", "1");
     }
   }, [deferredPrompt]);
 
