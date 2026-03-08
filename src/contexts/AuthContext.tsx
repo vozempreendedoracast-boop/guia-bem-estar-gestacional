@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) return;
 
         // If account/plan is blocked or profile deleted, force logout
-        if (!data || isAccountBlocked((data as UserProfile).account_status) || (!isAdmin && isPlanInactive((data as UserProfile).plan_status))) {
+        if (!data || isAccountBlocked((data as UserProfile).account_status)) {
           await supabase.auth.signOut();
           clearState();
           window.location.href = "/login";
