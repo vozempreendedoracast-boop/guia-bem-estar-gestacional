@@ -25,6 +25,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import Support from "./pages/Support";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import DynamicPage from "./pages/DynamicPage";
 import ScrollToTop from "./components/ScrollToTop";
