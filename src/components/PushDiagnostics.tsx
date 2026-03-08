@@ -82,6 +82,7 @@ const PushDiagnostics = () => {
           title: "🔔 Teste de Push",
           body: "Se você está vendo isso, as notificações funcionam!",
           url: "/perfil",
+          self_test: true,
         },
       });
       if (error) throw error;

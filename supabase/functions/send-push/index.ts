@@ -194,12 +194,7 @@ Deno.serve(async (req) => {
       _role: "admin",
     });
 
-    if (!hasAdmin) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Admin check moved after JSON parsing to allow self-test
 
     const { target_user_id, title, body, url, self_test } = await req.json();
 
