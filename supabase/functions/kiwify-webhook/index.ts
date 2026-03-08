@@ -186,7 +186,7 @@ serve(async (req) => {
     if (mappedEvento === "compra aprovada") {
       return await handlePurchase(supabase, resolvedProfile, normalizedEmail, normalizedProduto, produto, subscriptionPlanName);
     } else if (["reembolso", "chargeback", "compra cancelada"].includes(mappedEvento)) {
-      return await handleRevoke(supabase, resolvedProfile, normalizedEmail, mappedEvento, produto);
+      return await handleRevoke(supabase, resolvedProfile, normalizedEmail, mappedEvento, produto, eventOccurredAt);
     } else if (mappedEvento === "pix gerado") {
       await logWebhook(supabase, normalizedEmail, mappedEvento, produto, "", "sucesso: pix gerado (apenas log)");
       return jsonResponse({ ok: true, message: "Pix gerado registrado" });
