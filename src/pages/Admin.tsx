@@ -29,6 +29,7 @@ import cardAssistant from "@/assets/card-assistant.png";
 import WebhookAdmin from "@/components/WebhookAdmin";
 import AdminSupportTab from "@/components/AdminSupportTab";
 import AdminBioLinksTab from "@/components/AdminBioLinksTab";
+import AdminNotificationsTab from "@/components/AdminNotificationsTab";
 import { useAppSettings } from "@/hooks/useAppSettings";
 
 import {
@@ -102,6 +103,7 @@ const sidebarItems = [
   { id: "cards", label: "Cards", icon: Stack },
   { id: "content", label: "Conteúdos", icon: FileText },
   { id: "promotions", label: "Promoções", icon: Megaphone },
+  { id: "notifications", label: "Notificações", icon: Bell },
   { id: "users", label: "Usuárias", icon: Users },
   { id: "support", label: "Suporte", icon: ChatCircleDots },
   { id: "webhooks", label: "Webhooks", icon: Link },
@@ -1208,6 +1210,9 @@ const Admin = () => {
               )}
             </motion.div>
            )}
+
+          {/* ===== NOTIFICATIONS ===== */}
+          {activeTab === "notifications" && <AdminNotificationsTab />}
 
           {/* ===== SUPPORT ===== */}
           {activeTab === "support" && <AdminSupportTab />}
