@@ -36,6 +36,7 @@ serve(async (req) => {
     let customerName: string | undefined;
 
     let subscriptionPlanName: string | undefined;
+    let eventOccurredAt: string | undefined;
 
     if (isRealKiwify) {
       email = payload.Customer?.email || "";
@@ -43,6 +44,7 @@ serve(async (req) => {
       produto = payload.Product?.product_name || "";
       customerName = payload.Customer?.full_name || undefined;
       subscriptionPlanName = payload.Subscription?.plan?.name || undefined;
+      eventOccurredAt = payload.refunded_at || payload.updated_at || payload.approved_date || payload.created_at || undefined;
       const url = new URL(req.url);
       token = url.searchParams.get("token") || undefined;
     } else {
@@ -51,6 +53,7 @@ serve(async (req) => {
       produto = payload.produto || "";
       token = payload.token;
       customerName = payload.nome || undefined;
+      eventOccurredAt = payload.data_evento || undefined;
     }
 
     // Validate token
@@ -183,7 +186,7 @@ serve(async (req) => {
     if (mappedEvento === "compra aprovada") {
       return await handlePurchase(supabase, resolvedProfile, normalizedEmail, normalizedProduto, produto, subscriptionPlanName);
     } else if (["reembolso", "chargeback", "compra cancelada"].includes(mappedEvento)) {
-      return await handleRevoke(supabase, resolvedProfile, normalizedEmail, mappedEvento, produto);
+      return await handleRevoke(supabase, resolvedProfile, normalizedEmail, mappedEvento, produto, eventOccurredAt);
     } else if (mappedEvento === "pix gerado") {
       await logWebhook(supabase, normalizedEmail, mappedEvento, produto, "", "sucesso: pix gerado (apenas log)");
       return jsonResponse({ ok: true, message: "Pix gerado registrado" });
@@ -239,7 +242,26 @@ async function handlePurchase(supabase: any, profile: any, email: string, normal
   return jsonResponse({ ok: true, plan, status: "active" });
 }
 
-async function handleRevoke(supabase: any, profile: any, email: string, evento: string, produto: string) {
+async function handleRevoke(
+  supabase: any,
+  profile: any,
+  email: string,
+  evento: string,
+  produto: string,
+  eventOccurredAt?: string,
+) {
+  // Ignore stale revoke events that happened before a newer manual/admin purchase activation
+  if (eventOccurredAt && profile?.purchased_at) {
+    const eventDate = parseKiwifyDate(eventOccurredAt);
+    const profilePurchasedAt = new Date(profile.purchased_at);
+
+    if (eventDate && !Number.isNaN(profilePurchasedAt.getTime()) && eventDate < profilePurchasedAt) {
+      await logWebhook(supabase, email, evento, produto, profile.plan || "none", "ignorado: evento antigo (stale)");
+      console.log(`Revoke ignored (stale event): ${email}, event=${eventOccurredAt}, purchased_at=${profile.purchased_at}`);
+      return jsonResponse({ ok: true, ignored: true, reason: "stale_revoke_event" });
+    }
+  }
+
   const { error: updateError } = await supabase
     .from("user_profiles")
     .update({
@@ -258,6 +280,15 @@ async function handleRevoke(supabase: any, profile: any, email: string, evento: 
   await logWebhook(supabase, email, evento, produto, "none", "sucesso");
   console.log(`Plan revoked: ${email}`);
   return jsonResponse({ ok: true, plan: "none", status: "revoked" });
+}
+
+function parseKiwifyDate(input?: string): Date | null {
+  if (!input) return null;
+
+  const normalized = input.includes("T") ? input : input.replace(" ", "T");
+  const parsed = new Date(normalized);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
 }
 
 async function logWebhook(
