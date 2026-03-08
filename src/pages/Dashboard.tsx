@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
 import PremiumUpgradeCard from "@/components/PremiumUpgradeCard";
+import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 
 import { useAppSettings } from "@/hooks/useAppSettings";
 
