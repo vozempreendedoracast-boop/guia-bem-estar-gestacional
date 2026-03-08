@@ -20,9 +20,12 @@ const PwaInstallPrompt = () => {
   const [isIos, setIsIos] = useState(false);
 
   useEffect(() => {
-    // Already installed
-    if (window.matchMedia("(display-mode: standalone)").matches) return;
-    if ((navigator as any).standalone === true) return;
+    // Already running as installed PWA — never show
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as any).standalone === true;
+    if (isStandalone) return;
+
     // Don't show on admin or sales/login pages
     if (
       window.location.pathname.startsWith("/administracao") ||
@@ -31,7 +34,8 @@ const PwaInstallPrompt = () => {
       window.location.pathname.startsWith("/login")
     ) return;
 
-    const dismissed = sessionStorage.getItem("pwa-prompt-dismissed");
+    // Persist dismissal across sessions so it doesn't nag
+    const dismissed = localStorage.getItem("pwa-prompt-dismissed");
     if (dismissed) return;
 
     // Detect iOS
@@ -42,13 +46,12 @@ const PwaInstallPrompt = () => {
     const handler = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Show immediately when prompt is available
       setShow(true);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    // Fallback only for iOS (Android should rely on native install banner/event)
+    // Fallback only for iOS
     const timer = iosDevice
       ? setTimeout(() => {
           if (window.matchMedia("(display-mode: standalone)").matches) return;
