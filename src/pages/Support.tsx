@@ -113,13 +113,13 @@ const Support = () => {
     }
   }, [messages, user, conversation?.id]);
 
-  // Detect new admin messages and notify (only when NOT on the support page actively)
+  // Detect new admin messages and notify (only when page is hidden/backgrounded)
   useEffect(() => {
     if (messages.length > prevMessageCountRef.current && prevMessageCountRef.current > 0) {
       const newMsgs = messages.slice(prevMessageCountRef.current);
       const newAdminMsgs = newMsgs.filter(m => m.sender === "admin");
       if (newAdminMsgs.length > 0) {
-        toast.success("Nova resposta do suporte! 💬");
+        // Don't show toast — user is already on the support page viewing messages
         // Only send push notification if page is not visible (user in background)
         if (document.hidden) {
           sendNotification("MamyBoo Suporte 💬", "Você recebeu uma nova resposta do suporte!");
@@ -206,7 +206,14 @@ const Support = () => {
     }
   };
 
-  const handleSkipRating = () => {
+  const handleSkipRating = async () => {
+    // Set rating to 0 to mark as "skipped" so query won't return this conversation again
+    if (conversation?.id) {
+      await supabase
+        .from("support_conversations")
+        .update({ rating: 0, rating_text: "Avaliação pulada" })
+        .eq("id", conversation.id);
+    }
     setRatingOpen(false);
     queryClient.invalidateQueries({ queryKey: ["support_conversation"] });
   };
@@ -310,7 +317,14 @@ const Support = () => {
       ) : (
         <div className="px-6 pb-6 pt-3 border-t border-border bg-background text-center">
           <p className="text-sm text-muted-foreground">Esta conversa foi encerrada.</p>
-          <Button variant="outline" className="rounded-xl mt-2" onClick={() => {
+          <Button variant="outline" className="rounded-xl mt-2" onClick={async () => {
+            // Mark closed conversation as skipped so a new one can be created
+            if (conversation?.id && conversation.rating === null) {
+              await supabase
+                .from("support_conversations")
+                .update({ rating: 0, rating_text: "Avaliação pulada" })
+                .eq("id", conversation.id);
+            }
             queryClient.invalidateQueries({ queryKey: ["support_conversation"] });
           }}>
             Iniciar nova conversa
