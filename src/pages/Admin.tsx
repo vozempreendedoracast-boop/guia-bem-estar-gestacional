@@ -1211,6 +1211,9 @@ const Admin = () => {
             </motion.div>
            )}
 
+          {/* ===== NOTIFICATIONS ===== */}
+          {activeTab === "notifications" && <AdminNotificationsTab />}
+
           {/* ===== SUPPORT ===== */}
           {activeTab === "support" && <AdminSupportTab />}
 
