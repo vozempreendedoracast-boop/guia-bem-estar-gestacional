@@ -12,6 +12,7 @@ export interface UserProfile {
   kiwify_order_id: string | null;
   purchased_at: string | null;
   expires_at: string | null;
+  terms_accepted_at?: string | null;
 }
 
 interface AuthContextType {
