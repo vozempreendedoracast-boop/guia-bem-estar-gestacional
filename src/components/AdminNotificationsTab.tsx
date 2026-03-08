@@ -88,21 +88,12 @@ const AdminNotificationsTab = () => {
         if (error) throw error;
         toast.success(`Push enviado! (${data?.sent || 0} dispositivo(s))`);
       } else {
-        // Mass send: iterate all subscribed users
-        let totalSent = 0;
-        let totalFailed = 0;
-        for (const uid of subscribedUsers) {
-          try {
-            const { data, error } = await supabase.functions.invoke("send-push", {
-              body: { target_user_id: uid, title: title.trim(), body: body.trim(), url: url.trim() || "/painel" },
-            });
-            if (error) throw error;
-            totalSent += data?.sent || 0;
-          } catch {
-            totalFailed++;
-          }
-        }
-        toast.success(`Push em massa enviado! ${totalSent} dispositivo(s) alcançados${totalFailed > 0 ? `, ${totalFailed} falha(s)` : ""}`);
+        // Mass send via dedicated server-side edge function
+        const { data, error } = await supabase.functions.invoke("send-push-mass", {
+          body: { title: title.trim(), body: body.trim(), url: url.trim() || "/painel" },
+        });
+        if (error) throw error;
+        toast.success(`Push em massa enviado! ${data?.sent || 0} dispositivo(s) de ${data?.users || 0} usuária(s)`);
       }
       setTitle("");
       setBody("");
