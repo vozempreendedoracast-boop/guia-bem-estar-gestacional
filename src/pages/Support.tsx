@@ -206,7 +206,14 @@ const Support = () => {
     }
   };
 
-  const handleSkipRating = () => {
+  const handleSkipRating = async () => {
+    // Set rating to 0 to mark as "skipped" so query won't return this conversation again
+    if (conversation?.id) {
+      await supabase
+        .from("support_conversations")
+        .update({ rating: 0, rating_text: "Avaliação pulada" })
+        .eq("id", conversation.id);
+    }
     setRatingOpen(false);
     queryClient.invalidateQueries({ queryKey: ["support_conversation"] });
   };
