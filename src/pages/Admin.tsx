@@ -585,7 +585,8 @@ const Admin = () => {
   const statusBadge = (status: string) => {
     if (status === "active") return <Badge className="bg-emerald-100 text-emerald-700 border-0"><ShieldCheck className="w-3 h-3 mr-1" /> Ativo</Badge>;
     if (status === "expired") return <Badge className="bg-red-100 text-red-700 border-0">Expirado</Badge>;
-    return <Badge variant="outline" className="text-muted-foreground border-muted">Inativo</Badge>;
+    if (status === "none") return <Badge variant="outline" className="text-muted-foreground border-muted">Sem plano</Badge>;
+    return <Badge variant="outline" className="text-muted-foreground border-muted">Sem plano</Badge>;
   };
 
   const StatCard = ({ icon: Icon, label, value, trend, color }: { icon: any; label: string; value: string; trend?: string; color: string }) => (

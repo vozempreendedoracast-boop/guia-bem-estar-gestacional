@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isPlanInactive = useCallback((planStatus?: string | null) => {
     const normalized = (planStatus ?? "").toLowerCase().trim();
-    return normalized === "none" || normalized === "inactive" || normalized === "inativo";
+    return normalized === "expired" || normalized === "inactive" || normalized === "inativo";
   }, []);
 
   const fetchProfile = useCallback(async (userId: string, email?: string) => {
