@@ -226,10 +226,12 @@ Deno.serve(async (req) => {
     }
 
     const accessToken = await getAccessToken();
+    console.log("send-push: got access token, sending to", subscriptions.length, "device(s)");
     let sent = 0;
     const errors: string[] = [];
 
     for (const sub of subscriptions) {
+      console.log("send-push: sending to token:", sub.fcm_token?.slice(0, 20) + "...");
       const fcmRes = await fetch(
         `https://fcm.googleapis.com/v1/projects/app-mamyboo/messages:send`,
         {
@@ -256,17 +258,20 @@ Deno.serve(async (req) => {
         }
       );
 
+      const resText = await fcmRes.text();
+      console.log("send-push: FCM response status:", fcmRes.status, "body:", resText.slice(0, 300));
+
       if (fcmRes.ok) {
         sent++;
       } else {
-        const errText = await fcmRes.text();
-        errors.push(errText);
+        errors.push(resText);
         // Remove invalid tokens
-        if (errText.includes("UNREGISTERED") || errText.includes("NOT_FOUND")) {
+        if (resText.includes("UNREGISTERED") || resText.includes("NOT_FOUND")) {
           await adminClient
             .from("push_subscriptions")
             .delete()
             .eq("fcm_token", sub.fcm_token);
+          console.log("send-push: removed invalid token");
         }
       }
     }
