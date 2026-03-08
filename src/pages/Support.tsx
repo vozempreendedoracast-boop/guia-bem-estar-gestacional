@@ -317,7 +317,14 @@ const Support = () => {
       ) : (
         <div className="px-6 pb-6 pt-3 border-t border-border bg-background text-center">
           <p className="text-sm text-muted-foreground">Esta conversa foi encerrada.</p>
-          <Button variant="outline" className="rounded-xl mt-2" onClick={() => {
+          <Button variant="outline" className="rounded-xl mt-2" onClick={async () => {
+            // Mark closed conversation as skipped so a new one can be created
+            if (conversation?.id && conversation.rating === null) {
+              await supabase
+                .from("support_conversations")
+                .update({ rating: 0, rating_text: "Avaliação pulada" })
+                .eq("id", conversation.id);
+            }
             queryClient.invalidateQueries({ queryKey: ["support_conversation"] });
           }}>
             Iniciar nova conversa
