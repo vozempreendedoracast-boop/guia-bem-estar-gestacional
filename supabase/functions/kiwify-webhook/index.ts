@@ -35,11 +35,14 @@ serve(async (req) => {
     let token: string | undefined;
     let customerName: string | undefined;
 
+    let subscriptionPlanName: string | undefined;
+
     if (isRealKiwify) {
       email = payload.Customer?.email || "";
       evento = payload.webhook_event_type || "";
       produto = payload.Product?.product_name || "";
       customerName = payload.Customer?.full_name || undefined;
+      subscriptionPlanName = payload.Subscription?.plan?.name || undefined;
       const url = new URL(req.url);
       token = url.searchParams.get("token") || undefined;
     } else {
