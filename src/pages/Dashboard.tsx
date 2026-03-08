@@ -45,7 +45,7 @@ const iconMap: Record<string, React.ElementType> = {
 const Dashboard = () => {
   const { profile, currentWeek, trimester, progressPercent, addMood, moods, logout } = usePregnancy();
   const { user, signOut } = useAuth();
-  const { hasAccess, isExpired } = usePlan();
+  const { hasAccess, isExpired, isEssential } = usePlan();
   const navigate = useNavigate();
 
   // Calculate day of week within current pregnancy week
@@ -88,6 +88,7 @@ const Dashboard = () => {
   const [promoIndex, setPromoIndex] = useState(0);
   const promoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [planPopupOpen, setPlanPopupOpen] = useState(!hasAccess);
+  const [planPopupFilter, setPlanPopupFilter] = useState<string | undefined>(undefined);
 
   // Re-open popup when hasAccess changes (e.g. after refresh)
   useEffect(() => {
@@ -153,7 +154,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background pb-8 lg:px-16 xl:px-32">
       {/* Plan selection popup for users without plan */}
-      <PlanSelectionPopup open={planPopupOpen} onClose={() => setPlanPopupOpen(false)} />
+      <PlanSelectionPopup open={planPopupOpen} onClose={() => { setPlanPopupOpen(false); setPlanPopupFilter(undefined); }} filterPlan={planPopupFilter} />
 
       {/* Header */}
       <div className="gradient-hero text-primary-foreground px-6 pt-8 pb-10 rounded-b-[2rem]">
@@ -394,6 +395,12 @@ const Dashboard = () => {
               variants={item}
               onClick={() => {
                 if (card.locked) {
+                  // Essential users trying Premium content → show only Premium plan
+                  if (isEssential && card.requiredPlan === "premium") {
+                    setPlanPopupFilter("premium");
+                  } else {
+                    setPlanPopupFilter(undefined);
+                  }
                   setPlanPopupOpen(true);
                   return;
                 }

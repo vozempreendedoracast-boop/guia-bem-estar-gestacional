@@ -7,10 +7,12 @@ import { useActivePlans } from "@/hooks/useSupabaseData";
 interface PlanSelectionPopupProps {
   open: boolean;
   onClose?: () => void;
+  filterPlan?: string;
 }
 
-const PlanSelectionPopup = ({ open, onClose }: PlanSelectionPopupProps) => {
-  const { data: plans = [] } = useActivePlans();
+const PlanSelectionPopup = ({ open, onClose, filterPlan }: PlanSelectionPopupProps) => {
+  const { data: allPlans = [] } = useActivePlans();
+  const plans = filterPlan ? allPlans.filter(p => p.slug === filterPlan) : allPlans;
 
   const iconMap: Record<string, React.ElementType> = { BookOpen, Crown, Star };
 
@@ -40,9 +42,13 @@ const PlanSelectionPopup = ({ open, onClose }: PlanSelectionPopupProps) => {
               <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-3 shadow-soft">
                 <Crown className="w-7 h-7 text-primary-foreground" />
               </div>
-              <h2 className="text-xl font-bold font-display">Escolha seu plano</h2>
+              <h2 className="text-xl font-bold font-display">
+                {filterPlan === "premium" ? "Upgrade para o Premium 👑" : "Escolha seu plano"}
+              </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Desbloqueie todos os recursos do MamyBoo para acompanhar sua gestação! 💕
+                {filterPlan === "premium"
+                  ? "Desbloqueie todos os recursos exclusivos do plano Premium!"
+                  : "Desbloqueie todos os recursos do MamyBoo para acompanhar sua gestação! 💕"}
               </p>
             </div>
 
