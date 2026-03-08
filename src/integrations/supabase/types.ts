@@ -656,6 +656,7 @@ export type Database = {
           plan: Database["public"]["Enums"]["user_plan"]
           plan_status: Database["public"]["Enums"]["plan_status"]
           purchased_at: string | null
+          terms_accepted_at: string | null
           updated_at: string
           user_id: string
         }
@@ -669,6 +670,7 @@ export type Database = {
           plan?: Database["public"]["Enums"]["user_plan"]
           plan_status?: Database["public"]["Enums"]["plan_status"]
           purchased_at?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -682,6 +684,7 @@ export type Database = {
           plan?: Database["public"]["Enums"]["user_plan"]
           plan_status?: Database["public"]["Enums"]["plan_status"]
           purchased_at?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -861,6 +864,7 @@ export type Database = {
           plan: Database["public"]["Enums"]["user_plan"]
           plan_status: Database["public"]["Enums"]["plan_status"]
           purchased_at: string | null
+          terms_accepted_at: string | null
           updated_at: string
           user_id: string
         }

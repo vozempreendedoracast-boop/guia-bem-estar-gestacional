@@ -314,13 +314,15 @@ const Admin = () => {
     setViewProfileLoading(true);
     setViewProfileOpen(true);
     try {
-      const { data, error } = await supabase
-        .from("pregnancy_profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (error) throw error;
-      setViewingProfile(data);
+      const [pregnancyResult, userProfileResult] = await Promise.all([
+        supabase.from("pregnancy_profiles").select("*").eq("user_id", userId).maybeSingle(),
+        supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle(),
+      ]);
+      if (pregnancyResult.error) throw pregnancyResult.error;
+      setViewingProfile({
+        ...pregnancyResult.data,
+        _userProfile: userProfileResult.data,
+      });
     } catch { setViewingProfile(null); }
     finally { setViewProfileLoading(false); }
   };
@@ -2018,34 +2020,82 @@ const Admin = () => {
             </div>
           ) : (
             <div className="space-y-3 mt-2">
-              <div className="bg-muted/40 rounded-xl p-3 text-center">
-                <p className="text-lg font-bold text-foreground">{viewingProfile.name || "Sem nome"}</p>
-                <p className="text-xs text-muted-foreground">{viewingProfile.age} anos</p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { label: "Data prevista", value: viewingProfile.due_date ? new Date(viewingProfile.due_date).toLocaleDateString("pt-BR") : "—" },
-                  { label: "Primeira gestação", value: viewingProfile.first_pregnancy ? "Sim" : "Não" },
-                  { label: "Trabalhando", value: viewingProfile.working ? "Sim" : "Não" },
-                  { label: "Acompanhamento médico", value: viewingProfile.has_medical_care ? "Sim" : "Não" },
-                  { label: "Foco", value: viewingProfile.focus === "physical" ? "Físico" : viewingProfile.focus === "emotional" ? "Emocional" : "Ambos" },
-                  { label: "Nível emocional", value: `${viewingProfile.emotional_level}/5` },
-                ].map(item => (
-                  <div key={item.label} className="bg-muted/30 rounded-lg p-2.5">
-                    <p className="text-[10px] text-muted-foreground">{item.label}</p>
-                    <p className="text-sm font-medium text-foreground">{item.value}</p>
-                  </div>
-                ))}
-              </div>
-              {viewingProfile.current_symptoms?.length > 0 && (
-                <div className="bg-muted/30 rounded-lg p-2.5">
-                  <p className="text-[10px] text-muted-foreground mb-1">Sintomas</p>
-                  <div className="flex flex-wrap gap-1">
-                    {viewingProfile.current_symptoms.map((s: string) => (
-                      <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>
-                    ))}
+              {/* User profile info (plan, email, dates) */}
+              {viewingProfile._userProfile && (
+                <div className="bg-primary/5 rounded-xl p-3 space-y-2 border border-primary/10">
+                  <p className="text-xs font-semibold text-primary flex items-center gap-1.5"><Crown className="w-3.5 h-3.5" /> Dados da Conta</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Email</p>
+                      <p className="text-xs font-medium text-foreground truncate">{viewingProfile._userProfile.email || "—"}</p>
+                    </div>
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Plano</p>
+                      <p className="text-xs font-medium text-foreground capitalize">{viewingProfile._userProfile.plan || "—"}</p>
+                    </div>
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Status do plano</p>
+                      <p className="text-xs font-medium text-foreground capitalize">{viewingProfile._userProfile.plan_status || "—"}</p>
+                    </div>
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Status da conta</p>
+                      <p className="text-xs font-medium text-foreground capitalize">{viewingProfile._userProfile.account_status || "—"}</p>
+                    </div>
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Data da compra</p>
+                      <p className="text-xs font-medium text-foreground">{viewingProfile._userProfile.purchased_at ? new Date(viewingProfile._userProfile.purchased_at).toLocaleDateString("pt-BR") : "—"}</p>
+                    </div>
+                    <div className="bg-background rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground">Expira em</p>
+                      <p className="text-xs font-medium text-foreground">{viewingProfile._userProfile.expires_at ? new Date(viewingProfile._userProfile.expires_at).toLocaleDateString("pt-BR") : "—"}</p>
+                    </div>
+                    <div className="bg-background rounded-lg p-2.5 col-span-2">
+                      <p className="text-[10px] text-muted-foreground">Cadastro</p>
+                      <p className="text-xs font-medium text-foreground">{viewingProfile._userProfile.created_at ? new Date(viewingProfile._userProfile.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}</p>
+                    </div>
                   </div>
                 </div>
+              )}
+
+              {/* Pregnancy profile */}
+              {viewingProfile.name ? (
+                <>
+                  <div className="bg-muted/40 rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-foreground">{viewingProfile.name || "Sem nome"}</p>
+                    <p className="text-xs text-muted-foreground">{viewingProfile.age} anos</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Data prevista", value: viewingProfile.due_date ? new Date(viewingProfile.due_date).toLocaleDateString("pt-BR") : "—" },
+                      { label: "Primeira gestação", value: viewingProfile.first_pregnancy ? "Sim" : "Não" },
+                      { label: "Trabalhando", value: viewingProfile.working ? "Sim" : "Não" },
+                      { label: "Acompanhamento médico", value: viewingProfile.has_medical_care ? "Sim" : "Não" },
+                      { label: "Foco", value: viewingProfile.focus === "physical" ? "Físico" : viewingProfile.focus === "emotional" ? "Emocional" : "Ambos" },
+                      { label: "Nível emocional", value: `${viewingProfile.emotional_level}/5` },
+                    ].map(item => (
+                      <div key={item.label} className="bg-muted/30 rounded-lg p-2.5">
+                        <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                        <p className="text-sm font-medium text-foreground">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {viewingProfile.current_symptoms?.length > 0 && (
+                    <div className="bg-muted/30 rounded-lg p-2.5">
+                      <p className="text-[10px] text-muted-foreground mb-1">Sintomas</p>
+                      <div className="flex flex-wrap gap-1">
+                        {viewingProfile.current_symptoms.map((s: string) => (
+                          <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                !viewingProfile._userProfile && (
+                  <div className="text-center py-4 text-muted-foreground">
+                    <p className="text-xs">Cadastro de gestação não preenchido.</p>
+                  </div>
+                )
               )}
             </div>
           )}

@@ -25,6 +25,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import Support from "./pages/Support";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import DynamicPage from "./pages/DynamicPage";
 import ScrollToTop from "./components/ScrollToTop";
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/planos" element={<Plans />} /> {/* redirects to /vendas */}
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/termos" element={<ProtectedRoute><Terms /></ProtectedRoute>} />
 
               {/* Protected routes */}
               <Route path="/cadastro" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
