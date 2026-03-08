@@ -495,14 +495,14 @@ const Dashboard = () => {
 
       {/* AI Mood Feedback Dialog */}
       <Dialog open={moodFeedbackOpen} onOpenChange={setMoodFeedbackOpen}>
-        <DialogContent className="max-w-sm rounded-2xl mx-4">
-          <DialogHeader>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-sm rounded-2xl p-4 sm:p-6 gap-3">
+          <DialogHeader className="space-y-1">
             <DialogTitle className="flex items-center gap-2 text-base">
-              <Sparkle className="w-5 h-5 text-primary" />
+              <Sparkle className="w-5 h-5 text-primary shrink-0" />
               MamyBoo cuida de você 💕
             </DialogTitle>
           </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[50vh] sm:max-h-[60vh] overflow-y-auto -mx-1 px-1">
             {moodFeedbackLoading ? (
               <div className="flex flex-col items-center gap-3 py-6">
                 <motion.div
@@ -510,10 +510,10 @@ const Dashboard = () => {
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
                 />
-                <p className="text-sm text-muted-foreground">Preparando um conselho especial para você...</p>
+                <p className="text-sm text-muted-foreground text-center">Preparando um conselho especial para você...</p>
               </div>
             ) : (
-              <div className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground">
+              <div className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                 <ReactMarkdown>{moodFeedbackText}</ReactMarkdown>
               </div>
             )}
