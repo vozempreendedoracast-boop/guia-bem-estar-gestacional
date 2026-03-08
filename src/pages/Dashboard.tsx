@@ -154,7 +154,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background pb-8 lg:px-16 xl:px-32">
       {/* Plan selection popup for users without plan */}
-      <PlanSelectionPopup open={planPopupOpen} onClose={() => setPlanPopupOpen(false)} />
+      <PlanSelectionPopup open={planPopupOpen} onClose={() => { setPlanPopupOpen(false); setPlanPopupFilter(undefined); }} filterPlan={planPopupFilter} />
 
       {/* Header */}
       <div className="gradient-hero text-primary-foreground px-6 pt-8 pb-10 rounded-b-[2rem]">
