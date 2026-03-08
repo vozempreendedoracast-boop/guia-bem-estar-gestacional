@@ -266,7 +266,8 @@ async function handleRevoke(
     .from("user_profiles")
     .update({
       plan: "none",
-      plan_status: "none",
+      plan_status: "active",
+      purchased_at: null,
       expires_at: null,
     })
     .eq("user_id", profile.user_id);

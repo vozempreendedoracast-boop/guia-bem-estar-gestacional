@@ -583,10 +583,9 @@ const Admin = () => {
   };
 
   const statusBadge = (status: string) => {
-    if (status === "active") return <Badge className="bg-emerald-100 text-emerald-700 border-0"><ShieldCheck className="w-3 h-3 mr-1" /> Ativo</Badge>;
+    if (status === "active" || status === "none") return <Badge className="bg-emerald-100 text-emerald-700 border-0"><ShieldCheck className="w-3 h-3 mr-1" /> Ativo</Badge>;
     if (status === "expired") return <Badge className="bg-red-100 text-red-700 border-0">Expirado</Badge>;
-    if (status === "none") return <Badge variant="outline" className="text-muted-foreground border-muted">Sem plano</Badge>;
-    return <Badge variant="outline" className="text-muted-foreground border-muted">Sem plano</Badge>;
+    return <Badge variant="outline" className="text-muted-foreground border-muted">Inativo</Badge>;
   };
 
   const StatCard = ({ icon: Icon, label, value, trend, color }: { icon: any; label: string; value: string; trend?: string; color: string }) => (
@@ -1907,11 +1906,10 @@ const Admin = () => {
                 <div>
                   <Label className="text-sm font-medium">Status</Label>
                   <select
-                    value={editingUser.plan_status || "none"}
+                    value={editingUser.plan_status || "active"}
                     onChange={e => setEditingUser({ ...editingUser, plan_status: e.target.value as any })}
                     className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
                   >
-                    <option value="none">Inativo</option>
                     <option value="active">Ativo</option>
                     <option value="expired">Expirado</option>
                   </select>
