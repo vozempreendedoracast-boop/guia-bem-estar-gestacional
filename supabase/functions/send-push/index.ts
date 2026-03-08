@@ -6,31 +6,46 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Helper: base64url encode for Deno (handles UTF-8 properly)
+function base64url(input: string): string {
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(input);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function base64urlFromBuffer(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
 // Google OAuth2 token from service account
 async function getAccessToken(): Promise<string> {
   const clientEmail = Deno.env.get("FCM_CLIENT_EMAIL")!;
-  const privateKeyPem = Deno.env.get("FCM_PRIVATE_KEY")!;
+  let privateKeyPem = Deno.env.get("FCM_PRIVATE_KEY")!;
+  // Handle escaped newlines from env
+  privateKeyPem = privateKeyPem.replace(/\\n/g, "\n");
 
-  // Create JWT
   const now = Math.floor(Date.now() / 1000);
-  const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }))
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-
-  const payload = btoa(JSON.stringify({
+  const header = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
+  const payload = base64url(JSON.stringify({
     iss: clientEmail,
     scope: "https://www.googleapis.com/auth/firebase.messaging",
     aud: "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
-  })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }));
 
   const signInput = `${header}.${payload}`;
 
   // Import private key
   const pemContents = privateKeyPem
-    .replace("-----BEGIN PRIVATE KEY-----", "")
-    .replace("-----END PRIVATE KEY-----", "")
-    .replace(/\n/g, "");
+    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+    .replace(/-----END PRIVATE KEY-----/g, "")
+    .replace(/\s/g, "");
 
   const binaryKey = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
 
@@ -48,9 +63,7 @@ async function getAccessToken(): Promise<string> {
     new TextEncoder().encode(signInput)
   );
 
-  const signature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)))
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-
+  const signature = base64urlFromBuffer(signatureBuffer);
   const jwt = `${signInput}.${signature}`;
 
   // Exchange JWT for access token

@@ -6,29 +6,44 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper: base64url encode for Deno
+function base64url(input: string): string {
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(input);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function base64urlFromBuffer(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
 // Google OAuth2 token from service account
 async function getAccessToken(): Promise<string> {
   const clientEmail = Deno.env.get("FCM_CLIENT_EMAIL")!;
-  const privateKeyPem = Deno.env.get("FCM_PRIVATE_KEY")!;
+  let privateKeyPem = Deno.env.get("FCM_PRIVATE_KEY")!;
+  privateKeyPem = privateKeyPem.replace(/\\n/g, "\n");
 
   const now = Math.floor(Date.now() / 1000);
-  const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }))
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-
-  const payload = btoa(JSON.stringify({
+  const header = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
+  const payload = base64url(JSON.stringify({
     iss: clientEmail,
     scope: "https://www.googleapis.com/auth/firebase.messaging",
     aud: "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
-  })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }));
 
   const signInput = `${header}.${payload}`;
 
   const pemContents = privateKeyPem
-    .replace("-----BEGIN PRIVATE KEY-----", "")
-    .replace("-----END PRIVATE KEY-----", "")
-    .replace(/\n/g, "");
+    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+    .replace(/-----END PRIVATE KEY-----/g, "")
+    .replace(/\s/g, "");
 
   const binaryKey = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
 
@@ -46,9 +61,7 @@ async function getAccessToken(): Promise<string> {
     new TextEncoder().encode(signInput)
   );
 
-  const signature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)))
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-
+  const signature = base64urlFromBuffer(signatureBuffer);
   const jwt = `${signInput}.${signature}`;
 
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
