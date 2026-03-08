@@ -10,8 +10,9 @@ interface PlanSelectionPopupProps {
   filterPlan?: string;
 }
 
-const PlanSelectionPopup = ({ open, onClose }: PlanSelectionPopupProps) => {
-  const { data: plans = [] } = useActivePlans();
+const PlanSelectionPopup = ({ open, onClose, filterPlan }: PlanSelectionPopupProps) => {
+  const { data: allPlans = [] } = useActivePlans();
+  const plans = filterPlan ? allPlans.filter(p => p.slug === filterPlan) : allPlans;
 
   const iconMap: Record<string, React.ElementType> = { BookOpen, Crown, Star };
 
