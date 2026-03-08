@@ -41,10 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return normalized !== "" && normalized !== "active";
   }, []);
 
-  const isPlanInactive = useCallback((planStatus?: string | null) => {
-    const normalized = (planStatus ?? "").toLowerCase().trim();
-    return normalized === "none" || normalized === "inactive" || normalized === "inativo";
-  }, []);
 
   const fetchProfile = useCallback(async (userId: string, email?: string) => {
     try {
@@ -82,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isAdminUser = Boolean(adminResult.data);
 
       // Check if account/plan is blocked
-      if (resolvedProfile && (isAccountBlocked(resolvedProfile.account_status) || (!isAdminUser && isPlanInactive(resolvedProfile.plan_status)))) {
+      if (resolvedProfile && isAccountBlocked(resolvedProfile.account_status)) {
         await supabase.auth.signOut();
         setUserProfile(null);
         setIsAdmin(false);
@@ -98,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserProfile(null);
       setIsAdmin(false);
     }
-  }, [isAccountBlocked, isPlanInactive]);
+  }, [isAccountBlocked]);
 
   const clearState = useCallback(() => {
     setUser(null);
@@ -128,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) return;
 
         // If account/plan is blocked or profile deleted, force logout
-        if (!data || isAccountBlocked((data as UserProfile).account_status) || (!isAdmin && isPlanInactive((data as UserProfile).plan_status))) {
+        if (!data || isAccountBlocked((data as UserProfile).account_status)) {
           await supabase.auth.signOut();
           clearState();
           window.location.href = "/login";
@@ -146,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         pollingRef.current = null;
       }
     };
-  }, [user, clearState, isAdmin, isAccountBlocked, isPlanInactive]);
+  }, [user, clearState, isAccountBlocked]);
 
   useEffect(() => {
     let mounted = true;
@@ -210,7 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const profile = profileResult.data as Pick<UserProfile, "account_status" | "plan_status"> | null;
     const isAdminUser = Boolean(adminResult.data);
 
-    if (profile && (isAccountBlocked(profile.account_status) || (!isAdminUser && isPlanInactive(profile.plan_status)))) {
+    if (profile && isAccountBlocked(profile.account_status)) {
       await supabase.auth.signOut();
       return { error: new Error("ACCOUNT_INACTIVE"), user: null };
     }
