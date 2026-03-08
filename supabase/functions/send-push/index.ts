@@ -201,11 +201,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { target_user_id, title, body, url } = await req.json();
+    const { target_user_id, title, body, url, self_test } = await req.json();
 
     if (!target_user_id || !title) {
       return new Response(JSON.stringify({ error: "target_user_id and title required" }), {
         status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Allow users to send a test push to themselves without admin role
+    const isSelfTest = self_test === true && target_user_id === user.id;
+
+    if (!isSelfTest && !hasAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
