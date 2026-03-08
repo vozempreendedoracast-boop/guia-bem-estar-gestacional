@@ -314,13 +314,15 @@ const Admin = () => {
     setViewProfileLoading(true);
     setViewProfileOpen(true);
     try {
-      const { data, error } = await supabase
-        .from("pregnancy_profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (error) throw error;
-      setViewingProfile(data);
+      const [pregnancyResult, userProfileResult] = await Promise.all([
+        supabase.from("pregnancy_profiles").select("*").eq("user_id", userId).maybeSingle(),
+        supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle(),
+      ]);
+      if (pregnancyResult.error) throw pregnancyResult.error;
+      setViewingProfile({
+        ...pregnancyResult.data,
+        _userProfile: userProfileResult.data,
+      });
     } catch { setViewingProfile(null); }
     finally { setViewProfileLoading(false); }
   };

@@ -183,8 +183,14 @@ const AdminSupportTab = () => {
     setViewProfileLoading(true);
     setViewProfileOpen(true);
     try {
-      const { data } = await supabase.from("pregnancy_profiles").select("*").eq("user_id", userId).maybeSingle();
-      setViewingProfile(data);
+      const [pregnancyResult, userProfileResult] = await Promise.all([
+        supabase.from("pregnancy_profiles").select("*").eq("user_id", userId).maybeSingle(),
+        supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle(),
+      ]);
+      setViewingProfile({
+        ...pregnancyResult.data,
+        _userProfile: userProfileResult.data,
+      });
     } catch { setViewingProfile(null); }
     finally { setViewProfileLoading(false); }
   };
