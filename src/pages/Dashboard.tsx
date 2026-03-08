@@ -12,6 +12,8 @@ import { getWeekEmoji } from "@/data/weeks";
 import { differenceInDays } from "date-fns";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ReactMarkdown from "react-markdown";
 import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
