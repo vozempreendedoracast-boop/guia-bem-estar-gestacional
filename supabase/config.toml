@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.reminder-push]
 verify_jwt = false
+
+[functions.send-push-mass]
+verify_jwt = false
