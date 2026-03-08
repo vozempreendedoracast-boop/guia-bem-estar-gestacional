@@ -18,7 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
 import PremiumUpgradeCard from "@/components/PremiumUpgradeCard";
-import { useUnreadSupport } from "@/hooks/useUnreadSupport";
+
 import { useAppSettings } from "@/hooks/useAppSettings";
 
 import cardJourney from "@/assets/card-journey.png";
