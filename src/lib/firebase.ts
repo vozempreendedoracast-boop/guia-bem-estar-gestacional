@@ -71,10 +71,16 @@ export async function requestFCMToken(): Promise<string | null> {
 }
 
 export function onForegroundMessage(callback: (payload: any) => void) {
+  let unsubscribe: (() => void) | undefined;
+
   getFirebaseMessaging().then((messaging) => {
     if (!messaging) return;
-    onMessage(messaging, callback);
+    unsubscribe = onMessage(messaging, callback);
   });
+
+  return () => {
+    if (unsubscribe) unsubscribe();
+  };
 }
 
 export { VAPID_KEY };
