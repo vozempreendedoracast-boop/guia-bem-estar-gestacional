@@ -282,6 +282,15 @@ async function handleRevoke(
   return jsonResponse({ ok: true, plan: "none", status: "revoked" });
 }
 
+function parseKiwifyDate(input?: string): Date | null {
+  if (!input) return null;
+
+  const normalized = input.includes("T") ? input : input.replace(" ", "T");
+  const parsed = new Date(normalized);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+}
+
 async function logWebhook(
   supabase: any,
   email: string,
