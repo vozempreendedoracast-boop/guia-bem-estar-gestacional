@@ -238,7 +238,7 @@ const Admin = () => {
       const res = await fetch(`${ADMIN_BASE_URL}/functions/v1/admin-users?action=update`, {
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingUser.id, plan: editingUser.plan, plan_status: editingUser.plan_status }),
+        body: JSON.stringify({ id: editingUser.id, plan: editingUser.plan, plan_status: editingUser.plan_status, account_status: editingUser.account_status }),
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error);
