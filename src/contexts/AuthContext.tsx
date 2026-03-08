@@ -206,7 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const profile = profileResult.data as Pick<UserProfile, "account_status" | "plan_status"> | null;
     const isAdminUser = Boolean(adminResult.data);
 
-    if (profile && (isAccountBlocked(profile.account_status) || (!isAdminUser && isPlanInactive(profile.plan_status)))) {
+    if (profile && isAccountBlocked(profile.account_status)) {
       await supabase.auth.signOut();
       return { error: new Error("ACCOUNT_INACTIVE"), user: null };
     }
