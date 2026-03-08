@@ -35,11 +35,14 @@ serve(async (req) => {
     let token: string | undefined;
     let customerName: string | undefined;
 
+    let subscriptionPlanName: string | undefined;
+
     if (isRealKiwify) {
       email = payload.Customer?.email || "";
       evento = payload.webhook_event_type || "";
       produto = payload.Product?.product_name || "";
       customerName = payload.Customer?.full_name || undefined;
+      subscriptionPlanName = payload.Subscription?.plan?.name || undefined;
       const url = new URL(req.url);
       token = url.searchParams.get("token") || undefined;
     } else {
@@ -178,7 +181,7 @@ serve(async (req) => {
 
     // Determine action based on event
     if (mappedEvento === "compra aprovada") {
-      return await handlePurchase(supabase, resolvedProfile, normalizedEmail, normalizedProduto, produto);
+      return await handlePurchase(supabase, resolvedProfile, normalizedEmail, normalizedProduto, produto, subscriptionPlanName);
     } else if (["reembolso", "chargeback", "compra cancelada"].includes(mappedEvento)) {
       return await handleRevoke(supabase, resolvedProfile, normalizedEmail, mappedEvento, produto);
     } else if (mappedEvento === "pix gerado") {
@@ -204,9 +207,10 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   });
 }
 
-async function handlePurchase(supabase: any, profile: any, email: string, normalizedProduto: string, produto: string) {
+async function handlePurchase(supabase: any, profile: any, email: string, normalizedProduto: string, produto: string, subscriptionPlanName?: string) {
   let plan: "essential" | "premium" = "essential";
-  if (normalizedProduto.includes("premium")) {
+  const subPlan = (subscriptionPlanName || "").toLowerCase();
+  if (subPlan.includes("premium") || normalizedProduto.includes("premium")) {
     plan = "premium";
   }
 
