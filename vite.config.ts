@@ -23,6 +23,8 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
         navigateFallbackDenylist: [/^\/~oauth/],
         importScripts: ["/sw-custom.js"],
+        // Exclude firebase-messaging-sw.js from precache (it registers separately)
+        globIgnores: ["**/firebase-messaging-sw.js"],
       },
       manifest: {
         name: "MamyBoo - Acompanhamento de Gestação",
