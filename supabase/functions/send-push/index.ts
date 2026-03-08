@@ -89,10 +89,6 @@ async function getAccessToken(): Promise<string> {
   const clientEmailEnv = Deno.env.get("FCM_CLIENT_EMAIL") || "";
   const privateKeyEnv = Deno.env.get("FCM_PRIVATE_KEY") || "";
 
-  // DEBUG: log format info (remove after fixing)
-  console.log("DEBUG FCM_CLIENT_EMAIL length:", clientEmailEnv.length, "starts:", clientEmailEnv.slice(0, 20));
-  console.log("DEBUG FCM_PRIVATE_KEY length:", privateKeyEnv.length, "starts:", privateKeyEnv.slice(0, 30), "ends:", privateKeyEnv.slice(-30));
-
   const parsedFromPrivateKey = parseServiceAccountFromEnv(privateKeyEnv);
   const parsedFromClientEmail = parseServiceAccountFromEnv(clientEmailEnv);
 
