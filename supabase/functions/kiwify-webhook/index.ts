@@ -207,9 +207,10 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   });
 }
 
-async function handlePurchase(supabase: any, profile: any, email: string, normalizedProduto: string, produto: string) {
+async function handlePurchase(supabase: any, profile: any, email: string, normalizedProduto: string, produto: string, subscriptionPlanName?: string) {
   let plan: "essential" | "premium" = "essential";
-  if (normalizedProduto.includes("premium")) {
+  const subPlan = (subscriptionPlanName || "").toLowerCase();
+  if (subPlan.includes("premium") || normalizedProduto.includes("premium")) {
     plan = "premium";
   }
 
