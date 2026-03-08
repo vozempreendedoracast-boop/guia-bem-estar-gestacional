@@ -51,18 +51,46 @@ export async function getFirebaseMessaging() {
 export async function requestFCMToken(): Promise<string | null> {
   try {
     const messaging = await getFirebaseMessaging();
-    if (!messaging) return null;
+    if (!messaging) {
+      console.warn("FCM: messaging not supported");
+      return null;
+    }
 
     const permission = await Notification.requestPermission();
-    if (permission !== "granted") return null;
+    if (permission !== "granted") {
+      console.warn("FCM: permission not granted:", permission);
+      return null;
+    }
 
     const registration = await getMessagingServiceWorkerRegistration();
-    if (!registration) return null;
+    if (!registration) {
+      console.warn("FCM: no service worker registration");
+      return null;
+    }
 
+    // Wait for SW to be active before requesting token
+    if (registration.installing || registration.waiting) {
+      console.log("FCM: waiting for SW to activate...");
+      await new Promise<void>((resolve) => {
+        const sw = registration.installing || registration.waiting;
+        if (!sw) { resolve(); return; }
+        sw.addEventListener("statechange", function handler() {
+          if (sw.state === "activated") {
+            sw.removeEventListener("statechange", handler);
+            resolve();
+          }
+        });
+        // Timeout after 10s
+        setTimeout(resolve, 10000);
+      });
+    }
+
+    console.log("FCM: requesting token with SW scope:", registration.scope);
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: registration,
     });
+    console.log("FCM: token obtained:", token ? token.slice(0, 20) + "..." : "null");
     return token;
   } catch (err) {
     console.error("FCM token error:", err);
