@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWeekContents, useCategories, useActivePromotions, useDailyTip } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, Bell, PencilSimple, Lock, ChatCircleDots } from "@phosphor-icons/react";
+import { BookOpen, Heartbeat, Heart, ChartBar, Robot, Smiley, WarningCircle, Sparkle, SignOut, ArrowRight, Bell, PencilSimple, Lock } from "@phosphor-icons/react";
 import mamybooWhite from "@/assets/mamyboo-white.png";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
 import PremiumUpgradeCard from "@/components/PremiumUpgradeCard";
-import { useUnreadSupport } from "@/hooks/useUnreadSupport";
+
 import { useAppSettings } from "@/hooks/useAppSettings";
 
 import cardJourney from "@/assets/card-journey.png";
@@ -81,7 +81,7 @@ const Dashboard = () => {
   });
 
   const notificationCount = upcomingReminders.length;
-  const { unreadCount: unreadSupportCount } = useUnreadSupport();
+  
 
   const [selectedMoodIndex, setSelectedMoodIndex] = useState<number | null>(null);
   const [moodNote, setMoodNote] = useState("");
@@ -476,22 +476,6 @@ const Dashboard = () => {
         </p>
       </div>
 
-      {/* Support FAB */}
-      <motion.button
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.8 }}
-        onClick={() => navigate("/suporte")}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-elevated flex items-center justify-center hover:scale-105 transition-transform z-50"
-        aria-label="Suporte"
-      >
-        <ChatCircleDots className="w-6 h-6" />
-        {unreadSupportCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-destructive text-destructive-foreground rounded-full text-[10px] font-bold flex items-center justify-center px-1 border-2 border-background shadow-sm animate-pulse">
-            {unreadSupportCount > 9 ? "9+" : unreadSupportCount}
-          </span>
-        )}
-      </motion.button>
 
       {/* AI Mood Feedback Dialog */}
       <Dialog open={moodFeedbackOpen} onOpenChange={setMoodFeedbackOpen}>
