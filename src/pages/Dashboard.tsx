@@ -126,11 +126,48 @@ const Dashboard = () => {
   const todayMood = moods.find(m => new Date(m.date).toDateString() === new Date().toDateString());
   const lastMood = moods.length > 0 ? moods[moods.length - 1] : null;
 
-  const handleMoodWithNote = (mood: number) => {
+  const handleMoodWithNote = async (mood: number) => {
     addMood(mood, moodNote || undefined);
+    const savedNote = moodNote;
+    const savedMoodLabel = moodLabels[mood - 1];
+    const savedEmoji = moodEmojis[mood - 1];
     setMoodNote("");
     setShowNoteInput(false);
     setSelectedMoodIndex(null);
+
+    // Trigger AI feedback popup
+    setMoodFeedbackOpen(true);
+    setMoodFeedbackLoading(true);
+    setMoodFeedbackText("");
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userMessage = savedNote
+        ? `Registrei que estou me sentindo ${savedEmoji} ${savedMoodLabel}. Nota: "${savedNote}"`
+        : `Registrei que estou me sentindo ${savedEmoji} ${savedMoodLabel}.`;
+
+      const res = await supabase.functions.invoke("chat", {
+        body: {
+          messages: [{ role: "user", content: userMessage }],
+          context: {
+            name: profile?.name,
+            week: currentWeek,
+            trimester,
+            moodFeedback: true,
+          },
+        },
+      });
+
+      if (res.error || res.data?.error) {
+        setMoodFeedbackText("Obrigada por registrar como você se sente! 💕 Continue cuidando de si mesma.");
+      } else {
+        setMoodFeedbackText(res.data?.content || "Obrigada por registrar como você se sente! 💕");
+      }
+    } catch {
+      setMoodFeedbackText("Obrigada por registrar como você se sente! 💕 Continue cuidando de si mesma.");
+    } finally {
+      setMoodFeedbackLoading(false);
+    }
   };
 
   const { plan, hasAccess: planHasAccess } = usePlan();
