@@ -113,13 +113,13 @@ const Support = () => {
     }
   }, [messages, user, conversation?.id]);
 
-  // Detect new admin messages and notify (only when NOT on the support page actively)
+  // Detect new admin messages and notify (only when page is hidden/backgrounded)
   useEffect(() => {
     if (messages.length > prevMessageCountRef.current && prevMessageCountRef.current > 0) {
       const newMsgs = messages.slice(prevMessageCountRef.current);
       const newAdminMsgs = newMsgs.filter(m => m.sender === "admin");
       if (newAdminMsgs.length > 0) {
-        toast.success("Nova resposta do suporte! 💬");
+        // Don't show toast — user is already on the support page viewing messages
         // Only send push notification if page is not visible (user in background)
         if (document.hidden) {
           sendNotification("MamyBoo Suporte 💬", "Você recebeu uma nova resposta do suporte!");
