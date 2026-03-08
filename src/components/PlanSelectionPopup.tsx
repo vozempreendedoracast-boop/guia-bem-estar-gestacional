@@ -42,9 +42,13 @@ const PlanSelectionPopup = ({ open, onClose, filterPlan }: PlanSelectionPopupPro
               <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-3 shadow-soft">
                 <Crown className="w-7 h-7 text-primary-foreground" />
               </div>
-              <h2 className="text-xl font-bold font-display">Escolha seu plano</h2>
+              <h2 className="text-xl font-bold font-display">
+                {filterPlan === "premium" ? "Upgrade para o Premium 👑" : "Escolha seu plano"}
+              </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Desbloqueie todos os recursos do MamyBoo para acompanhar sua gestação! 💕
+                {filterPlan === "premium"
+                  ? "Desbloqueie todos os recursos exclusivos do plano Premium!"
+                  : "Desbloqueie todos os recursos do MamyBoo para acompanhar sua gestação! 💕"}
               </p>
             </div>
 
