@@ -22,12 +22,63 @@ function base64urlFromBuffer(buffer: ArrayBuffer): string {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+type ServiceAccountLike = {
+  client_email?: string;
+  private_key?: string;
+};
+
+function parseServiceAccountFromEnv(rawValue: string): ServiceAccountLike {
+  const trimmed = rawValue.trim();
+  const unquoted =
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+      ? trimmed.slice(1, -1)
+      : trimmed;
+
+  if (unquoted.startsWith("{")) {
+    try {
+      return JSON.parse(unquoted) as ServiceAccountLike;
+    } catch {
+      // fall through and treat as plain key
+    }
+  }
+
+  return { private_key: unquoted };
+}
+
+function decodeBase64ToBytes(value: string): Uint8Array {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
+  const decoded = atob(normalized + padding);
+  return Uint8Array.from(decoded, (c) => c.charCodeAt(0));
+}
+
+function normalizePrivateKey(rawKey: string): string {
+  return rawKey
+    .replace(/\\r/g, "")
+    .replace(/\\n/g, "\n")
+    .replace(/\r/g, "")
+    .trim();
+}
+
 // Google OAuth2 token from service account
 async function getAccessToken(): Promise<string> {
-  const clientEmail = Deno.env.get("FCM_CLIENT_EMAIL")!;
-  let privateKeyPem = Deno.env.get("FCM_PRIVATE_KEY")!;
-  // Handle escaped newlines from env
-  privateKeyPem = privateKeyPem.replace(/\\n/g, "\n");
+  const clientEmailEnv = Deno.env.get("FCM_CLIENT_EMAIL") || "";
+  const privateKeyEnv = Deno.env.get("FCM_PRIVATE_KEY") || "";
+  const parsedFromPrivateKey = parseServiceAccountFromEnv(privateKeyEnv);
+  const parsedFromClientEmail = parseServiceAccountFromEnv(clientEmailEnv);
+
+  const clientEmail =
+    parsedFromClientEmail.client_email ||
+    parsedFromPrivateKey.client_email ||
+    clientEmailEnv.trim();
+
+  const rawPrivateKey = parsedFromPrivateKey.private_key || privateKeyEnv;
+  const privateKeyPem = normalizePrivateKey(rawPrivateKey);
+
+  if (!clientEmail || !privateKeyPem) {
+    throw new Error("FCM_CLIENT_EMAIL ou FCM_PRIVATE_KEY não configurados corretamente");
+  }
 
   const now = Math.floor(Date.now() / 1000);
   const header = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
@@ -47,7 +98,7 @@ async function getAccessToken(): Promise<string> {
     .replace(/-----END PRIVATE KEY-----/g, "")
     .replace(/\s/g, "");
 
-  const binaryKey = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
+  const binaryKey = decodeBase64ToBytes(pemContents);
 
   const cryptoKey = await crypto.subtle.importKey(
     "pkcs8",
