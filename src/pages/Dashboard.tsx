@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
 import PremiumUpgradeCard from "@/components/PremiumUpgradeCard";
+import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 
 import { useAppSettings } from "@/hooks/useAppSettings";
 
@@ -80,7 +81,8 @@ const Dashboard = () => {
     enabled: !!user,
   });
 
-  const notificationCount = upcomingReminders.length;
+  const { unreadCount: unreadPushCount } = useUnreadNotifications();
+  const notificationCount = upcomingReminders.length + unreadPushCount;
   
 
   const [selectedMoodIndex, setSelectedMoodIndex] = useState<number | null>(null);
