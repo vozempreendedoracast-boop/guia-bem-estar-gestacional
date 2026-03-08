@@ -1,0 +1,1 @@
+UPDATE user_profiles SET plan = 'premium' WHERE email = 'elesamuelsantos@gmail.com' AND plan_status = 'active';
