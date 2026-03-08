@@ -238,7 +238,7 @@ const Admin = () => {
       const res = await fetch(`${ADMIN_BASE_URL}/functions/v1/admin-users?action=update`, {
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingUser.id, plan: editingUser.plan, plan_status: editingUser.plan_status }),
+        body: JSON.stringify({ id: editingUser.id, plan: editingUser.plan, plan_status: editingUser.plan_status, account_status: editingUser.account_status }),
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error);
@@ -1890,7 +1890,7 @@ const Admin = () => {
               </div>
 
               {/* Plan & Status */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <Label className="text-sm font-medium">Plano</Label>
                   <select
@@ -1904,7 +1904,7 @@ const Admin = () => {
                   </select>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Status</Label>
+                  <Label className="text-sm font-medium">Status do plano</Label>
                   <select
                     value={editingUser.plan_status || "active"}
                     onChange={e => setEditingUser({ ...editingUser, plan_status: e.target.value as any })}
@@ -1912,6 +1912,17 @@ const Admin = () => {
                   >
                     <option value="active">Ativo</option>
                     <option value="expired">Expirado</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Status da conta</Label>
+                  <select
+                    value={editingUser.account_status || "active"}
+                    onChange={e => setEditingUser({ ...editingUser, account_status: e.target.value as any })}
+                    className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="active">Ativo</option>
+                    <option value="banned">Inativo</option>
                   </select>
                 </div>
               </div>
