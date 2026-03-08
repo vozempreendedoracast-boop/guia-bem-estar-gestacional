@@ -29,6 +29,7 @@ import cardAssistant from "@/assets/card-assistant.png";
 import WebhookAdmin from "@/components/WebhookAdmin";
 import AdminSupportTab from "@/components/AdminSupportTab";
 import AdminBioLinksTab from "@/components/AdminBioLinksTab";
+import AdminNotificationsTab from "@/components/AdminNotificationsTab";
 import { useAppSettings } from "@/hooks/useAppSettings";
 
 import {
