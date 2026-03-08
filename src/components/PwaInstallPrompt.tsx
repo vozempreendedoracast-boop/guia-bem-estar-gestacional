@@ -14,17 +14,35 @@ declare global {
   }
 }
 
+const DISMISSED_KEY = "pwa-prompt-dismissed";
+const INSTALLED_KEY = "pwa-installed";
+
+const isRunningAsInstalledApp = () => {
+  const displayModes = ["standalone", "fullscreen", "minimal-ui", "window-controls-overlay"];
+  const hasInstalledDisplayMode = displayModes.some((mode) => window.matchMedia(`(display-mode: ${mode})`).matches);
+  const isIosStandalone = (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  const isAndroidTwa = document.referrer.startsWith("android-app://");
+
+  return hasInstalledDisplayMode || isIosStandalone || isAndroidTwa;
+};
+
 const PwaInstallPrompt = () => {
   const [show, setShow] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIos, setIsIos] = useState(false);
 
   useEffect(() => {
-    // Already running as installed PWA — never show
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as any).standalone === true;
-    if (isStandalone) return;
+    const markInstalled = () => {
+      localStorage.setItem(INSTALLED_KEY, "1");
+      localStorage.setItem(DISMISSED_KEY, "1");
+      setShow(false);
+    };
+
+    // If app is already running as installed, never show and persist this state
+    if (isRunningAsInstalledApp()) {
+      markInstalled();
+      return;
+    }
 
     // Don't show on admin or sales/login pages
     if (
@@ -34,34 +52,43 @@ const PwaInstallPrompt = () => {
       window.location.pathname.startsWith("/login")
     ) return;
 
-    // Persist dismissal across sessions so it doesn't nag
-    const dismissed = localStorage.getItem("pwa-prompt-dismissed");
-    if (dismissed) return;
+    // If we've ever detected install or user already dismissed, don't nag
+    if (localStorage.getItem(INSTALLED_KEY) === "1") return;
+    if (localStorage.getItem(DISMISSED_KEY) === "1") return;
 
     // Detect iOS
     const ua = navigator.userAgent;
     const iosDevice = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
     setIsIos(iosDevice);
 
-    const handler = (e: BeforeInstallPromptEvent) => {
+    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShow(true);
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
+    const handleAppInstalled = () => {
+      markInstalled();
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
     // Fallback only for iOS
     const timer = iosDevice
       ? setTimeout(() => {
-          if (window.matchMedia("(display-mode: standalone)").matches) return;
-          if ((navigator as any).standalone === true) return;
+          if (isRunningAsInstalledApp()) {
+            markInstalled();
+            return;
+          }
           setShow(true);
         }, 6000)
       : null;
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
       if (timer) clearTimeout(timer);
     };
   }, []);
@@ -71,24 +98,28 @@ const PwaInstallPrompt = () => {
       try {
         await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
+
         if (outcome === "accepted") {
+          localStorage.setItem(INSTALLED_KEY, "1");
+          localStorage.setItem(DISMISSED_KEY, "1");
           setShow(false);
-          localStorage.setItem("pwa-prompt-dismissed", "1");
         }
       } catch (err) {
         console.warn("Install prompt error:", err);
       }
+
       setDeferredPrompt(null);
-    } else {
-      // On iOS, just dismiss - the instructions are in the text
-      setShow(false);
-      localStorage.setItem("pwa-prompt-dismissed", "1");
+      return;
     }
+
+    // On iOS, just dismiss - the instructions are in the text
+    setShow(false);
+    localStorage.setItem(DISMISSED_KEY, "1");
   }, [deferredPrompt]);
 
   const handleDismiss = useCallback(() => {
     setShow(false);
-    localStorage.setItem("pwa-prompt-dismissed", "1");
+    localStorage.setItem(DISMISSED_KEY, "1");
   }, []);
 
   return (
