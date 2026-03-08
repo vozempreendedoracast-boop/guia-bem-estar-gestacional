@@ -12,6 +12,8 @@ import { getWeekEmoji } from "@/data/weeks";
 import { differenceInDays } from "date-fns";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ReactMarkdown from "react-markdown";
 import { useQuery } from "@tanstack/react-query";
 import { usePlan } from "@/hooks/usePlan";
 import PlanSelectionPopup from "@/components/PlanSelectionPopup";
@@ -90,6 +92,11 @@ const Dashboard = () => {
   const [planPopupOpen, setPlanPopupOpen] = useState(!hasAccess);
   const [planPopupFilter, setPlanPopupFilter] = useState<string | undefined>(undefined);
 
+  // AI mood feedback state
+  const [moodFeedbackOpen, setMoodFeedbackOpen] = useState(false);
+  const [moodFeedbackText, setMoodFeedbackText] = useState("");
+  const [moodFeedbackLoading, setMoodFeedbackLoading] = useState(false);
+
   // Re-open popup when hasAccess changes (e.g. after refresh)
   useEffect(() => {
     if (!hasAccess) setPlanPopupOpen(true);
@@ -119,11 +126,48 @@ const Dashboard = () => {
   const todayMood = moods.find(m => new Date(m.date).toDateString() === new Date().toDateString());
   const lastMood = moods.length > 0 ? moods[moods.length - 1] : null;
 
-  const handleMoodWithNote = (mood: number) => {
+  const handleMoodWithNote = async (mood: number) => {
     addMood(mood, moodNote || undefined);
+    const savedNote = moodNote;
+    const savedMoodLabel = moodLabels[mood - 1];
+    const savedEmoji = moodEmojis[mood - 1];
     setMoodNote("");
     setShowNoteInput(false);
     setSelectedMoodIndex(null);
+
+    // Trigger AI feedback popup
+    setMoodFeedbackOpen(true);
+    setMoodFeedbackLoading(true);
+    setMoodFeedbackText("");
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userMessage = savedNote
+        ? `Registrei que estou me sentindo ${savedEmoji} ${savedMoodLabel}. Nota: "${savedNote}"`
+        : `Registrei que estou me sentindo ${savedEmoji} ${savedMoodLabel}.`;
+
+      const res = await supabase.functions.invoke("chat", {
+        body: {
+          messages: [{ role: "user", content: userMessage }],
+          context: {
+            name: profile?.name,
+            week: currentWeek,
+            trimester,
+            moodFeedback: true,
+          },
+        },
+      });
+
+      if (res.error || res.data?.error) {
+        setMoodFeedbackText("Obrigada por registrar como você se sente! 💕 Continue cuidando de si mesma.");
+      } else {
+        setMoodFeedbackText(res.data?.content || "Obrigada por registrar como você se sente! 💕");
+      }
+    } catch {
+      setMoodFeedbackText("Obrigada por registrar como você se sente! 💕 Continue cuidando de si mesma.");
+    } finally {
+      setMoodFeedbackLoading(false);
+    }
   };
 
   const { plan, hasAccess: planHasAccess } = usePlan();
@@ -448,6 +492,34 @@ const Dashboard = () => {
           </span>
         )}
       </motion.button>
+
+      {/* AI Mood Feedback Dialog */}
+      <Dialog open={moodFeedbackOpen} onOpenChange={setMoodFeedbackOpen}>
+        <DialogContent className="max-w-sm rounded-2xl mx-4">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Sparkle className="w-5 h-5 text-primary" />
+              MamyBoo cuida de você 💕
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto">
+            {moodFeedbackLoading ? (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
+                />
+                <p className="text-sm text-muted-foreground">Preparando um conselho especial para você...</p>
+              </div>
+            ) : (
+              <div className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground">
+                <ReactMarkdown>{moodFeedbackText}</ReactMarkdown>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
