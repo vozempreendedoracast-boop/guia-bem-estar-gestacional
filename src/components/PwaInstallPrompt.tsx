@@ -88,7 +88,7 @@ const PwaInstallPrompt = () => {
 
   const handleDismiss = useCallback(() => {
     setShow(false);
-    sessionStorage.setItem("pwa-prompt-dismissed", "1");
+    localStorage.setItem("pwa-prompt-dismissed", "1");
   }, []);
 
   return (
