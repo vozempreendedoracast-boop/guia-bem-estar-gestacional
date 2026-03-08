@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isAdminUser = Boolean(adminResult.data);
 
       // Check if account/plan is blocked
-      if (resolvedProfile && (isAccountBlocked(resolvedProfile.account_status) || (!isAdminUser && isPlanInactive(resolvedProfile.plan_status)))) {
+      if (resolvedProfile && isAccountBlocked(resolvedProfile.account_status)) {
         await supabase.auth.signOut();
         setUserProfile(null);
         setIsAdmin(false);
