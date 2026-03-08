@@ -492,6 +492,34 @@ const Dashboard = () => {
           </span>
         )}
       </motion.button>
+
+      {/* AI Mood Feedback Dialog */}
+      <Dialog open={moodFeedbackOpen} onOpenChange={setMoodFeedbackOpen}>
+        <DialogContent className="max-w-sm rounded-2xl mx-4">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Sparkle className="w-5 h-5 text-primary" />
+              MamyBoo cuida de você 💕
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto">
+            {moodFeedbackLoading ? (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
+                />
+                <p className="text-sm text-muted-foreground">Preparando um conselho especial para você...</p>
+              </div>
+            ) : (
+              <div className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-li:text-foreground">
+                <ReactMarkdown>{moodFeedbackText}</ReactMarkdown>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
