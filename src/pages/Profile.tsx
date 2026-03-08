@@ -198,7 +198,7 @@ const Profile = () => {
                     planStatus === "expired" ? "bg-destructive/10 text-destructive" :
                     "bg-muted-foreground/10 text-muted-foreground"
                   }`}>
-                    {planStatus === "active" ? "Ativo" : planStatus === "expired" ? "Expirado" : "Inativo"}
+                    {planStatus === "active" || planStatus === "none" ? "Ativo" : planStatus === "expired" ? "Expirado" : "Inativo"}
                   </span>
                 </div>
 

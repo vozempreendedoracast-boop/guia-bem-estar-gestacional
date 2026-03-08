@@ -177,8 +177,13 @@ Deno.serve(async (req) => {
           updates.purchased_at = new Date().toISOString();
           updates.expires_at = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
         }
-        if (plan_status === "expired" || plan === "none") {
-          updates.plan_status = plan_status || "expired";
+
+        if (plan === "none") {
+          updates.plan_status = "active";
+          updates.purchased_at = null;
+          updates.expires_at = null;
+        } else if (plan_status === "expired") {
+          updates.plan_status = "expired";
         }
 
         const { error } = await admin

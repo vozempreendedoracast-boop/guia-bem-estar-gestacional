@@ -1906,11 +1906,10 @@ const Admin = () => {
                 <div>
                   <Label className="text-sm font-medium">Status</Label>
                   <select
-                    value={editingUser.plan_status || "none"}
+                    value={editingUser.plan_status || "active"}
                     onChange={e => setEditingUser({ ...editingUser, plan_status: e.target.value as any })}
                     className="mt-1 w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
                   >
-                    <option value="none">Inativo</option>
                     <option value="active">Ativo</option>
                     <option value="expired">Expirado</option>
                   </select>
