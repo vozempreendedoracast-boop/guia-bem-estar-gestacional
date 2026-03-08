@@ -36,6 +36,7 @@ serve(async (req) => {
     let customerName: string | undefined;
 
     let subscriptionPlanName: string | undefined;
+    let eventOccurredAt: string | undefined;
 
     if (isRealKiwify) {
       email = payload.Customer?.email || "";
