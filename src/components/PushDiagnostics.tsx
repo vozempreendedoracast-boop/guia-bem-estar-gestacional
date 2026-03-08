@@ -210,7 +210,7 @@ const PushDiagnostics = () => {
       {/* Test button */}
       <Button
         onClick={handleTestPush}
-        disabled={testSending || !permOk}
+        disabled={testSending || !permOk || !fcmToken}
         className="w-full rounded-xl gap-2"
         variant="outline"
       >

@@ -219,10 +219,16 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: subscriptions } = await adminClient
+    let subscriptionsQuery = adminClient
       .from("push_subscriptions")
       .select("fcm_token")
       .eq("user_id", target_user_id);
+
+    if (target_token) {
+      subscriptionsQuery = subscriptionsQuery.eq("fcm_token", target_token);
+    }
+
+    const { data: subscriptions } = await subscriptionsQuery;
 
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(JSON.stringify({ sent: 0, message: "No tokens found" }), {
