@@ -44,6 +44,7 @@ serve(async (req) => {
       produto = payload.Product?.product_name || "";
       customerName = payload.Customer?.full_name || undefined;
       subscriptionPlanName = payload.Subscription?.plan?.name || undefined;
+      eventOccurredAt = payload.refunded_at || payload.updated_at || payload.approved_date || payload.created_at || undefined;
       const url = new URL(req.url);
       token = url.searchParams.get("token") || undefined;
     } else {
@@ -52,6 +53,7 @@ serve(async (req) => {
       produto = payload.produto || "";
       token = payload.token;
       customerName = payload.nome || undefined;
+      eventOccurredAt = payload.data_evento || undefined;
     }
 
     // Validate token
