@@ -28,21 +28,11 @@ type ServiceAccountLike = {
 };
 
 function decodeBase64ToBytes(value: string): Uint8Array {
-  const cleaned = value
-    .trim()
-    .replace(/^['"]|['"]$/g, "")
-    .replace(/\s/g, "")
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-
-  const normalized = cleaned.length % 4 === 0 ? cleaned : cleaned + "=".repeat(4 - (cleaned.length % 4));
-
-  try {
-    const decoded = atob(normalized);
-    return Uint8Array.from(decoded, (c) => c.charCodeAt(0));
-  } catch {
-    throw new Error("FCM_PRIVATE_KEY inválida: base64 malformado");
-  }
+  // Strip everything that isn't a valid base64 character
+  const cleaned = value.replace(/[^A-Za-z0-9+/]/g, "");
+  const padding = cleaned.length % 4 === 0 ? "" : "=".repeat(4 - (cleaned.length % 4));
+  const decoded = atob(cleaned + padding);
+  return Uint8Array.from(decoded, (c) => c.charCodeAt(0));
 }
 
 function parseServiceAccountFromEnv(rawValue: string): ServiceAccountLike {
@@ -98,6 +88,11 @@ function normalizePrivateKey(rawKey: string): string {
 async function getAccessToken(): Promise<string> {
   const clientEmailEnv = Deno.env.get("FCM_CLIENT_EMAIL") || "";
   const privateKeyEnv = Deno.env.get("FCM_PRIVATE_KEY") || "";
+
+  // DEBUG: log format info (remove after fixing)
+  console.log("DEBUG FCM_CLIENT_EMAIL length:", clientEmailEnv.length, "starts:", clientEmailEnv.slice(0, 20));
+  console.log("DEBUG FCM_PRIVATE_KEY length:", privateKeyEnv.length, "starts:", privateKeyEnv.slice(0, 30), "ends:", privateKeyEnv.slice(-30));
+
   const parsedFromPrivateKey = parseServiceAccountFromEnv(privateKeyEnv);
   const parsedFromClientEmail = parseServiceAccountFromEnv(clientEmailEnv);
 
@@ -108,6 +103,8 @@ async function getAccessToken(): Promise<string> {
 
   const rawPrivateKey = parsedFromPrivateKey.private_key || privateKeyEnv;
   const privateKeyPem = normalizePrivateKey(rawPrivateKey);
+
+  console.log("DEBUG privateKeyPem length:", privateKeyPem.length, "starts:", privateKeyPem.slice(0, 40), "ends:", privateKeyPem.slice(-40));
 
   if (!clientEmail || !privateKeyPem) {
     throw new Error("FCM_CLIENT_EMAIL ou FCM_PRIVATE_KEY não configurados corretamente");
@@ -130,6 +127,8 @@ async function getAccessToken(): Promise<string> {
     .replace(/-----BEGIN PRIVATE KEY-----/g, "")
     .replace(/-----END PRIVATE KEY-----/g, "")
     .replace(/\s/g, "");
+
+  console.log("DEBUG pemContents length:", pemContents.length, "first40:", pemContents.slice(0, 40));
 
   const binaryKey = decodeBase64ToBytes(pemContents);
 

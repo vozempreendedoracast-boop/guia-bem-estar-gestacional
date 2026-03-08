@@ -28,21 +28,11 @@ type ServiceAccountLike = {
 };
 
 function decodeBase64ToBytes(value: string): Uint8Array {
-  const cleaned = value
-    .trim()
-    .replace(/^['"]|['"]$/g, "")
-    .replace(/\s/g, "")
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-
-  const normalized = cleaned.length % 4 === 0 ? cleaned : cleaned + "=".repeat(4 - (cleaned.length % 4));
-
-  try {
-    const decoded = atob(normalized);
-    return Uint8Array.from(decoded, (c) => c.charCodeAt(0));
-  } catch {
-    throw new Error("FCM_PRIVATE_KEY inválida: base64 malformado");
-  }
+  // Strip everything that isn't a valid base64 character
+  const cleaned = value.replace(/[^A-Za-z0-9+/]/g, "");
+  const padding = cleaned.length % 4 === 0 ? "" : "=".repeat(4 - (cleaned.length % 4));
+  const decoded = atob(cleaned + padding);
+  return Uint8Array.from(decoded, (c) => c.charCodeAt(0));
 }
 
 function parseServiceAccountFromEnv(rawValue: string): ServiceAccountLike {
