@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
 
     // Admin check moved after JSON parsing to allow self-test
 
-    const { target_user_id, title, body, url, self_test } = await req.json();
+    const { target_user_id, target_token, title, body, url, self_test } = await req.json();
 
     if (!target_user_id || !title) {
       return new Response(JSON.stringify({ error: "target_user_id and title required" }), {
@@ -219,10 +219,16 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: subscriptions } = await adminClient
+    let subscriptionsQuery = adminClient
       .from("push_subscriptions")
       .select("fcm_token")
       .eq("user_id", target_user_id);
+
+    if (target_token) {
+      subscriptionsQuery = subscriptionsQuery.eq("fcm_token", target_token);
+    }
+
+    const { data: subscriptions } = await subscriptionsQuery;
 
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(JSON.stringify({ sent: 0, message: "No tokens found" }), {
