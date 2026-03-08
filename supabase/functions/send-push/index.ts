@@ -6,7 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Helper: base64url encode for Deno (handles UTF-8 properly)
 function base64url(input: string): string {
   const encoder = new TextEncoder();
   const bytes = encoder.encode(input);
@@ -28,7 +27,6 @@ type ServiceAccountLike = {
 };
 
 function decodeBase64ToBytes(value: string): Uint8Array {
-  // Strip everything that isn't a valid base64 character
   const cleaned = value.replace(/[^A-Za-z0-9+/]/g, "");
   const padding = cleaned.length % 4 === 0 ? "" : "=".repeat(4 - (cleaned.length % 4));
   const decoded = atob(cleaned + padding);
@@ -44,23 +42,14 @@ function parseServiceAccountFromEnv(rawValue: string): ServiceAccountLike {
       : trimmed;
 
   if (unquoted.startsWith("{")) {
-    try {
-      return JSON.parse(unquoted) as ServiceAccountLike;
-    } catch {
-      // fall through
-    }
+    try { return JSON.parse(unquoted) as ServiceAccountLike; } catch {}
   }
 
-  // Accept full service-account JSON encoded as base64
   if (/^[A-Za-z0-9+/=_-]+$/.test(unquoted) && unquoted.length > 100) {
     try {
       const decoded = new TextDecoder().decode(decodeBase64ToBytes(unquoted));
-      if (decoded.trim().startsWith("{")) {
-        return JSON.parse(decoded) as ServiceAccountLike;
-      }
-    } catch {
-      // fall through
-    }
+      if (decoded.trim().startsWith("{")) return JSON.parse(decoded) as ServiceAccountLike;
+    } catch {}
   }
 
   return { private_key: unquoted };
@@ -68,39 +57,21 @@ function parseServiceAccountFromEnv(rawValue: string): ServiceAccountLike {
 
 function normalizePrivateKey(rawKey: string): string {
   let key = rawKey.trim();
-
-  if (
-    (key.startsWith('"') && key.endsWith('"')) ||
-    (key.startsWith("'") && key.endsWith("'"))
-  ) {
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
     key = key.slice(1, -1);
   }
-
-  return key
-    .replace(/\\r/g, "")
-    .replace(/\\\\n/g, "\\n")
-    .replace(/\\n/g, "\n")
-    .replace(/\r/g, "")
-    .trim();
+  return key.replace(/\\r/g, "").replace(/\\\\n/g, "\\n").replace(/\\n/g, "\n").replace(/\r/g, "").trim();
 }
 
-// Google OAuth2 token from service account
 async function getAccessToken(): Promise<string> {
   const clientEmailEnv = Deno.env.get("FCM_CLIENT_EMAIL") || "";
   const privateKeyEnv = Deno.env.get("FCM_PRIVATE_KEY") || "";
-
   const parsedFromPrivateKey = parseServiceAccountFromEnv(privateKeyEnv);
   const parsedFromClientEmail = parseServiceAccountFromEnv(clientEmailEnv);
 
-  const clientEmail =
-    parsedFromClientEmail.client_email ||
-    parsedFromPrivateKey.client_email ||
-    clientEmailEnv.trim();
-
+  const clientEmail = parsedFromClientEmail.client_email || parsedFromPrivateKey.client_email || clientEmailEnv.trim();
   const rawPrivateKey = parsedFromPrivateKey.private_key || privateKeyEnv;
   const privateKeyPem = normalizePrivateKey(rawPrivateKey);
-
-  
 
   if (!clientEmail || !privateKeyPem) {
     throw new Error("FCM_CLIENT_EMAIL ou FCM_PRIVATE_KEY não configurados corretamente");
@@ -112,40 +83,18 @@ async function getAccessToken(): Promise<string> {
     iss: clientEmail,
     scope: "https://www.googleapis.com/auth/firebase.messaging",
     aud: "https://oauth2.googleapis.com/token",
-    iat: now,
-    exp: now + 3600,
+    iat: now, exp: now + 3600,
   }));
 
   const signInput = `${header}.${payload}`;
-
-  // Import private key
-  const pemContents = privateKeyPem
-    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
-    .replace(/-----END PRIVATE KEY-----/g, "")
-    .replace(/\s/g, "");
-
-  
-
+  const pemContents = privateKeyPem.replace(/-----BEGIN PRIVATE KEY-----/g, "").replace(/-----END PRIVATE KEY-----/g, "").replace(/\s/g, "");
   const binaryKey = decodeBase64ToBytes(pemContents);
 
-  const cryptoKey = await crypto.subtle.importKey(
-    "pkcs8",
-    binaryKey,
-    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-
-  const signatureBuffer = await crypto.subtle.sign(
-    "RSASSA-PKCS1-v1_5",
-    cryptoKey,
-    new TextEncoder().encode(signInput)
-  );
-
+  const cryptoKey = await crypto.subtle.importKey("pkcs8", binaryKey, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const signatureBuffer = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", cryptoKey, new TextEncoder().encode(signInput));
   const signature = base64urlFromBuffer(signatureBuffer);
   const jwt = `${signInput}.${signature}`;
 
-  // Exchange JWT for access token
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -153,9 +102,7 @@ async function getAccessToken(): Promise<string> {
   });
 
   const tokenData = await tokenRes.json();
-  if (!tokenData.access_token) {
-    throw new Error(`Token exchange failed: ${JSON.stringify(tokenData)}`);
-  }
+  if (!tokenData.access_token) throw new Error(`Token exchange failed: ${JSON.stringify(tokenData)}`);
   return tokenData.access_token;
 }
 
@@ -165,12 +112,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Validate caller is admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -183,42 +128,42 @@ Deno.serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check admin role
-    const { data: hasAdmin } = await supabase.rpc("has_role", {
-      _user_id: user.id,
-      _role: "admin",
-    });
-
-    // Admin check moved after JSON parsing to allow self-test
+    const { data: hasAdmin } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
 
     const { target_user_id, target_token, title, body, url, self_test } = await req.json();
 
     if (!target_user_id || !title) {
       return new Response(JSON.stringify({ error: "target_user_id and title required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Allow users to send a test push to themselves without admin role
     const isSelfTest = self_test === true && target_user_id === user.id;
 
     if (!isSelfTest && !hasAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Get FCM tokens for target user using service role
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
+    // Save notification to inbox (using service role to bypass RLS)
+    if (!isSelfTest) {
+      await adminClient.from("push_notifications").insert({
+        user_id: target_user_id,
+        title: title,
+        body: body || "",
+        url: url || "/painel",
+      });
+    }
+
+    // Get FCM tokens for target user
     let subscriptionsQuery = adminClient
       .from("push_subscriptions")
       .select("fcm_token")
@@ -276,12 +221,8 @@ Deno.serve(async (req) => {
         sent++;
       } else {
         errors.push(resText);
-        // Remove invalid tokens
         if (resText.includes("UNREGISTERED") || resText.includes("NOT_FOUND")) {
-          await adminClient
-            .from("push_subscriptions")
-            .delete()
-            .eq("fcm_token", sub.fcm_token);
+          await adminClient.from("push_subscriptions").delete().eq("fcm_token", sub.fcm_token);
           console.log("send-push: removed invalid token");
         }
       }
@@ -294,8 +235,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("send-push error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
