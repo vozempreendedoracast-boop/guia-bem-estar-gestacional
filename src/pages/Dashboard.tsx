@@ -395,6 +395,12 @@ const Dashboard = () => {
               variants={item}
               onClick={() => {
                 if (card.locked) {
+                  // Essential users trying Premium content → show only Premium plan
+                  if (isEssential && card.requiredPlan === "premium") {
+                    setPlanPopupFilter("premium");
+                  } else {
+                    setPlanPopupFilter(undefined);
+                  }
                   setPlanPopupOpen(true);
                   return;
                 }
