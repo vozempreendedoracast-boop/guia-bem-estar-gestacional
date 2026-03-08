@@ -242,7 +242,26 @@ async function handlePurchase(supabase: any, profile: any, email: string, normal
   return jsonResponse({ ok: true, plan, status: "active" });
 }
 
-async function handleRevoke(supabase: any, profile: any, email: string, evento: string, produto: string) {
+async function handleRevoke(
+  supabase: any,
+  profile: any,
+  email: string,
+  evento: string,
+  produto: string,
+  eventOccurredAt?: string,
+) {
+  // Ignore stale revoke events that happened before a newer manual/admin purchase activation
+  if (eventOccurredAt && profile?.purchased_at) {
+    const eventDate = parseKiwifyDate(eventOccurredAt);
+    const profilePurchasedAt = new Date(profile.purchased_at);
+
+    if (eventDate && !Number.isNaN(profilePurchasedAt.getTime()) && eventDate < profilePurchasedAt) {
+      await logWebhook(supabase, email, evento, produto, profile.plan || "none", "ignorado: evento antigo (stale)");
+      console.log(`Revoke ignored (stale event): ${email}, event=${eventOccurredAt}, purchased_at=${profile.purchased_at}`);
+      return jsonResponse({ ok: true, ignored: true, reason: "stale_revoke_event" });
+    }
+  }
+
   const { error: updateError } = await supabase
     .from("user_profiles")
     .update({
