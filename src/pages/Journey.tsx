@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock, CaretRight, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
+import PageSEO from "@/components/PageSEO";
 
 const Journey = () => {
   const { currentWeek } = usePregnancy();
