@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
           newUserId = newUser.user?.id;
         } else {
           // Legacy invite flow
-          const siteUrl = body.redirectTo || "https://mamyboo.vercel.app/cadastro";
+          const siteUrl = body.redirectTo || "https://mamyboo.com/cadastro";
           const { data: newUser, error: createError } = await admin.auth.admin.inviteUserByEmail(email, {
             redirectTo: siteUrl,
           });

@@ -212,7 +212,7 @@ const AdminNotificationsTab = () => {
         <div className="space-y-2">
           <Label className="font-medium">Link (opcional)</Label>
           <Input
-            placeholder="Ex: /jornada ou https://mamyboo.vercel.app/vendas"
+            placeholder="Ex: /jornada ou https://mamyboo.com/vendas"
             value={url}
             onChange={e => setUrl(e.target.value)}
             className="rounded-xl"
