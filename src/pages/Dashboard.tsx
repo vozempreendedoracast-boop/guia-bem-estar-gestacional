@@ -200,6 +200,12 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background pb-8 lg:px-16 xl:px-32">
+      <PageSEO
+        title="Painel da Gestante"
+        description="Painel completo de acompanhamento da sua gravidez. Veja sua semana atual, registre humor, acesse dicas e acompanhe o bebê."
+        keywords="painel gravidez, dashboard gestante, acompanhamento semanal gravidez"
+        path="/painel"
+      />
       {/* Plan selection popup for users without plan */}
       <PlanSelectionPopup open={planPopupOpen} onClose={() => { setPlanPopupOpen(false); setPlanPopupFilter(undefined); }} filterPlan={planPopupFilter} />
 
