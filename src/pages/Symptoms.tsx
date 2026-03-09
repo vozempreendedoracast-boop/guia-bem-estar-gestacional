@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, MagnifyingGlass, WarningCircle, Warning, Info, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PageSEO from "@/components/PageSEO";
 
 const alertConfig = {
   low: { icon: Info, color: "bg-sage", textColor: "text-sage-foreground", label: "Baixo" },

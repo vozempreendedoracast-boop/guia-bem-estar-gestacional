@@ -4,6 +4,7 @@ import { useActiveExercises } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { ArrowLeft, Barbell, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import PageSEO from "@/components/PageSEO";
 
 const Exercises = () => {
   const navigate = useNavigate();

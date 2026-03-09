@@ -1,3 +1,4 @@
+import PageSEO from "@/components/PageSEO";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {

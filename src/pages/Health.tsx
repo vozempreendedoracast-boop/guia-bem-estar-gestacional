@@ -3,6 +3,7 @@ import { useActiveHealthTips } from "@/hooks/useSupabaseData";
 import { motion } from "framer-motion";
 import { ArrowLeft, AppleLogo, Moon, Brain, Heart, Baby, SpinnerGap, Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import PageSEO from "@/components/PageSEO";
 
 const iconMap: Record<string, React.ElementType> = {
   AppleLogo, Moon, Brain, Heart, Baby, Sparkle,
