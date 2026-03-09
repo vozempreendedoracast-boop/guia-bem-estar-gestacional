@@ -1,3 +1,4 @@
+import PageSEO from "@/components/PageSEO";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Robot, PaperPlaneRight, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
