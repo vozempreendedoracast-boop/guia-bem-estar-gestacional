@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, MagnifyingGlass, WarningCircle, Warning, Info, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PageSEO from "@/components/PageSEO";
 
 const alertConfig = {
   low: { icon: Info, color: "bg-sage", textColor: "text-sage-foreground", label: "Baixo" },
@@ -38,6 +39,12 @@ const Symptoms = () => {
 
   return (
     <div className="min-h-screen bg-background pb-8">
+      <PageSEO
+        title="Sintomas da Gravidez por Trimestre"
+        description="Conheça os sintomas mais comuns da gravidez em cada trimestre, saiba quando procurar o médico e o que fazer para aliviar o desconforto."
+        keywords="sintomas da gravidez, enjoo na gravidez, dor nas costas gestação, sintomas por trimestre, quando ir ao médico grávida"
+        path="/sintomas"
+      />
       <div className="px-6 pt-6 pb-4 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/painel")} className="rounded-xl">
           <ArrowLeft className="w-5 h-5" />

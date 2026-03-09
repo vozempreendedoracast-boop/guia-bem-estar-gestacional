@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock, CaretRight, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { getWeekEmoji } from "@/data/weeks";
+import PageSEO from "@/components/PageSEO";
 
 const Journey = () => {
   const { currentWeek } = usePregnancy();
@@ -31,6 +32,12 @@ const Journey = () => {
 
   return (
     <div className="min-h-screen bg-background pb-8">
+      <PageSEO
+        title="Desenvolvimento do Bebê Semana a Semana"
+        description="Descubra como seu bebê está se desenvolvendo a cada semana da gravidez e acompanhe as mudanças no seu corpo."
+        keywords="desenvolvimento do bebê, gravidez semana a semana, tamanho do bebê por semana, trimestres da gravidez"
+        path="/jornada"
+      />
       <div className="px-6 pt-6 pb-4 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/painel")} className="rounded-xl">
           <ArrowLeft className="w-5 h-5" />

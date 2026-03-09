@@ -1,3 +1,4 @@
+import PageSEO from "@/components/PageSEO";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Robot, PaperPlaneRight, SpinnerGap } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,12 @@ const Assistant = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <PageSEO
+        title="Assistente IA para Gestantes"
+        description="Tire dúvidas sobre a gravidez com a assistente de inteligência artificial do MamyBoo. Apoio personalizado durante toda a gestação."
+        keywords="assistente IA gravidez, chatbot gestante, dúvidas gravidez, apoio na gestação, inteligência artificial maternidade"
+        path="/assistente"
+      />
       {/* Header */}
       <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-border">
         <Button variant="ghost" size="icon" onClick={() => navigate("/painel")} className="rounded-xl">

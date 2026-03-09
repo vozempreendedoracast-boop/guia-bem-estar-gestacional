@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Heart, Sparkle, CalendarBlank } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import mamybooWhite from "@/assets/mamyboo-white.png";
+import PageSEO from "@/components/PageSEO";
 
 const Index = () => {
   const { user, loading, isAdmin } = useAuth();
@@ -32,6 +33,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+      <PageSEO
+        title="Acompanhamento da Gravidez Semana a Semana"
+        description="Aplicativo completo de acompanhamento da gravidez. Veja o desenvolvimento do bebê semana a semana, registre emoções, acompanhe sintomas e receba dicas diárias."
+        path="/"
+      />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
