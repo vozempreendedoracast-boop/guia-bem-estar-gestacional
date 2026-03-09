@@ -1,3 +1,4 @@
+import PageSEO from "@/components/PageSEO";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePregnancy, MoodEntry } from "@/contexts/PregnancyContext";
