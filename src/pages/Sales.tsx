@@ -114,6 +114,12 @@ const Sales = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden relative">
+      <PageSEO
+        title="Planos e Preços — App de Gravidez"
+        description="Conheça os planos do MamyBoo. Acompanhamento gestacional completo com diário, sintomas, exercícios, IA e muito mais a partir de R$ 47."
+        keywords="app gravidez preço, plano acompanhamento gestacional, aplicativo para grávidas, MamyBoo planos"
+        path="/vendas"
+      />
       {/* Cute floating background elements */}
       {cuteElements.map((el, i) => (
         <FloatingCuteElement key={i} {...el} />
