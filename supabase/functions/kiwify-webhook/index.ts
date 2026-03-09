@@ -111,7 +111,7 @@ serve(async (req) => {
             full_name: customerName || "",
             invited_by: "kiwify_purchase",
           },
-          redirectTo: `${supabaseUrl.replace('.supabase.co', '.supabase.co').replace('https://hmtrjnosuwtmulerhgnr.supabase.co', 'https://mamyboo.vercel.app')}/cadastro`,
+          redirectTo: "https://mamyboo.com/cadastro",
         });
 
         if (inviteError) {
