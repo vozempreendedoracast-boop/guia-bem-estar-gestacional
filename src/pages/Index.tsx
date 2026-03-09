@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Heart, Sparkle, CalendarBlank } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import mamybooWhite from "@/assets/mamyboo-white.png";
+import PageSEO from "@/components/PageSEO";
 
 const Index = () => {
   const { user, loading, isAdmin } = useAuth();
