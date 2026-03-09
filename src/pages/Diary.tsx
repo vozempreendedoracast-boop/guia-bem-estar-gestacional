@@ -240,6 +240,12 @@ const Diary = () => {
 
   return (
     <div className="min-h-screen bg-background pb-8">
+      <PageSEO
+        title="Diário da Gravidez e Humor"
+        description="Registre suas emoções e consultas médicas durante a gravidez. Acompanhe seu humor semana a semana e cuide da sua saúde emocional."
+        keywords="diário da gravidez, humor na gestação, saúde emocional grávida, registro de emoções gravidez"
+        path="/diario"
+      />
       <div className="px-6 pt-6 pb-4 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/painel")} className="rounded-xl">
           <ArrowLeft className="w-5 h-5" />

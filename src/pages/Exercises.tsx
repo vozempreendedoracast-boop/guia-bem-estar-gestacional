@@ -24,6 +24,12 @@ const Exercises = () => {
 
   return (
     <div className="min-h-screen bg-background pb-8">
+      <PageSEO
+        title="Exercícios para Gestantes por Trimestre"
+        description="Exercícios seguros e recomendados para cada fase da gravidez. Alongamentos, fortalecimento e respiração para uma gestação saudável."
+        keywords="exercícios para gestantes, yoga na gravidez, alongamento gestante, exercícios seguros gravidez, atividade física na gestação"
+        path="/exercicios"
+      />
       <div className="px-6 pt-6 pb-4 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/painel")} className="rounded-xl">
           <ArrowLeft className="w-5 h-5" />

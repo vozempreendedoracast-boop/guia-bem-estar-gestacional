@@ -1,3 +1,4 @@
+import PageSEO from "@/components/PageSEO";
 import { usePregnancy } from "@/contexts/PregnancyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWeekContents, useCategories, useActivePromotions, useDailyTip } from "@/hooks/useSupabaseData";

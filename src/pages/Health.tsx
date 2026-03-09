@@ -25,6 +25,12 @@ const Health = () => {
 
   return (
     <div className="min-h-screen bg-background pb-8">
+      <PageSEO
+        title="Saúde Integral na Gravidez"
+        description="Dicas de alimentação, sono, saúde emocional e bem-estar para uma gestação saudável e equilibrada."
+        keywords="saúde na gravidez, alimentação gestante, sono na gravidez, saúde emocional gestação, bem-estar na gravidez"
+        path="/saude"
+      />
       <div className="px-6 pt-6 pb-4 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/painel")} className="rounded-xl">
           <ArrowLeft className="w-5 h-5" />
