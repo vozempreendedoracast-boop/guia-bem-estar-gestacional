@@ -6,8 +6,9 @@ import {
   CheckCircle, ArrowRight, Crown, Sparkle, BabyCarriage,
   Butterfly, FlowerLotus, StarFour, Notebook,
   Stethoscope, Seal, Baby, Calendar, FirstAid, Brain,
-  Lock,
+  Lock, Fire, X as XMark,
 } from "@phosphor-icons/react";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
@@ -499,6 +500,48 @@ const Sales = () => {
         </div>
       </section>
 
+      {/* Launch offer intro */}
+      <section className="py-16 relative z-10">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
+              <Fire className="w-4 h-4" weight="fill" />
+              Oferta de Lançamento
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground">
+              O MamyBoo foi criado para acompanhar cada fase da gestação com informação confiável e apoio emocional. 💜
+            </h2>
+            <p className="text-muted-foreground mt-4 max-w-xl mx-auto leading-relaxed">
+              Para o lançamento do aplicativo, as <strong className="text-foreground">primeiras 100 gestantes</strong> terão acesso ao preço especial.
+            </p>
+          </motion.div>
+
+          {/* Vacancy counter */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="mt-8 max-w-md mx-auto"
+          >
+            <div className="bg-card rounded-2xl border border-border shadow-card p-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-foreground">Vagas de lançamento</span>
+                <span className="text-sm font-bold text-primary">87 de 100</span>
+              </div>
+              <Progress value={87} className="h-3 bg-muted" />
+              <p className="text-xs text-muted-foreground mt-3">
+                🔥 Restam apenas <strong className="text-foreground">13 vagas</strong> com preço de lançamento.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Plans */}
       <section id="plans" className="py-16 relative z-10">
         <FloatingBlob className="w-80 h-80 bg-peach/30 -top-20 -left-32" delay={0.5} />
@@ -523,6 +566,7 @@ const Sales = () => {
           <div className={`grid gap-6 ${plans.length === 1 ? 'max-w-md mx-auto' : plans.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
             {plans.map((plan, i) => {
               const IconComp = iconMap[plan.icon] || BookOpen;
+              const isPremium = plan.slug === "premium" || plan.highlighted;
               return (
                 <motion.div
                   key={plan.id}
@@ -532,9 +576,9 @@ const Sales = () => {
                   viewport={{ once: true }}
                   variants={staggerChild}
                   className={`bg-card rounded-2xl p-6 flex flex-col relative ${
-                    plan.highlighted
-                      ? "border-2 border-primary shadow-elevated"
-                      : "border border-border shadow-card"
+                    isPremium
+                      ? "border-2 border-primary shadow-elevated ring-2 ring-primary/20 scale-[1.02]"
+                      : "border border-border shadow-card opacity-90"
                   }`}
                 >
                   {plan.badge && (
@@ -544,11 +588,11 @@ const Sales = () => {
                   )}
                   <div className={`flex items-center gap-3 mb-4 ${plan.badge ? "mt-2" : ""}`}>
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      plan.highlighted
+                      isPremium
                         ? "gradient-primary shadow-soft"
-                        : "bg-peach"
+                        : "bg-muted"
                     }`}>
-                      <IconComp className={`w-6 h-6 ${plan.highlighted ? "text-primary-foreground" : "text-peach-foreground"}`} />
+                      <IconComp className={`w-6 h-6 ${isPremium ? "text-primary-foreground" : "text-muted-foreground"}`} />
                     </div>
                     <div>
                       <h3 className="text-xl font-bold font-display">{plan.name}</h3>
@@ -556,42 +600,72 @@ const Sales = () => {
                     </div>
                   </div>
                   <div className="mb-6">
+                    {isPremium && (
+                      <p className="text-sm text-muted-foreground mb-1">
+                        <span className="line-through">R$ 297</span>
+                        <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">-67% OFF</span>
+                      </p>
+                    )}
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl font-bold font-display text-foreground">{plan.price}</span>
                       <span className="text-sm text-muted-foreground">{plan.price_label}</span>
                     </div>
-                    {plan.highlight_text && (
-                      <p className="text-xs text-primary font-medium mt-1">{plan.highlight_text}</p>
+                    {isPremium && (
+                      <p className="text-xs text-primary font-medium mt-1">
+                        Menos de R$ 8 por mês durante toda a gestação.
+                      </p>
+                    )}
+                    {!isPremium && plan.highlight_text && (
+                      <p className="text-xs text-muted-foreground font-medium mt-1">{plan.highlight_text}</p>
+                    )}
+                    {isPremium && (
+                      <p className="text-[11px] text-muted-foreground mt-2">
+                        Preço especial de lançamento para as primeiras gestantes.
+                      </p>
                     )}
                   </div>
                   <ul className="space-y-3 flex-1 mb-6">
                     {(plan.features || []).map(f => (
                       <li key={f} className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" weight={plan.highlighted ? "fill" : "regular"} />
+                        <CheckCircle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isPremium ? "text-primary" : "text-muted-foreground"}`} weight={isPremium ? "fill" : "regular"} />
                         <span className="text-foreground">{f}</span>
                       </li>
                     ))}
                     {(plan.excluded_features || []).map(f => (
                       <li key={f} className="flex items-start gap-2 text-sm opacity-40">
-                        <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-center">✕</span>
+                        <XMark className="w-4 h-4 flex-shrink-0 mt-0.5 text-muted-foreground" />
                         <span>{f}</span>
                       </li>
                     ))}
                   </ul>
                   <Button
                     onClick={() => handleSelectPlan(plan.checkout_url || "#")}
-                    variant={plan.highlighted ? "default" : "outline"}
+                    variant={isPremium ? "default" : "outline"}
                     className={`w-full h-14 rounded-xl font-semibold text-base ${
-                      plan.highlighted ? "gradient-primary text-primary-foreground shadow-soft" : ""
+                      isPremium ? "gradient-primary text-primary-foreground shadow-soft" : ""
                     }`}
                   >
-                    {plan.button_text || "Quero começar"}
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                    {isPremium ? "Quero Premium" : "Começar"}
+                    {isPremium && <ArrowRight className="w-5 h-5 ml-2" />}
                   </Button>
                 </motion.div>
               );
             })}
           </div>
+
+          {/* Guarantee reminder */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="mt-8 text-center"
+          >
+            <div className="inline-flex items-center gap-2 bg-card border border-border rounded-2xl px-5 py-3 shadow-card">
+              <Seal className="w-5 h-5 text-primary" weight="fill" />
+              <span className="text-sm text-foreground font-medium">Teste por 7 dias. Se não gostar, devolvemos 100% do seu dinheiro.</span>
+            </div>
+          </motion.div>
 
           {/* Trust badges */}
           <motion.div
