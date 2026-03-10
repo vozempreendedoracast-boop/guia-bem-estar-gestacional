@@ -140,6 +140,20 @@ const Login = () => {
     setRecoveryCooldownUntil(Date.now() + 60_000);
   };
 
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "https://mamyboo.com/painel",
+      },
+    });
+    if (error) {
+      toast.error("Erro ao conectar com Google. Tente novamente.");
+      setGoogleLoading(false);
+    }
+  };
+
   const signupCooldownSeconds = Math.max(0, Math.ceil((signupCooldownUntil - Date.now()) / 1000));
 
   return (
