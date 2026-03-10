@@ -606,6 +606,12 @@ const Sales = () => {
                         <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">-67% OFF</span>
                       </p>
                     )}
+                    {!isPremium && (
+                      <p className="text-sm text-muted-foreground mb-1">
+                        <span className="line-through">R$ 179</span>
+                        <span className="ml-2 text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">Lançamento</span>
+                      </p>
+                    )}
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl font-bold font-display text-foreground">{plan.price}</span>
                       <span className="text-sm text-muted-foreground">{plan.price_label}</span>
@@ -623,6 +629,11 @@ const Sales = () => {
                         Preço especial de lançamento para as primeiras gestantes.
                       </p>
                     )}
+                    {!isPremium && (
+                      <p className="text-[11px] text-muted-foreground mt-2">
+                        Após o lançamento: R$ 179
+                      </p>
+                    )}
                   </div>
                   <ul className="space-y-3 flex-1 mb-6">
                     {(plan.features || []).map(f => (
@@ -637,6 +648,12 @@ const Sales = () => {
                         <span>{f}</span>
                       </li>
                     ))}
+                    {!isPremium && (
+                      <li className="flex items-start gap-2 text-sm opacity-40">
+                        <XMark className="w-4 h-4 flex-shrink-0 mt-0.5 text-muted-foreground" />
+                        <span>Atualizações e recursos futuros</span>
+                      </li>
+                    )}
                   </ul>
                   <Button
                     onClick={() => handleSelectPlan(plan.checkout_url || "#")}
