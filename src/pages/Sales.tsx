@@ -6,8 +6,9 @@ import {
   CheckCircle, ArrowRight, Crown, Sparkle, BabyCarriage,
   Butterfly, FlowerLotus, StarFour, Notebook,
   Stethoscope, Seal, Baby, Calendar, FirstAid, Brain,
-  Lock,
+  Lock, Fire, X as XMark,
 } from "@phosphor-icons/react";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
