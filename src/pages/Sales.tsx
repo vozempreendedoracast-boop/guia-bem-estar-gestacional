@@ -648,12 +648,6 @@ const Sales = () => {
                         <span>{f}</span>
                       </li>
                     ))}
-                    {!isPremium && (
-                      <li className="flex items-start gap-2 text-sm opacity-40">
-                        <XMark className="w-4 h-4 flex-shrink-0 mt-0.5 text-muted-foreground" />
-                        <span>Atualizações e recursos futuros</span>
-                      </li>
-                    )}
                   </ul>
                   <Button
                     onClick={() => handleSelectPlan(plan.checkout_url || "#")}
