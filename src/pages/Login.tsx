@@ -21,6 +21,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
   const [recoveryCooldownUntil, setRecoveryCooldownUntil] = useState<number>(0);
   const [signupCooldownUntil, setSignupCooldownUntil] = useState<number>(0);
