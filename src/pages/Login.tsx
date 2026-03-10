@@ -120,7 +120,7 @@ const Login = () => {
 
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: "https://mamyboo.vercel.app/reset-password",
+      redirectTo: "https://mamyboo.com/reset-password",
     });
     setLoading(false);
 
