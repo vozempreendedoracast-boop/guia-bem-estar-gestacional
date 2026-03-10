@@ -606,6 +606,12 @@ const Sales = () => {
                         <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">-67% OFF</span>
                       </p>
                     )}
+                    {!isPremium && (
+                      <p className="text-sm text-muted-foreground mb-1">
+                        <span className="line-through">R$ 179</span>
+                        <span className="ml-2 text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">Lançamento</span>
+                      </p>
+                    )}
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl font-bold font-display text-foreground">{plan.price}</span>
                       <span className="text-sm text-muted-foreground">{plan.price_label}</span>
@@ -621,6 +627,11 @@ const Sales = () => {
                     {isPremium && (
                       <p className="text-[11px] text-muted-foreground mt-2">
                         Preço especial de lançamento para as primeiras gestantes.
+                      </p>
+                    )}
+                    {!isPremium && (
+                      <p className="text-[11px] text-muted-foreground mt-2">
+                        Após o lançamento: R$ 179
                       </p>
                     )}
                   </div>
